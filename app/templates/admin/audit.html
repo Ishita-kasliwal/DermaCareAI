@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination as paginate %}
+{% block title %}Audit log · Administration{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head"><div><p class="eyebrow">Administration</p><h1>Audit log</h1><p class="muted">Security-relevant events. IP addresses are stored only as keyed hashes.</p></div></div>
+  {% include "admin/_subnav.html" %}
+  <form class="filters" method="get" action="{{ url_for('admin.audit_log') }}" aria-label="Filter events">
+    <div class="field"><label for="action">Event type</label>
+      <select id="action" name="action"><option value="">All events</option>{% for a in actions %}<option value="{{ a }}" {% if a == action %}selected{% endif %}>{{ a }}</option>{% endfor %}</select>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary btn-sm" type="submit">Apply</button>{% if action %}<a class="btn btn-ghost btn-sm" href="{{ url_for('admin.audit_log') }}">Clear</a>{% endif %}</div>
+  </form>
+  {% if pagination.items %}
+    <div class="table-wrap">
+      <table class="responsive">
+        <thead><tr><th scope="col">When (UTC)</th><th scope="col">Event</th><th scope="col">Account</th><th scope="col">Target</th><th scope="col">Client</th></tr></thead>
+        <tbody>
+          {% for a in pagination.items %}
+            <tr>
+              <td data-label="When">{{ a.created_at|datetimefmt }}</td>
+              <td data-label="Event" class="mono">{{ a.action }}</td>
+              <td data-label="Account">{{ a.user.full_name if a.user else '—' }}</td>
+              <td data-label="Target" class="mono small">{{ a.target_type or '' }} {{ (a.target_id or '')|truncate(14, true, '…') }}</td>
+              <td data-label="Client" class="mono small">{{ (a.ip_hash or '—')[:10] }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {{ paginate(pagination, 'admin.audit_log', {'action': action} if action else {}) }}
+  {% else %}
+    <div class="empty"><h2>No events</h2><p>Nothing has been recorded for this filter.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

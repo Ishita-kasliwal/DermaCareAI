@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% from "_macros.html" import check %}
+{% block title %}Check your photo{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Step 2 of 3</span>
+      <h1>Check your photo</h1>
+      <p class="muted">Make sure this is the right spot. If anything below says "Check", a new photo may give a better result.</p>
+    </div>
+  </div>
+
+  {% if error %}<div class="alert alert-error" role="alert"><p>{{ error }}</p></div>{% endif %}
+
+  <div class="grid-2">
+    <figure class="image-frame">
+      <img src="{{ url_for('predict.image_file', image_id=image.public_id) }}" alt="Your uploaded photo of the skin spot" width="{{ image.width }}" height="{{ image.height }}">
+      <figcaption>{{ image.width }} × {{ image.height }} pixels · hidden photo details removed · uploaded {{ image.uploaded_at|datetimefmt }}</figcaption>
+    </figure>
+
+    <div class="stack">
+      <section class="panel" aria-labelledby="quality-h">
+        <h2 id="quality-h">Photo quality</h2>
+        <ul class="quality-list">
+          {% set codes = (image.quality_issues or [])|map(attribute='code')|list %}
+          <li>{% if 'blurry' in codes %}<span class="q-warn">Check</span>{% else %}<span class="q-ok">Good</span>{% endif %}
+            <span><strong>Sharpness:</strong> {% if 'blurry' in codes %}{{ (image.quality_issues|selectattr('code','equalto','blurry')|first).message }}{% else %}the photo looks clear.{% endif %}</span></li>
+          <li>{% if 'dark' in codes or 'overexposed' in codes %}<span class="q-warn">Check</span>{% else %}<span class="q-ok">Good</span>{% endif %}
+            <span><strong>Light:</strong> {% for i in image.quality_issues or [] if i.code in ['dark','overexposed'] %}{{ i.message }}{% else %}the brightness looks fine.{% endfor %}</span></li>
+          <li>{% if 'low_contrast' in codes %}<span class="q-warn">Check</span>{% else %}<span class="q-ok">Good</span>{% endif %}
+            <span><strong>Contrast:</strong> {% if 'low_contrast' in codes %}{{ (image.quality_issues|selectattr('code','equalto','low_contrast')|first).message }}{% else %}the spot stands out from the skin around it.{% endif %}</span></li>
+          <li>{% if 'greyscale' in codes %}<span class="q-warn">Check</span>{% else %}<span class="q-ok">Good</span>{% endif %}
+            <span><strong>Colour:</strong> {% if 'greyscale' in codes %}{{ (image.quality_issues|selectattr('code','equalto','greyscale')|first).message }}{% else %}it's a colour photo.{% endif %}</span></li>
+        </ul>
+        {% if not image.quality_ok %}
+          <p class="note small">You can still continue, but the result may be less reliable. We'll show a reminder with your result.</p>
+        {% endif %}
+      </section>
+
+      <section class="panel" aria-labelledby="confirm-h">
+        <h2 id="confirm-h">Ready?</h2>
+        {% if not model %}
+          <div class="alert alert-warning"><p>The AI isn't ready yet, so we can't check this photo right now.</p></div>
+        {% endif %}
+        <form class="form" method="post" action="{{ url_for('predict.analyze', image_id=image.public_id) }}" novalidate data-loading-form>
+          {{ form.hidden_tag() }}
+          {{ check(form.consent, required=true) }}
+          <div class="btn-row">
+            <button class="btn btn-primary" type="submit" {% if not model %}disabled aria-disabled="true"{% endif %}>Check my spot</button>
+            <a class="btn btn-secondary" href="{{ url_for('predict.upload') }}">Use a different photo</a>
+          </div>
+          <p class="loading-note" data-loading-note>The AI is looking at your photo. This usually takes a few seconds…</p>
+        </form>
+      </section>
+    </div>
+  </div>
+</div>
+{% endblock %}

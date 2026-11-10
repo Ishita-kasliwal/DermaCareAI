@@ -1,0 +1,19 @@
+[project]
+name = "ai-skin-disease-prediction"
+version = "0.1.0"
+description = "AI-Based Skin Disease Detection and Classification System"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["ml/data", "ml/artifacts", "migrations/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: end-to-end ML smoke tests (deselect with -m 'not slow')"]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::UserWarning"]

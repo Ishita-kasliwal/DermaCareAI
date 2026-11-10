@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}Edit {{ dc.name }} · Administration{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head"><div><p class="eyebrow">Administration · Categories</p><h1>{{ dc.name }}</h1></div></div>
+  {% include "admin/_subnav.html" %}
+  <div class="form-card narrow">
+    <form class="form" method="post" action="{{ url_for('admin.edit_category', code=dc.code) }}" novalidate data-loading-form>
+      {{ form.hidden_tag() }}
+      {{ field(form.description, rows=5, required=true, hint='Shown on the home page and as an alternative on results. Plain language, no diagnostic claims.') }}
+      {{ field(form.advice, rows=4, required=true, hint='Shown in the next-steps box when this category is the result.') }}
+      <div class="btn-row">
+        <button class="btn btn-primary" type="submit">Save changes</button>
+        <a class="btn btn-ghost" href="{{ url_for('admin.categories') }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

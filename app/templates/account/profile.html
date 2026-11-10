@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}My account{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head">
+    <div>
+      <h1>My account</h1>
+      <p class="muted">Logged in as {{ current_user.email }} · member since {{ current_user.created_at|datefmt }}</p>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <section class="form-card" aria-labelledby="profile-h">
+      <h2 id="profile-h">Your details</h2>
+      <p class="muted small">Only your name is needed. Your skin type helps you understand how well the AI may work for you, because it learned mostly from lighter skin (types I–III).</p>
+      <form class="form" method="post" action="{{ url_for('account.profile_update') }}" novalidate data-loading-form>
+        {{ profile_form.hidden_tag() }}
+        {{ field(profile_form.full_name, autocomplete='name', required=true) }}
+        {{ field(profile_form.birth_year, inputmode='numeric', min=1900, max=current_year, autocomplete='bday-year') }}
+        {{ field(profile_form.sex) }}
+        {{ field(profile_form.skin_type) }}
+        <button class="btn btn-primary" type="submit">Save my details</button>
+      </form>
+    </section>
+
+    <div class="stack">
+      <section class="form-card" aria-labelledby="pw-h">
+        <h2 id="pw-h">Change password</h2>
+        <form class="form" method="post" action="{{ url_for('account.password') }}" novalidate data-loading-form>
+          {{ password_form.hidden_tag() }}
+          {{ field(password_form.current_password, autocomplete='current-password', required=true) }}
+          {{ field(password_form.new_password, autocomplete='new-password', required=true, minlength=min_length, hint='At least ' ~ min_length ~ ' characters. You will be logged out on your other devices.') }}
+          {{ field(password_form.confirm, autocomplete='new-password', required=true) }}
+          <button class="btn btn-secondary" type="submit">Change password</button>
+        </form>
+      </section>
+
+      <section class="form-card" aria-labelledby="del-h">
+        <h2 id="del-h">Delete my account</h2>
+        <p class="muted small">This deletes all your photos straight away and can't be undone. You may want to download your history first.</p>
+        <p><a href="{{ url_for('history.export') }}">Download my history (CSV)</a></p>
+        <form class="form" method="post" action="{{ url_for('account.delete') }}" novalidate data-confirm="Delete your account and all your photos for good?">
+          {{ delete_form.hidden_tag() }}
+          {{ field(delete_form.password, autocomplete='current-password', required=true) }}
+          {{ field(delete_form.confirm_text, autocomplete='off', required=true) }}
+          <button class="btn btn-danger" type="submit">Delete my account</button>
+        </form>
+      </section>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Analytics · Administration{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head"><div><p class="eyebrow">Administration</p><h1>Analytics</h1><p class="muted">Computed from stored analyses. Deleted records are excluded.</p></div></div>
+  {% include "admin/_subnav.html" %}
+
+  <form class="filters" method="get" action="{{ url_for('admin.analytics') }}" aria-label="Date range" data-range-form>
+    <div class="field"><label for="from">From</label><input id="from" name="from" type="date" value="{{ start.isoformat() }}" required></div>
+    <div class="field"><label for="to">To</label><input id="to" name="to" type="date" value="{{ end.isoformat() }}" required></div>
+    <div class="btn-row"><button class="btn btn-primary btn-sm" type="submit">Update</button></div>
+    <p class="error-text" data-range-error role="alert" hidden></p>
+  </form>
+
+  <div data-analytics data-src="{{ url_for('api.analytics', **{'from': start.isoformat(), 'to': end.isoformat()}) }}">
+    <p class="chart-status" data-chart-status>Loading analytics…</p>
+
+    <div class="figures" data-figures hidden>
+      <div class="figure"><div class="value" data-fig="total">—</div><div class="label">Analyses in range</div></div>
+      <div class="figure"><div class="value" data-fig="inconclusive">—</div><div class="label">Inconclusive</div></div>
+      <div class="figure"><div class="value" data-fig="quality">—</div><div class="label">With photo-quality issues</div></div>
+    </div>
+
+    <div class="stack" data-charts hidden>
+      <section class="panel" aria-labelledby="c-daily">
+        <h2 id="c-daily">Analyses per day</h2>
+        <div class="chart-box tall"><canvas data-chart="daily" role="img" aria-label="Line chart of analyses per day"></canvas></div>
+      </section>
+      <div class="grid-2">
+        <section class="panel" aria-labelledby="c-class">
+          <h2 id="c-class">Top category</h2>
+          <div class="chart-box"><canvas data-chart="classes" role="img" aria-label="Bar chart of analyses by top category"></canvas></div>
+        </section>
+        <section class="panel" aria-labelledby="c-status">
+          <h2 id="c-status">Confident vs inconclusive</h2>
+          <div class="chart-box"><canvas data-chart="status" role="img" aria-label="Doughnut chart of confident and inconclusive results"></canvas></div>
+        </section>
+        <section class="panel" aria-labelledby="c-conf">
+          <h2 id="c-conf">Top-score distribution</h2>
+          <div class="chart-box"><canvas data-chart="confidence" role="img" aria-label="Histogram of top category scores"></canvas></div>
+        </section>
+        <section class="panel" aria-labelledby="c-model">
+          <h2 id="c-model">By model version</h2>
+          <div class="chart-box"><canvas data-chart="models" role="img" aria-label="Bar chart of analyses by model version"></canvas></div>
+        </section>
+      </div>
+      <section class="panel" aria-labelledby="c-fb">
+        <h2 id="c-fb">Clinician feedback by top category</h2>
+        <div data-feedback-table></div>
+      </section>
+      <details class="data-table">
+        <summary>View the underlying numbers as tables</summary>
+        <div data-raw-tables></div>
+      </details>
+    </div>
+  </div>
+  <p class="small muted">Need the raw data? <a href="{{ url_for('admin.exports') }}">Download Power BI-ready CSV files</a>.</p>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='vendor/chartjs/chart.umd.js') }}" defer></script><script src="{{ url_for('static', filename='js/charts.js') }}" defer></script>{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field, check %}
+{% block title %}Sign up{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="auth-wrap">
+    <h1>Create your free account</h1>
+    <p class="lead">It takes less than a minute. Your account keeps your photos and results private.</p>
+    <div class="form-card">
+      <form class="form" method="post" action="{{ url_for('auth.register') }}" novalidate data-loading-form>
+        {{ form.hidden_tag() }}
+        {{ field(form.full_name, autocomplete='name', required=true) }}
+        {{ field(form.email, autocomplete='email', required=true, hint="You'll use this to log in. We never share it.") }}
+        <div class="field{{ ' has-error' if form.password.errors }}">
+          {{ form.password.label() }}
+          <ul class="pw-rules" id="password-hint">
+            <li>At least {{ min_length }} characters</li>
+            <li>Not an easy-to-guess password, and not your name or email</li>
+          </ul>
+          {{ form.password(autocomplete='new-password', required=true, minlength=min_length, aria_describedby='password-hint' ~ (' password-error' if form.password.errors else '')) }}
+          {% if form.password.errors %}<p class="error" id="password-error">{{ form.password.errors|join(' ') }}</p>{% endif %}
+        </div>
+        {{ field(form.confirm, autocomplete='new-password', required=true) }}
+        {{ check(form.accept) }}
+        <button class="btn btn-primary" type="submit">Create my account</button>
+      </form>
+      <p class="form-footer">Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

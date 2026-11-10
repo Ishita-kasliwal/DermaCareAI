@@ -1,0 +1,37 @@
+# Runtime + ML dependencies (install into the project .venv only).
+# Exact resolved versions are recorded in requirements.lock.txt.
+
+# --- Web (Flask) ---
+flask>=3.0
+flask-login>=0.6
+flask-wtf>=1.2
+flask-sqlalchemy>=3.1
+flask-migrate>=4.0
+flask-limiter>=3.8
+flask-talisman>=1.1
+email-validator>=2.2
+python-dotenv>=1.0
+waitress>=3.0
+
+# --- Security ---
+argon2-cffi>=23.1
+
+# --- Database (MySQL) ---
+sqlalchemy>=2.0
+pymysql>=1.1
+cryptography>=43   # required by PyMySQL for MySQL 8 caching_sha2_password
+
+# --- Deep learning (CPU; Python 3.12) ---
+tensorflow>=2.17
+
+# --- Image processing ---
+opencv-python-headless>=4.10
+pillow>=10.4
+
+# --- ML support / analytics ---
+numpy
+pandas>=2.2
+scikit-learn>=1.5
+matplotlib>=3.9
+pyyaml>=6.0
+tqdm>=4.66

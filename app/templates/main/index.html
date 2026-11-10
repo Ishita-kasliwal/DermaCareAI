@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% from "_macros.html" import risk_badge, icon %}
+{% block title %}Check a skin spot with AI{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <span class="eyebrow pill-eyebrow">Free skin-spot checker</span>
+      <h1>Understand your skin spot <span class="hl">before you see a doctor</span></h1>
+      <p class="lead">Upload a close-up photo of a mole or skin spot. Our AI compares it with 7 common types of
+        skin spots and tells you, in plain words, what it looks most like. It also tells you when it isn't sure.</p>
+      <div class="btn-row">
+        {% if current_user.is_authenticated %}
+          <a class="btn btn-primary btn-lg" href="{{ url_for('predict.upload') }}">Check a spot now</a>
+          <a class="btn btn-secondary btn-lg" href="{{ url_for('main.dashboard') }}">Go to my dashboard</a>
+        {% else %}
+          <a class="btn btn-primary btn-lg" href="{{ url_for('auth.register') }}">Get started, it's free</a>
+          <a class="btn btn-secondary btn-lg" href="{{ url_for('auth.login') }}">Log in</a>
+        {% endif %}
+      </div>
+      <ul class="trust-row">
+        <li>{{ icon('lock') }} Only you see your photos</li>
+        <li>{{ icon('question') }} Honest when it's not sure</li>
+        <li>{{ icon('clock') }} Takes about a minute</li>
+      </ul>
+    </div>
+
+    <div class="hero-art" aria-hidden="true">
+      <svg class="art" viewBox="0 0 400 290" focusable="false">
+        <rect class="art-bg" x="0" y="0" width="400" height="290" rx="18"/>
+        <rect class="art-skin" x="30" y="25" width="340" height="240" rx="16"/>
+        <circle class="art-skin-dot" cx="80" cy="60" r="3"/><circle class="art-skin-dot" cx="120" cy="215" r="2.5"/>
+        <circle class="art-skin-dot" cx="320" cy="70" r="3"/><circle class="art-skin-dot" cx="300" cy="225" r="2.5"/>
+        <circle class="art-skin-dot" cx="65" cy="170" r="2"/><circle class="art-skin-dot" cx="345" cy="160" r="2"/>
+        <circle class="art-skin-dot" cx="160" cy="45" r="2"/><circle class="art-skin-dot" cx="250" cy="245" r="2"/>
+        <ellipse class="art-lesion" cx="200" cy="145" rx="52" ry="42" transform="rotate(-12 200 145)"/>
+        <ellipse class="art-lesion-2" cx="192" cy="140" rx="24" ry="19" transform="rotate(-8 192 140)"/>
+        <circle class="art-ring" cx="200" cy="145" r="78"/>
+        <circle class="art-ring-2" cx="200" cy="145" r="96"/>
+        <path class="art-corner" d="M58 52v-14h14M342 52v-14h-14M58 238v14h14M342 238v14h-14"/>
+      </svg>
+      <div class="art-caption">
+        <span class="icon-circle">{{ icon('eye') }}</span>
+        <p>The AI looks at the spot's <strong>shape, colours and edges</strong>. You always see every score, not just one answer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt" id="how-it-works">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">How it works</span>
+      <h2>Three easy steps</h2>
+    </div>
+    <ol class="steps">
+      <li><h3>Take a clear photo</h3><p>Get close, use good light, and keep the spot in the middle of the photo.</p></li>
+      <li><h3>Upload and check</h3><p>We check that your photo is sharp and bright enough before the AI looks at it.</p></li>
+      <li><h3>Read your result</h3><p>See what the spot looks most like, how sure the AI is, and what to do next.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Why people like it</span>
+      <h2>Clear answers, no confusing words</h2>
+    </div>
+    <div class="feature-grid">
+      <div class="feature"><span class="icon-circle">{{ icon('chat') }}</span><h3>Simple results</h3><p>Results are written in everyday language, with the medical name alongside.</p></div>
+      <div class="feature"><span class="icon-circle warm">{{ icon('question') }}</span><h3>Says when it's not sure</h3><p>If the photo doesn't clearly match one type, we tell you honestly instead of guessing.</p></div>
+      <div class="feature"><span class="icon-circle">{{ icon('eye') }}</span><h3>See what the AI looked at</h3><p>A heatmap highlights the parts of your photo the AI paid most attention to.</p></div>
+      <div class="feature"><span class="icon-circle">{{ icon('history') }}</span><h3>All your checks in one place</h3><p>Look back at earlier checks, compare them over time, or download them.</p></div>
+      <div class="feature"><span class="icon-circle warm">{{ icon('lock') }}</span><h3>Private by design</h3><p>We remove hidden photo details like location. Delete any photo whenever you like.</p></div>
+      <div class="feature"><span class="icon-circle">{{ icon('doctor') }}</span><h3>Clear next steps</h3><p>Every result tells you whether to see a doctor soon or just keep an eye on the spot.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">What it knows</span>
+      <h2>The 7 types of skin spots the AI can recognise</h2>
+      <p class="muted">If your spot is something else, like a rash, the AI will still pick the closest of these 7. That's one reason to always check with a doctor.</p>
+    </div>
+    <ul class="category-list cards">
+      {% for c in classes %}
+        <li>
+          <span class="name">{{ c.name }}</span>
+          {{ risk_badge(c.risk_level) }}
+          <span class="desc">{{ c.description }}</span>
+        </li>
+      {% else %}
+        <li class="muted">The skin spot types haven't been set up yet.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="good-to-know">
+  <div class="container grid-2">
+    <div class="panel">
+      <h2>{{ brand }} can help you</h2>
+      <ul class="checklist">
+        <li>Learn what a skin spot might be, in simple words</li>
+        <li>Prepare questions before a doctor's visit</li>
+        <li>Keep track of spots over time</li>
+        <li>See honestly when the AI isn't sure</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h2>{{ brand }} cannot</h2>
+      <ul class="checklist cross">
+        <li>Tell you for sure whether a spot is cancer</li>
+        <li>Check rashes, infections, eczema or psoriasis</li>
+        <li>Promise the same accuracy for phone photos or darker skin, because it learned mostly from close-up photos of lighter skin</li>
+        <li>Replace a visit to a doctor</li>
+      </ul>
+      <p class="small"><a href="{{ url_for('main.about_model') }}">Read more about how the AI was built</a></p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="cta-band">
+      <div>
+        <h2>Ready to check a spot?</h2>
+        <p>It's free and takes about a minute. Your photos stay private.</p>
+      </div>
+      {% if current_user.is_authenticated %}
+        <a class="btn btn-secondary btn-lg" href="{{ url_for('predict.upload') }}">Check a spot now</a>
+      {% else %}
+        <a class="btn btn-secondary btn-lg" href="{{ url_for('auth.register') }}">Create a free account</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

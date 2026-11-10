@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, result_label, icon %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head">
+    <div>
+      <h1>Hi, {{ current_user.first_name }}</h1>
+      <p class="muted">Here's a quick look at your skin checks.</p>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('predict.upload') }}">Check a new spot</a>
+  </div>
+
+  {% if not model %}
+    <div class="alert alert-warning"><p><strong>The AI isn't ready yet.</strong> We can't check new photos right now, but you can still see your past results.</p></div>
+  {% endif %}
+
+  <div class="figures" aria-label="Your summary">
+    <div class="figure"><div class="value">{{ stats.total }}</div><div class="label">Checks done</div></div>
+    <div class="figure"><div class="value">{{ stats.high_risk_confident }}</div><div class="label">Spots to show a doctor soon</div></div>
+    <div class="figure"><div class="value">{{ stats.status.inconclusive }}</div><div class="label">Results the AI wasn't sure about</div></div>
+    <div class="figure"><div class="value">{{ stats.last_at|datefmt if stats.last_at else '—' }}</div><div class="label">Last check</div></div>
+  </div>
+
+  {% if stats.total == 0 %}
+    <div class="empty">
+      <span class="icon-circle">{{ icon('camera') }}</span>
+      <h2>You haven't checked any spots yet</h2>
+      <p>Upload a close-up photo of a skin spot. You'll see your photo first, before the AI looks at it.</p>
+      <a class="btn btn-primary" href="{{ url_for('predict.upload') }}">Check my first spot</a>
+    </div>
+  {% else %}
+    <div class="grid-2 wide-left">
+      <section class="panel" aria-labelledby="recent-h">
+        <div class="panel-head">
+          <h2 id="recent-h">Your recent checks</h2>
+          <a href="{{ url_for('history.index') }}">See all</a>
+        </div>
+        <div class="table-wrap">
+          <table class="responsive">
+            <thead><tr><th scope="col"><span class="visually-hidden">Photo</span></th><th scope="col">Result</th><th scope="col">Date</th><th scope="col"><span class="visually-hidden">Open</span></th></tr></thead>
+            <tbody>
+              {% for p in recent %}
+                <tr>
+                  <td class="cell-thumb"><img class="thumb" src="{{ url_for('predict.image_file', image_id=p.image.public_id) }}" alt="" loading="lazy" width="52" height="52"></td>
+                  <td data-label="Result">{{ result_label(p) }}<br>{{ status_badge(p) }}</td>
+                  <td data-label="Date">{{ p.created_at|datetimefmt }}</td>
+                  <td><a href="{{ url_for('predict.result', prediction_id=p.public_id) }}">Open<span class="visually-hidden"> result from {{ p.created_at|datetimefmt }}</span></a></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="dist-h">
+        <h2 id="dist-h">What your spots looked like</h2>
+        <p class="muted small">How many of your checks matched each type best (including "not sure" results).</p>
+        <div class="chart-box" data-chart="user-classes" data-src="{{ url_for('api.my_stats') }}">
+          <canvas aria-label="Bar chart of your checks by skin spot type" role="img"></canvas>
+        </div>
+        <p class="chart-status" data-chart-status hidden></p>
+      </section>
+    </div>
+  {% endif %}
+
+  <section class="section">
+    <div class="feature-grid">
+      <div class="feature"><span class="icon-circle">{{ icon('camera') }}</span><h3>Taking a good photo</h3><p>Get close to the spot, use soft daylight and avoid flash. A skin magnifier (dermatoscope) works best.</p></div>
+      <div class="feature"><span class="icon-circle warm">{{ icon('info') }}</span><h3>What the score means</h3><p>The score shows how closely your photo matches each type. It is not the chance that you have it.</p></div>
+      <div class="feature"><span class="icon-circle">{{ icon('doctor') }}</span><h3>When to see a doctor</h3><p>If a spot is new, changing, bleeding or itchy, see a doctor, whatever the result says.</p></div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='vendor/chartjs/chart.umd.js') }}" defer></script><script src="{{ url_for('static', filename='js/charts.js') }}" defer></script>{% endblock %}

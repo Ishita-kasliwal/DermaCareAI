@@ -1,0 +1,10 @@
+{% set ep = request.endpoint or '' %}
+<nav class="subnav" aria-label="Administration">
+  <a href="{{ url_for('admin.dashboard') }}" {% if ep == 'admin.dashboard' %}aria-current="page"{% endif %}>Overview</a>
+  <a href="{{ url_for('admin.analytics') }}" {% if ep == 'admin.analytics' %}aria-current="page"{% endif %}>Analytics</a>
+  <a href="{{ url_for('admin.users') }}" {% if ep == 'admin.users' %}aria-current="page"{% endif %}>Users</a>
+  <a href="{{ url_for('admin.models') }}" {% if ep == 'admin.models' %}aria-current="page"{% endif %}>Models</a>
+  <a href="{{ url_for('admin.categories') }}" {% if ep in ['admin.categories', 'admin.edit_category'] %}aria-current="page"{% endif %}>Categories</a>
+  <a href="{{ url_for('admin.audit_log') }}" {% if ep == 'admin.audit_log' %}aria-current="page"{% endif %}>Audit log</a>
+  <a href="{{ url_for('admin.exports') }}" {% if ep == 'admin.exports' %}aria-current="page"{% endif %}>Exports</a>
+</nav>

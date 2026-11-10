@@ -1,0 +1,48 @@
+# ---- Secrets / local environment (NEVER commit) ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# ---- Python ----
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# ---- Runtime (PID files, logs, uploads) ----
+run/
+logs/
+*.log
+uploads/
+instance/
+
+# ---- ML data and artifacts (large / licensed; not for Git) ----
+ml/data/*
+!ml/data/.gitkeep
+ml/artifacts/*
+!ml/artifacts/.gitkeep
+*.keras
+*.pt
+*.pth
+*.onnx
+*.ckpt
+*.h5
+*.zip
+
+# ---- Editors / OS ----
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+Thumbs.db
+.DS_Store

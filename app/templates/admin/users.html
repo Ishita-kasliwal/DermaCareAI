@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field, pagination as paginate %}
+{% block title %}Users · Administration{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head"><div><p class="eyebrow">Administration</p><h1>Users</h1><p class="muted">Administrators can't view other users' images. Only aggregate data is available here.</p></div></div>
+  {% include "admin/_subnav.html" %}
+
+  <form class="filters" method="get" action="{{ url_for('admin.users') }}" aria-label="Filter users">
+    {{ field(form.q, placeholder='Name or email', type='search') }}
+    {{ field(form.role) }}
+    {{ field(form.state) }}
+    <div class="btn-row">
+      <button class="btn btn-primary btn-sm" type="submit">Apply</button>
+      {% if filters %}<a class="btn btn-ghost btn-sm" href="{{ url_for('admin.users') }}">Clear</a>{% endif %}
+    </div>
+  </form>
+
+  {% if pagination.items %}
+    <div class="table-wrap">
+      <table class="responsive">
+        <thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Role</th><th scope="col">Status</th><th scope="col" class="num">Analyses</th><th scope="col">Joined</th><th scope="col">Last sign-in</th><th scope="col">Actions</th></tr></thead>
+        <tbody>
+          {% for u in pagination.items %}
+            <tr>
+              <td data-label="Name">{{ u.full_name }}{% if u.id == current_user.id %} <span class="muted small">(you)</span>{% endif %}</td>
+              <td data-label="Email">{{ u.email }}</td>
+              <td data-label="Role">{{ 'Administrator' if u.role == 'admin' else 'User' }}</td>
+              <td data-label="Status">{% if u.is_active_flag %}<span class="badge badge-low">Active</span>{% else %}<span class="badge badge-neutral">Deactivated</span>{% endif %}</td>
+              <td data-label="Analyses" class="num">{{ counts.get(u.id, 0) }}</td>
+              <td data-label="Joined">{{ u.created_at|datefmt }}</td>
+              <td data-label="Last sign-in">{{ u.last_login_at|datetimefmt if u.last_login_at else 'Never' }}</td>
+              <td>
+                {% if u.id != current_user.id %}
+                  <div class="actions">
+                    <form class="inline-form" method="post" action="{{ url_for('admin.toggle_active', public_id=u.public_id) }}" data-confirm="{{ 'Deactivate' if u.is_active_flag else 'Reactivate' }} {{ u.full_name }}?">
+                      {{ confirm.hidden_tag() }}
+                      <button class="btn btn-sm {{ 'btn-danger' if u.is_active_flag else 'btn-secondary' }}" type="submit">{{ 'Deactivate' if u.is_active_flag else 'Reactivate' }}<span class="visually-hidden"> {{ u.full_name }}</span></button>
+                    </form>
+                    <form class="inline-form actions" method="post" action="{{ url_for('admin.change_role', public_id=u.public_id) }}" data-confirm="Change the role of {{ u.full_name }}?">
+                      {{ role_form.hidden_tag() }}
+                      <label class="visually-hidden" for="role-{{ u.public_id }}">Role for {{ u.full_name }}</label>
+                      <select id="role-{{ u.public_id }}" name="role">
+                        <option value="user" {% if u.role == 'user' %}selected{% endif %}>User</option>
+                        <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>Administrator</option>
+                      </select>
+                      <button class="btn btn-secondary btn-sm" type="submit">Set role</button>
+                    </form>
+                  </div>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {{ paginate(pagination, 'admin.users', filters) }}
+  {% else %}
+    <div class="empty"><h2>No users found</h2><p>No accounts match these filters.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% from "_macros.html" import risk_badge, field, icon %}
+{% block title %}Your result{% endblock %}
+{% block content %}
+{% set dc = pred.predicted_class %}
+{% set inconclusive = pred.status == 'inconclusive' %}
+<div class="container page">
+  <span class="eyebrow">Step 3 of 3 · Your result · {{ pred.created_at|datetimefmt }}</span>
+
+  <div class="grid-2 wide-right">
+    <div class="stack">
+      <figure class="image-frame">
+        <div data-image-views>
+          <img src="{{ url_for('predict.image_file', image_id=pred.image.public_id) }}" alt="Your photo of the skin spot" data-view="original">
+          {% if pred.gradcam_key %}
+            <img src="{{ url_for('predict.gradcam_file', prediction_id=pred.public_id) }}" alt="Heatmap over your photo showing where the AI looked most" data-view="heatmap" hidden>
+          {% endif %}
+        </div>
+        <figcaption>
+          {% if pred.gradcam_key %}
+            <span class="toggle-view" role="group" aria-label="Photo view">
+              <button type="button" aria-pressed="true" data-view-btn="original">Photo</button>
+              <button type="button" aria-pressed="false" data-view-btn="heatmap">Heatmap</button>
+            </span>
+            The heatmap shows the parts of the photo the AI paid most attention to.
+          {% else %}
+            Your photo ({{ pred.image.width }} × {{ pred.image.height }} pixels)
+          {% endif %}
+        </figcaption>
+      </figure>
+
+      <section class="panel" aria-labelledby="about-h">
+        <h2 id="about-h">About this check</h2>
+        <dl class="meta-list">
+          <dt>AI version</dt><dd>{{ pred.model_version.architecture }} · <span class="mono">{{ pred.model_version.version }}</span></dd>
+          <dt>Checked on</dt><dd>{{ pred.created_at|datetimefmt }}</dd>
+          <dt>Time taken</dt><dd>{{ pred.inference_ms }} ms</dd>
+          <dt>Photo quality</dt><dd>{% if pred.image.quality_ok %}Looks good{% else %}{% for i in pred.image.quality_issues or [] %}{{ i.message[:1]|upper }}{{ i.message[1:] }} {% endfor %}{% endif %}</dd>
+          <dt>How we decide</dt><dd>We only name one type if it scores at least {{ pred.model_version.confidence_threshold|pct }} and is clearly ahead of the next one.</dd>
+        </dl>
+      </section>
+    </div>
+
+    <div>
+      <div class="result-head">
+        {% if inconclusive %}
+          <h1 class="result-title">The AI isn't sure about this one</h1>
+          <p class="result-confidence">Closest match: <strong>{{ dc.name }}</strong> ({{ pred.confidence|pct(1) }})</p>
+          {% if reasons %}
+            <ul class="small">{% for r in reasons %}<li>{{ r }}</li>{% endfor %}</ul>
+          {% endif %}
+        {% else %}
+          <p class="muted">Your spot looks most like</p>
+          <h1 class="result-title">{{ dc.name }}</h1>
+          <p class="result-confidence">AI confidence <strong>{{ pred.confidence|pct(1) }}</strong> {{ risk_badge(dc.risk_level) }}</p>
+          {% if reasons %}<p class="small muted">{{ reasons|join(' ') }}</p>{% endif %}
+        {% endif %}
+        <p class="small muted">This number shows how closely your photo matches this type compared with the other 6. It is not the chance that you have it.</p>
+      </div>
+
+      {% if inconclusive %}
+        <div class="risk-callout inconclusive">
+          <h2>What to do next</h2>
+          <p>Try again with a sharper photo in better light. If the spot is new, changing or worrying you, please see a skin doctor.</p>
+        </div>
+      {% else %}
+        <div class="risk-callout {{ dc.risk_level }}">
+          <h2>{% if dc.risk_level == 'high' %}Please see a skin doctor soon{% elif dc.risk_level == 'medium' %}It's a good idea to get this checked{% else %}Usually harmless, just keep an eye on it{% endif %}</h2>
+          <p>{{ dc.advice }}</p>
+        </div>
+      {% endif %}
+
+      <section aria-labelledby="scores-h">
+        <h2 id="scores-h">How your photo matched all 7 types</h2>
+        <ul class="prob-list">
+          {% for s in pred.scores %}
+            <li class="{{ 'top' if loop.first }}">
+              <span class="p-name">{{ s.disease_class.name }}</span>
+              <progress class="bar" max="1" value="{{ '%.4f'|format(s.probability) }}" aria-label="{{ s.disease_class.name }} score">{{ s.probability|pct }}</progress>
+              <span class="p-val">{{ s.probability|pct(1) }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+
+      <section class="section" aria-labelledby="alt-h">
+        <h2 id="alt-h">Other close matches</h2>
+        {% if alternatives %}
+          <p class="muted">These types can look alike in photos. The AI gave them the next-highest scores:</p>
+          <ul class="category-list">
+            {% for s in alternatives %}
+              <li><span class="name">{{ s.disease_class.name }} · {{ s.probability|pct(1) }}</span>{{ risk_badge(s.disease_class.risk_level) }}<span class="desc">{{ s.disease_class.description }}</span></li>
+            {% endfor %}
+          </ul>
+          <p class="small muted">A score below about 20% is only a weak match.</p>
+        {% else %}
+          <p class="muted">No other type scored {{ alt_min|pct }} or more for this photo. Even a strong match is not a diagnosis.</p>
+        {% endif %}
+      </section>
+
+      <section class="disclaimer" aria-labelledby="disc-h">
+        <span class="icon-circle warm">{{ icon('doctor') }}</span>
+        <div>
+          <h2 id="disc-h">This is not a diagnosis</h2>
+          <p class="small">{{ brand }} is a computer program, not a doctor. It can be wrong, and it only knows 7 types of skin spots. Only a skin doctor can tell you for sure. <strong>Please see a dermatologist if you're worried about this spot.</strong></p>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="fb-h">
+        <h2 id="fb-h">Did a doctor look at this spot?</h2>
+        {% if pred.feedback %}
+          <p class="muted small">You told us: {% if pred.feedback.is_correct is true %}the doctor agreed with the result{% elif pred.feedback.is_correct is false %}the doctor said it was {{ pred.feedback.suggested_class.name if pred.feedback.suggested_class else 'something else' }}{% else %}you haven't seen a doctor yet{% endif %}. You can change your answer below.</p>
+        {% else %}
+          <p class="muted small">Optional. If you see a doctor later, tell us what they said. It helps us learn how well the AI works.</p>
+        {% endif %}
+        <form class="form" method="post" action="{{ url_for('predict.feedback', prediction_id=pred.public_id) }}" novalidate data-feedback-form>
+          {{ fb_form.hidden_tag() }}
+          <fieldset>
+            <legend>{{ fb_form.is_correct.label.text }}</legend>
+            <div class="radio-list">
+              {% for opt in fb_form.is_correct %}
+                <div class="check">{{ opt(**({'checked': true} if pred.feedback and ((opt.data == 'yes' and pred.feedback.is_correct is true) or (opt.data == 'no' and pred.feedback.is_correct is false) or (opt.data == 'unsure' and pred.feedback.is_correct is none)) else {})) }} {{ opt.label() }}</div>
+              {% endfor %}
+            </div>
+          </fieldset>
+          <div data-suggested hidden>{{ field(fb_form.suggested_class) }}</div>
+          {{ field(fb_form.comment, maxlength=500, rows=3) }}
+          <div class="btn-row"><button class="btn btn-secondary" type="submit">Save my answer</button></div>
+        </form>
+      </section>
+
+      <hr class="rule">
+      <div class="btn-row">
+        <a class="btn btn-primary" href="{{ url_for('predict.upload') }}">Check another spot</a>
+        <a class="btn btn-secondary" href="{{ url_for('history.index') }}">Back to my history</a>
+        <form class="inline-form" method="post" action="{{ url_for('history.delete', prediction_id=pred.public_id) }}" data-confirm="Delete this check and its photo? This can't be undone.">
+          {{ delete_form.hidden_tag() }}
+          <button class="btn btn-danger" type="submit">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

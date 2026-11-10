@@ -1,0 +1,50 @@
+# Reproducible training configuration for HAM10000 (7 classes).
+# Paths are relative to the project root.
+
+seed: 42
+deterministic: true        # tf op determinism (slower, reproducible on CPU)
+output_dir: ml/artifacts
+
+data:
+  root: ml/data/raw/HAM10000
+  metadata_csv: HAM10000_metadata.csv
+  classes: [akiec, bcc, bkl, df, mel, nv, vasc]
+  group_column: lesion_id  # HAM10000 has no patient ID; lesion_id is the strictest available grouping
+  split: {train: 0.70, val: 0.15, test: 0.15}
+
+preprocess:
+  image_size: 224
+  crop: center_square      # center_square | none
+
+augmentation:              # training split only
+  enabled: true
+  flip: horizontal_and_vertical
+  rotation: 0.5            # fraction of a full turn -> up to +/-180 deg (dermoscopy has no "up")
+  zoom: 0.15
+  contrast: 0.15
+  brightness: 0.15
+
+imbalance:
+  method: class_weight     # class_weight | none
+  power: 0.5               # 1.0 = fully "balanced" weights; 0.5 = sqrt-softened (more stable)
+
+training:
+  batch_size: 32
+  early_stopping_patience: 4
+  monitor: val_macro_f1    # model selection metric (validation only; test is never used for selection)
+  label_smoothing: 0.0
+
+models:
+  - name: mobilenetv2
+    weights: imagenet
+    dropout: 0.3
+    stage1: {epochs: 10, learning_rate: 1.0e-3}            # frozen backbone, train head
+    stage2: {epochs: 20, learning_rate: 1.0e-5, unfreeze_last: 40}   # fine-tune top layers
+  - name: efficientnetb0
+    weights: imagenet
+    dropout: 0.3
+    stage1: {epochs: 10, learning_rate: 1.0e-3}
+    stage2: {epochs: 20, learning_rate: 1.0e-5, unfreeze_last: 60}
+
+inference:
+  confidence_threshold: 0.50   # below -> "inconclusive"

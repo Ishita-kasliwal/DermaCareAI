@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Models · Administration{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head"><div><p class="eyebrow">Administration</p><h1>Model versions</h1><p class="muted">Every analysis records the model version that produced it. Activating a version affects new analyses only.</p></div></div>
+  {% include "admin/_subnav.html" %}
+
+  {% if versions %}
+    <div class="table-wrap">
+      <table class="responsive">
+        <thead><tr><th scope="col">Version</th><th scope="col">Architecture</th><th scope="col" class="num">Test balanced acc.</th><th scope="col" class="num">Test macro F1</th><th scope="col" class="num">Threshold</th><th scope="col" class="num">Analyses</th><th scope="col">Registered</th><th scope="col">Status</th></tr></thead>
+        <tbody>
+          {% for m in versions %}
+            <tr>
+              <td data-label="Version" class="mono">{{ m.version }}</td>
+              <td data-label="Architecture">{{ m.architecture }}</td>
+              <td data-label="Test balanced acc." class="num">{{ m.balanced_accuracy|pct(1) }}</td>
+              <td data-label="Test macro F1" class="num">{{ m.macro_f1|pct(1) }}</td>
+              <td data-label="Threshold" class="num">{{ m.confidence_threshold|pct }}</td>
+              <td data-label="Analyses" class="num">{{ usage.get(m.id, 0) }}</td>
+              <td data-label="Registered">{{ m.created_at|datefmt }}</td>
+              <td>
+                {% if m.is_active %}<span class="badge badge-low">Active</span>
+                {% else %}
+                  <form class="inline-form" method="post" action="{{ url_for('admin.activate_model', model_id=m.id) }}" data-confirm="Make {{ m.version }} the active model for new analyses?">
+                    {{ confirm.hidden_tag() }}
+                    <button class="btn btn-secondary btn-sm" type="submit">Activate<span class="visually-hidden"> {{ m.version }}</span></button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty">
+      <h2>No models registered</h2>
+      <p>Train a model with the ML pipeline, then register the exported folder:</p>
+      <p class="mono">.\.venv\Scripts\flask.exe --app wsgi register-model ml\artifacts\models\&lt;version&gt; --activate</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

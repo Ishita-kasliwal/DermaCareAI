@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Exports · Administration{% endblock %}
+{% block content %}
+{% set info = {
+  'fact_predictions': ('One row per analysis', 'prediction_id, user_key, created_at, model_version, predicted_class_code, confidence, status, quality_ok, inference_ms'),
+  'fact_prediction_scores': ('One row per analysis and category', 'prediction_id, class_code, probability'),
+  'dim_disease_classes': ('The seven categories', 'class_code, name, risk_level, display_order'),
+  'dim_model_versions': ('Registered model versions', 'model_version, architecture, input_size, test metrics, threshold, is_active, dates'),
+  'fact_feedback': ('Clinician feedback reports', 'prediction_id, is_correct, suggested_class_code, created_at'),
+} %}
+<div class="container page">
+  <div class="page-head"><div><p class="eyebrow">Administration</p><h1>Data exports</h1><p class="muted">CSV files in a star schema for Power BI or Excel: UTF-8, ISO-8601 dates, one header row. Users appear only as a keyed pseudonym, never by name, email or image.</p></div></div>
+  {% include "admin/_subnav.html" %}
+  <div class="table-wrap">
+    <table class="responsive">
+      <thead><tr><th scope="col">File</th><th scope="col">Contents</th><th scope="col">Columns</th><th scope="col"><span class="visually-hidden">Download</span></th></tr></thead>
+      <tbody>
+        {% for n in names %}
+          <tr>
+            <td data-label="File" class="mono">{{ n }}.csv</td>
+            <td data-label="Contents">{{ info[n][0] }}</td>
+            <td data-label="Columns" class="small muted">{{ info[n][1] }}</td>
+            <td><a class="btn btn-secondary btn-sm" href="{{ url_for('admin.export_file', name=n) }}" download>Download<span class="visually-hidden"> {{ n }}.csv</span></a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="note"><p>In Power BI: <em>Get data → Text/CSV</em> for each file, then relate <span class="mono">fact_predictions.predicted_class_code</span> to <span class="mono">dim_disease_classes.class_code</span>, <span class="mono">model_version</span> to <span class="mono">dim_model_versions</span>, and <span class="mono">prediction_id</span> between the fact tables.</p></div>
+</div>
+{% endblock %}

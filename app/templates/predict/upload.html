@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}Check a spot{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Step 1 of 3</span>
+      <h1>Upload a photo of the spot</h1>
+      <p class="muted">You'll see your photo and a quick quality check before the AI looks at it.</p>
+    </div>
+  </div>
+
+  {% if not model %}
+    {% if error %}<div class="alert alert-error" role="alert"><p>{{ error }}</p></div>{% endif %}
+    <div class="empty">
+      <span class="icon-circle warm">{{ icon('info') }}</span>
+      <h2>The AI isn't ready yet</h2>
+      <p>No trained AI model has been installed, so we can't check photos right now. We never show made-up results.</p>
+      <a class="btn btn-secondary" href="{{ url_for('main.about_model') }}">About the AI</a>
+    </div>
+  {% else %}
+  <div class="grid-2 wide-left">
+    <div>
+      {% if error %}<div class="alert alert-error" role="alert" id="upload-error"><p>{{ error }}</p></div>{% endif %}
+      <form method="post" action="{{ url_for('predict.upload') }}" enctype="multipart/form-data" novalidate data-upload-form data-max-mb="{{ max_mb }}" data-min-side="{{ min_side }}">
+        {{ form.hidden_tag() }}
+        <div class="dropzone" data-dropzone>
+          <span class="icon-circle">{{ icon('upload') }}</span>
+          <p class="dz-title">Drag your photo here</p>
+          <p class="muted small" id="file-hint">or choose a file · JPG or PNG · up to {{ max_mb }} MB · at least {{ min_side }} × {{ min_side }} pixels</p>
+          <label class="visually-hidden" for="image">Photo of the skin spot</label>
+          <input id="image" name="image" type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png" required aria-describedby="file-hint{{ ' upload-error' if error }}" data-file-input>
+          <div class="dz-preview" data-preview aria-live="polite">
+            <img alt="Preview of the photo you chose" data-preview-img>
+            <div>
+              <p class="label" data-preview-name></p>
+              <p class="muted small" data-preview-meta></p>
+            </div>
+          </div>
+          <p class="error-text" data-client-error role="alert" hidden></p>
+        </div>
+        <div class="btn-row form-actions">
+          <button class="btn btn-primary" type="submit" data-submit>Upload photo</button>
+          <a class="btn btn-ghost" href="{{ url_for('main.dashboard') }}">Cancel</a>
+        </div>
+        <p class="loading-note" data-loading-note>Uploading and checking your photo…</p>
+      </form>
+    </div>
+
+    <aside class="panel" aria-labelledby="tips-h">
+      <h2 id="tips-h">Tips for a good photo</h2>
+      <ul class="tips">
+        <li><span class="icon-circle">{{ icon('focus') }}</span><div><strong>Get close</strong><span class="muted small">Fill most of the photo with the spot. A skin magnifier (dermatoscope) gives the best results.</span></div></li>
+        <li><span class="icon-circle">{{ icon('camera') }}</span><div><strong>Keep it sharp</strong><span class="muted small">Hold still and tap the spot on your screen to focus.</span></div></li>
+        <li><span class="icon-circle">{{ icon('sun') }}</span><div><strong>Use soft, even light</strong><span class="muted small">Daylight works well. Avoid flash, glare and shadows.</span></div></li>
+        <li><span class="icon-circle">{{ icon('nofilter') }}</span><div><strong>Don't edit it</strong><span class="muted small">No filters, and don't crop away the skin around the spot.</span></div></li>
+      </ul>
+      <hr class="rule">
+      <p class="small muted">We remove hidden photo details (like location) before saving. Only you can see your photos.</p>
+    </aside>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

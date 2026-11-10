@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Administration{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head"><div><p class="eyebrow">Administration</p><h1>Service overview</h1></div></div>
+  {% include "admin/_subnav.html" %}
+
+  <div class="figures" aria-label="Key figures">
+    <div class="figure"><div class="value">{{ o.active_users }}</div><div class="label">Active users ({{ o.users }} total)</div></div>
+    <div class="figure"><div class="value">{{ o.predictions }}</div><div class="label">Analyses stored</div></div>
+    <div class="figure"><div class="value">{{ o.predictions_7d }}</div><div class="label">Analyses, last 7 days</div></div>
+    <div class="figure"><div class="value">{{ o.inconclusive_rate|pct if o.inconclusive_rate is not none else '—' }}</div><div class="label">Inconclusive rate</div></div>
+    <div class="figure"><div class="value">{{ o.feedback_agreement|pct if o.feedback_agreement is not none else '—' }}</div><div class="label">Clinician agreement ({{ o.feedback_total }} reports)</div></div>
+  </div>
+
+  <div class="grid-2 wide-right">
+    <section class="panel" aria-labelledby="model-h">
+      <div class="panel-head"><h2 id="model-h">Active model</h2><a href="{{ url_for('admin.models') }}">Manage</a></div>
+      {% if o.active_model %}
+        {% set m = o.active_model %}
+        <dl class="meta-list">
+          <dt>Version</dt><dd class="mono">{{ m.version }}</dd>
+          <dt>Architecture</dt><dd>{{ m.architecture }}</dd>
+          <dt>Test balanced accuracy</dt><dd>{{ m.balanced_accuracy|pct(1) }}</dd>
+          <dt>Test macro F1</dt><dd>{{ m.macro_f1|pct(1) }}</dd>
+          <dt>Threshold</dt><dd>{{ m.confidence_threshold|pct }}</dd>
+        </dl>
+      {% else %}
+        <div class="note"><p><strong>No model is active.</strong> Users can't run analyses. Train a model (docs/ML_TRAINING.md), then run <span class="mono">flask --app wsgi register-model &lt;dir&gt; --activate</span>.</p></div>
+      {% endif %}
+    </section>
+
+    <section class="panel" aria-labelledby="act-h">
+      <div class="panel-head"><h2 id="act-h">Recent activity</h2><a href="{{ url_for('admin.audit_log') }}">Full audit log</a></div>
+      {% if recent %}
+        <div class="table-wrap">
+          <table class="responsive">
+            <thead><tr><th scope="col">When</th><th scope="col">Event</th><th scope="col">Account</th></tr></thead>
+            <tbody>
+              {% for a in recent %}
+                <tr><td data-label="When">{{ a.created_at|datetimefmt }}</td><td data-label="Event"><span class="mono">{{ a.action }}</span></td><td data-label="Account">{{ a.user.full_name if a.user else '—' }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="muted">No activity recorded yet.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

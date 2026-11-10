@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_macros.html" import risk_badge %}
+{% block title %}Categories · Administration{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head"><div><p class="eyebrow">Administration</p><h1>Categories</h1><p class="muted">The seven categories are fixed by the model. You can edit the patient-facing description and advice.</p></div></div>
+  {% include "admin/_subnav.html" %}
+  <div class="table-wrap">
+    <table class="responsive">
+      <thead><tr><th scope="col">Code</th><th scope="col">Name</th><th scope="col">Risk group</th><th scope="col">Advice shown with results</th><th scope="col"><span class="visually-hidden">Edit</span></th></tr></thead>
+      <tbody>
+        {% for c in rows %}
+          <tr>
+            <td data-label="Code" class="mono">{{ c.code }}</td>
+            <td data-label="Name">{{ c.name }}</td>
+            <td data-label="Risk group">{{ risk_badge(c.risk_level) }}</td>
+            <td data-label="Advice" class="small">{{ c.advice|truncate(140) }}</td>
+            <td><a class="btn btn-secondary btn-sm" href="{{ url_for('admin.edit_category', code=c.code) }}">Edit<span class="visually-hidden"> {{ c.name }}</span></a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

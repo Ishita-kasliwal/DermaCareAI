@@ -1,0 +1,2 @@
+Chart.js 4.4.7 (MIT License) from https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.js
+sha256 2812cb8825fdc57469eb2f7bb055e9429244e599920511ee477e828499b632cb
