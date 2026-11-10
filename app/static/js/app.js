@@ -7,11 +7,10 @@
     else document.addEventListener("DOMContentLoaded", fn);
   }
 
-  // --- light / dark theme toggle (choice remembered per browser; default follows the OS)
+  // --- light / dark theme toggle (state lives in theme.js: html.dark + saved choice)
   function currentTheme() {
-    var t = document.documentElement.getAttribute("data-theme");
-    if (t === "light" || t === "dark") return t;
-    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    return window.dermaTheme ? window.dermaTheme.current()
+      : (document.documentElement.classList.contains("dark") ? "dark" : "light");
   }
   function syncThemeButton(btn) {
     var dark = currentTheme() === "dark";
@@ -27,17 +26,11 @@
       syncThemeButton(themeBtn);
       themeBtn.addEventListener("click", function () {
         var next = currentTheme() === "dark" ? "light" : "dark";
-        document.documentElement.setAttribute("data-theme", next);
-        try { window.localStorage.setItem("dermacareai-theme", next); } catch (e) { /* ignore */ }
+        if (window.dermaTheme) window.dermaTheme.set(next);
         syncThemeButton(themeBtn);
-        document.dispatchEvent(new CustomEvent("themechange", { detail: next }));
       });
-      if (window.matchMedia) {
-        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () {
-          syncThemeButton(themeBtn);
-          document.dispatchEvent(new CustomEvent("themechange"));
-        });
-      }
+      // theme.js fires "themechange" for OS changes too; keep the button label in sync
+      document.addEventListener("themechange", function () { syncThemeButton(themeBtn); });
     }
 
     // --- mobile navigation

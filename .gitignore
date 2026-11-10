@@ -39,6 +39,9 @@ ml/artifacts/*
 *.h5
 *.zip
 
+# ---- Node (only used to build Tailwind CSS) ----
+node_modules/
+
 # ---- Editors / OS ----
 .vscode/*
 !.vscode/settings.json

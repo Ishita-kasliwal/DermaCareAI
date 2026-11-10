@@ -2,7 +2,9 @@
 # Paths are relative to the project root.
 
 seed: 42
-deterministic: true        # tf op determinism (slower, reproducible on CPU)
+deterministic: false       # true = bit-exact reruns, but ~11x slower augmentation on CPU (measured:
+                           # 0.33 vs 0.03 s/batch). Seeds + saved split still make runs repeatable
+                           # to within small floating-point differences.
 output_dir: ml/artifacts
 
 data:

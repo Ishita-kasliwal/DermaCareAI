@@ -1,0 +1,12 @@
+{
+  "name": "dermacareai-frontend",
+  "private": true,
+  "description": "Tailwind CSS build for the DermaCareAI Flask templates (Node is only needed to rebuild CSS).",
+  "scripts": {
+    "build:css": "tailwindcss -c tailwind.config.js -i app/static/src/tailwind.css -o app/static/css/app.css --minify",
+    "watch:css": "tailwindcss -c tailwind.config.js -i app/static/src/tailwind.css -o app/static/css/app.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}

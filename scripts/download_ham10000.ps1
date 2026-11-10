@@ -20,7 +20,13 @@ foreach ($f in $files) {
     $ok = (Test-Path $zip) -and ((Get-FileHash $zip -Algorithm MD5).Hash.ToLower() -eq $f.md5)
     if (-not $ok) {
         Write-Host "Downloading $($f.name) ..."
-        & curl.exe -L --fail --retry 5 -C - -o $zip "$Api/$($f.id)"
+        # Slow or unstable connections drop often: keep resuming (-C -) from where it stopped.
+        $attempt = 0
+        do {
+            $attempt++
+            if ($attempt -gt 1) { Write-Host "Connection dropped; resuming (attempt $attempt of 200) in 15 s..."; Start-Sleep -Seconds 15 }
+            & curl.exe -L --fail --retry 10 --retry-all-errors --retry-delay 10 --speed-limit 1000 --speed-time 120 -C - -o $zip "$Api/$($f.id)"
+        } while ($LASTEXITCODE -ne 0 -and $attempt -lt 200)
         if ($LASTEXITCODE -ne 0) { throw "Download failed: $($f.name)" }
         $hash = (Get-FileHash $zip -Algorithm MD5).Hash.ToLower()
         if ($hash -ne $f.md5) { throw "MD5 mismatch for $($f.name): $hash (expected $($f.md5)). Delete it and re-run." }

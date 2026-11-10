@@ -41,6 +41,15 @@ $v = Get-Content ml\artifacts\models\LATEST
 App: http://127.0.0.1:8010 · logs: `run/app.err.log`. The scripts act only on the PID in `run/app.pid`,
 after verifying that it is this project's `.venv` interpreter with a matching start time.
 
+## Styling (Tailwind CSS)
+The UI is styled with **Tailwind CSS 3.4** (class-based dark mode, follows the OS until you pick a theme).
+The compiled file `app/static/css/app.css` is committed, so Node is only needed when you change styles:
+```powershell
+npm install                 # once
+npm run build:css           # rebuild app/static/css/app.css from app/static/src/tailwind.css
+npm run watch:css           # rebuild automatically while editing
+```
+
 ## Tests
 ```powershell
 .\.venv\Scripts\python.exe -m pytest                 # full suite (~1.5 min)

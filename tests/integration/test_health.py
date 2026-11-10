@@ -23,8 +23,10 @@ def test_brand_and_theme_assets(client, app):
     assert html.index("js/theme.js") < html.index("css/app.css")
     assert 'data-theme-toggle' in html and 'name="color-scheme" content="light dark"' in html
     css = client.get("/static/css/app.css").data.decode()
-    assert "@media (prefers-color-scheme: dark)" in css and ':root[data-theme="dark"]' in css
-    assert client.get("/static/js/theme.js").status_code == 200
+    assert "tailwindcss" in css, "app.css should be the Tailwind build"
+    assert ".dark " in css or ".dark:" in css, "class-based dark mode rules present"
+    js = client.get("/static/js/theme.js").data.decode()
+    assert 'classList.toggle("dark"' in js and "prefers-color-scheme: dark" in js
 
 
 def test_404_page(client):

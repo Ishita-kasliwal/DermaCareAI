@@ -43,8 +43,11 @@ $v = Get-Content ml\artifacts\models\LATEST
 | Evaluate | Precision, recall/sensitivity, specificity, F1 and one-vs-rest AUC per class; confusion matrix; balanced accuracy; malignant-vs-benign sensitivity/specificity; coverage vs threshold | Everything the requirements list, plus the numbers needed to pick the "Inconclusive" threshold |
 | Export | `ml/artifacts/models/<version>/`: `model.keras`, `labels.json`, `preprocess_config.json`, `metrics.json`, `manifest.json` (SHA-256, config, environment, split fingerprint), `MODEL_CARD.md` | Reproducible and self-describing. The predictor refuses a model whose checksum doesn't match |
 
-**Reproducibility:** fixed seeds (Python, NumPy, TF), TF op determinism, a persisted split CSV with
-a fingerprint, the full config and its hash, library versions and the git commit, all recorded in `manifest.json`.
+**Reproducibility:** fixed seeds (Python, NumPy, TF), a persisted split CSV with a fingerprint, the full
+config and its hash, library versions and the git commit, all recorded in `manifest.json`.
+TF op determinism (`deterministic: true` in the config) gives bit-exact reruns, but on this CPU it made
+augmentation about 11× slower (0.33 vs 0.03 s per batch, measured with `python -m ml.src.profile_pipeline`).
+It is therefore **off** by default, so reruns can differ by small floating-point amounts.
 
 ## Training time on this laptop (CPU only)
 
