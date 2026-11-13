@@ -97,7 +97,7 @@
         <section class="panel" aria-labelledby="ai-{{ ck.domain }}">
           <div class="panel-head">
             <h2 id="ai-{{ ck.domain }}">{{ ck.title }}</h2>
-            {% if mv %}<span class="badge badge-low">Ready</span>{% else %}<span class="badge badge-neutral">Not installed</span>{% endif %}
+            {% if mv and ck.domain == 'general' %}<span class="badge badge-medium">Early version</span>{% elif mv %}<span class="badge badge-low">Ready</span>{% else %}<span class="badge badge-neutral">Not installed</span>{% endif %}
           </div>
           {% if mv %}
             <dl class="meta-list mb-4">

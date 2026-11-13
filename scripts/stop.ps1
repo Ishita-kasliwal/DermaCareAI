@@ -13,4 +13,6 @@ for ($i = 0; $i -lt 20; $i++) {
     Start-Sleep -Milliseconds 250
 }
 Remove-Item $PidFile -Force -ErrorAction SilentlyContinue
+# wait (max ~5 s) until no live process listens on the port any more
+for ($i = 0; $i -lt 20 -and (Get-PortOwner $AppPort); $i++) { Start-Sleep -Milliseconds 250 }
 Write-Host "Stopped (PID $($proc.Id))."

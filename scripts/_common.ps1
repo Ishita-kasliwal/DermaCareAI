@@ -46,7 +46,10 @@ function Get-AppProcess {
 }
 
 function Get-PortOwner([int]$Port) {
-    $c = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+    # Ignore PID 0 ("Idle"): Windows briefly keeps a listener entry for a socket whose process
+    # has already exited. That is not another program using the port.
+    $c = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue |
+        Where-Object { $_.OwningProcess -gt 0 } | Select-Object -First 1
     if ($c) { return Get-Process -Id $c.OwningProcess -ErrorAction SilentlyContinue }
     return $null
 }

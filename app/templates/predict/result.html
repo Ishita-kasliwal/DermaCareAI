@@ -43,6 +43,11 @@
     </div>
 
     <div>
+      {% if pred.model_version.domain == 'general' %}
+        <div class="alert alert-warning" role="note">
+          <p><strong>Early version.</strong> The rash checker learned from a small set of photos, and in testing it picked the right condition only about a third of the time. It often says "not sure". Treat this result as a rough hint only, and ask a doctor or pharmacist.</p>
+        </div>
+      {% endif %}
       <div class="result-head">
         {% if inconclusive %}
           <h1 class="result-title">The AI isn't sure about this one</h1>

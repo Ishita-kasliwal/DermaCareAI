@@ -40,6 +40,8 @@ def test_rash_photo_uses_rash_model_and_only_its_conditions(client, user, model_
     html = client.get(f"/results/{pred.public_id}").data.decode()
     assert "How your photo matched all 10 types" in html
     assert "Eczema (atopic dermatitis)" in html
+    assert "Early version." in html, "rash results carry the early-version warning"
+    assert "Early version: often unsure" in client.get("/analyze").data.decode()
 
     # the mole checker still uses the mole model
     iid2 = image_id_from(upload(client, image_bytes(seed=61), check="lesion"))
