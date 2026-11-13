@@ -17,7 +17,8 @@ AUTOTUNE = tf.data.AUTOTUNE
 
 def preprocess_config_from(cfg: dict) -> PreprocessConfig:
     p = cfg["preprocess"]
-    return PreprocessConfig(image_size=int(p["image_size"]), crop=p.get("crop", "center_square"))
+    return PreprocessConfig(image_size=int(p["image_size"]), crop=p.get("crop", "center_square"),
+                            tta=tuple(p.get("tta") or ()))
 
 
 def build_augmenter(cfg: dict, seed: int) -> keras.Sequential | None:
@@ -78,11 +79,15 @@ def make_dataset(
     return ds.prefetch(AUTOTUNE)
 
 
-def compute_class_weights(labels: np.ndarray, num_classes: int, power: float = 0.5) -> dict[int, float]:
-    """Inverse-frequency weights ** power, normalised so the weighted mean over samples is 1."""
+def compute_class_weights(labels: np.ndarray, num_classes: int, power: float = 0.5,
+                          boost: dict[int, float] | None = None) -> dict[int, float]:
+    """Inverse-frequency weights ** power, times optional per-class `boost` multipliers
+    (e.g. melanoma x2), normalised so the weighted mean over samples is 1."""
     counts = np.bincount(labels, minlength=num_classes).astype(float)
     if (counts == 0).any():
         raise ValueError(f"some classes have no training samples: {counts.tolist()}")
     w = (counts.sum() / (num_classes * counts)) ** power
+    for idx, factor in (boost or {}).items():
+        w[int(idx)] *= float(factor)
     w = w / (w * counts).sum() * counts.sum()
     return {i: float(round(w[i], 6)) for i in range(num_classes)}

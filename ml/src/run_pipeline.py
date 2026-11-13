@@ -45,8 +45,8 @@ def run(cfg: dict, model_names: list[str] | None = None, skip_eda: bool = False)
         best = keras.models.load_model(info["best_checkpoint"], compile=False)
         ds_val = make_dataset(val_df, cfg, k, training=False, cache_dir=cache_dir)
         ds_test = make_dataset(test_df, cfg, k, training=False, cache_dir=cache_dir)
-        val_m = evaluate_model(best, ds_val, val_df, classes, run_dir, "val")
-        test_m = evaluate_model(best, ds_test, test_df, classes, run_dir, "test")
+        val_m = evaluate_model(best, ds_val, val_df, classes, run_dir, "val", tta=cfg["preprocess"].get("tta") or ())
+        test_m = evaluate_model(best, ds_test, test_df, classes, run_dir, "test", tta=cfg["preprocess"].get("tta") or ())
         mel = classes.index("mel") if "mel" in classes else None
         results.append({
             "model": mcfg["name"], "info": info, "val": val_m, "test": test_m,

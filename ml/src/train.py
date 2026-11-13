@@ -25,6 +25,10 @@ from ml.src.utils import environment_info, load_config, resolve, save_json, set_
 
 def train_model(cfg: dict, model_cfg: dict, df: pd.DataFrame, run_dir: Path) -> dict:
     set_global_seed(int(cfg["seed"]), cfg.get("deterministic", True))
+    import tensorflow as tf
+
+    if cfg.get("mixed_precision") and tf.config.list_physical_devices("GPU"):
+        keras.mixed_precision.set_global_policy("mixed_float16")  # ~2x faster on modern GPUs
     run_dir.mkdir(parents=True, exist_ok=True)
     classes = cfg["data"]["classes"]
     k = len(classes)
@@ -40,7 +44,8 @@ def train_model(cfg: dict, model_cfg: dict, df: pd.DataFrame, run_dir: Path) -> 
     class_weight = None
     imb = cfg.get("imbalance", {"method": "none"})
     if imb.get("method") == "class_weight":
-        class_weight = compute_class_weights(train_df["label"].values, k, float(imb.get("power", 0.5)))
+        boost = {classes.index(c): f for c, f in (imb.get("boost") or {}).items() if c in classes}
+        class_weight = compute_class_weights(train_df["label"].values, k, float(imb.get("power", 0.5)), boost)
 
     model, backbone = build_model(
         model_cfg["name"], k, int(cfg["preprocess"]["image_size"]),

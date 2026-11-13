@@ -30,7 +30,7 @@ import numpy as np
 from PIL import Image, ImageOps
 
 from skinai_ml.classes import CLASS_INFO
-from skinai_ml.preprocess import PreprocessConfig, preprocess_image, to_model_input
+from skinai_ml.preprocess import PreprocessConfig, preprocess_image, to_model_input, tta_views
 
 DISCLAIMER = (
     "Research/education output for 7 dermoscopic lesion categories only. "
@@ -155,7 +155,11 @@ class SkinLesionPredictor:
         model = self._load()
         x = preprocess_image(rgb_uint8, self.preprocess_cfg)
         x = to_model_input(x)[None, ...]
-        probs = np.asarray(model(x, training=False))[0].astype(float)
+        views = tta_views(x, self.preprocess_cfg.tta)  # same TTA as used in evaluation
+        import tensorflow as tf
+
+        out = np.asarray(model(tf.concat(views, axis=0), training=False))
+        probs = out.mean(axis=0).astype(float)
         return self._build_result(probs)
 
     def predict(self, image) -> PredictionResult:

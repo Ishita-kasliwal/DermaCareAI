@@ -1,0 +1,56 @@
+# GPU training config for the RASH OR OTHER SKIN PROBLEM checker (SCIN). Intended for Colab / Kaggle.
+#   python -m ml.src.scin_prepare
+#   python -m ml.src.run_pipeline --config ml/configs/train_scin_gpu.yaml
+
+domain: general
+seed: 42
+deterministic: false
+mixed_precision: true
+output_dir: ml/artifacts/scin
+
+data:
+  root: ml/data/raw/SCIN
+  metadata_csv: scin_metadata.csv
+  image_glob: ["images/*.png"]
+  classes: [acne, cold_sores, contact_dermatitis, eczema, folliculitis, fungal, insect_bite, psoriasis, shingles, urticaria]
+  group_column: lesion_id
+  split: {train: 0.70, val: 0.15, test: 0.15}
+
+preprocess:
+  image_size: 300
+  crop: center_square
+  tta: [hflip]
+
+augmentation:
+  enabled: true
+  flip: horizontal
+  rotation: 0.08
+  zoom: 0.2
+  contrast: 0.25
+  brightness: 0.25
+
+imbalance:
+  method: class_weight
+  power: 0.75
+  boost: {shingles: 1.3}
+
+training:
+  batch_size: 32
+  early_stopping_patience: 8
+  monitor: val_macro_f1
+  label_smoothing: 0.1
+
+models:
+  - name: efficientnetb3
+    weights: imagenet
+    dropout: 0.5
+    stage1: {epochs: 15, learning_rate: 1.0e-3}
+    stage2: {epochs: 40, learning_rate: 2.0e-5, unfreeze_last: 120}
+  - name: efficientnetb0
+    weights: imagenet
+    dropout: 0.4
+    stage1: {epochs: 15, learning_rate: 1.0e-3}
+    stage2: {epochs: 40, learning_rate: 2.0e-5, unfreeze_last: 100}
+
+inference:
+  confidence_threshold: 0.45

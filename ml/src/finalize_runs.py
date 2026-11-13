@@ -57,8 +57,8 @@ def main() -> None:
         }
         best = keras.models.load_model(info["best_checkpoint"], compile=False)
         cache = out_root / "cache"
-        val_m = evaluate_model(best, make_dataset(val_df, cfg, k, False, cache), val_df, classes, run_dir, "val")
-        test_m = evaluate_model(best, make_dataset(test_df, cfg, k, False, cache), test_df, classes, run_dir, "test")
+        val_m = evaluate_model(best, make_dataset(val_df, cfg, k, False, cache), val_df, classes, run_dir, "val", tta=cfg["preprocess"].get("tta") or ())
+        test_m = evaluate_model(best, make_dataset(test_df, cfg, k, False, cache), test_df, classes, run_dir, "test", tta=cfg["preprocess"].get("tta") or ())
         mel = (val_m["per_class"].get("mel", {}).get("recall_sensitivity") or 0.0) if "mel" in classes else 0.0
         save_json(info, run_dir / "finalize_info.json")
         results.append({"model": name, "info": info, "val": val_m, "test": test_m,

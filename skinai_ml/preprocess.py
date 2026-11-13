@@ -18,6 +18,7 @@ from dataclasses import asdict, dataclass, field
 import tensorflow as tf
 
 CROP_MODES = ("center_square", "none")
+TTA_MODES = ("hflip", "vflip")
 
 
 @dataclass(frozen=True)
@@ -31,6 +32,8 @@ class PreprocessConfig:
     input_range: tuple[int, int] = (0, 255)
     normalization: str = "inside_model"
     exif_transpose: bool = True
+    # test-time augmentation: average the model over the original plus these flipped views
+    tta: tuple[str, ...] = ()
     version: int = 1
     notes: list[str] = field(
         default_factory=lambda: [
@@ -42,10 +45,14 @@ class PreprocessConfig:
     def __post_init__(self):
         if self.crop not in CROP_MODES:
             raise ValueError(f"crop must be one of {CROP_MODES}, got {self.crop!r}")
+        bad = [t for t in self.tta if t not in TTA_MODES]
+        if bad:
+            raise ValueError(f"tta must be from {TTA_MODES}, got {bad}")
 
     def to_dict(self) -> dict:
         d = asdict(self)
         d["input_range"] = list(self.input_range)
+        d["tta"] = list(self.tta)
         return d
 
     @classmethod
@@ -53,6 +60,7 @@ class PreprocessConfig:
         d = dict(d)
         if "input_range" in d:
             d["input_range"] = tuple(d["input_range"])
+        d["tta"] = tuple(d.get("tta") or ())
         known = {f for f in cls.__dataclass_fields__}
         return cls(**{k: v for k, v in d.items() if k in known})
 
@@ -88,3 +96,11 @@ def load_and_preprocess_file(path: tf.Tensor, cfg: PreprocessConfig) -> tf.Tenso
 
 def to_model_input(batch_uint8: tf.Tensor) -> tf.Tensor:
     return tf.cast(batch_uint8, tf.float32)
+
+
+def tta_views(batch: tf.Tensor, tta) -> list[tf.Tensor]:
+    """[original, *flipped views] for a float batch (N, S, S, 3)."""
+    views = [batch]
+    for t in tta:
+        views.append(tf.image.flip_left_right(batch) if t == "hflip" else tf.image.flip_up_down(batch))
+    return views

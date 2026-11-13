@@ -1,56 +1,68 @@
 # Testing & security review report
 
-**Date:** 2026-11-10 · **Scope:** Flask backend, frontend, ML integration, ML pipeline · **Environment:** Windows 11, Python 3.12.10, TensorFlow 2.21.0 (CPU), Flask 3.1.3
+**Last updated:** 2026-11-13 · **Scope:** Flask backend, Tailwind frontend, both ML checkers, ML pipelines, MySQL ·
+**Environment:** Windows 11, Python 3.12.10, TensorFlow 2.21.0 (CPU), Flask 3.1.3, MySQL 8.0.46
 
 ## 1. Result summary
 
-| Run | Command | Result |
+| Run | How | Result |
 |---|---|---|
-| Full automated suite | `.\.venv\Scripts\python.exe -m pytest tests` | **98 passed, 1 skipped, 0 failed** (86.8 s) |
+| Full automated suite | `.\.venv\Scripts\python.exe -m pytest tests` | **104 passed, 0 failed, 0 skipped** |
 | Lint (errors, bugbear) | `ruff check app skinai_ml ml tests --select F,E9,B` | clean |
-| Migration | `flask db upgrade` on a fresh SQLite file + `flask db check` | applied, no drift |
-| MySQL DDL | `flask db upgrade --sql` (offline, MySQL dialect) | rendered (ENUM, JSON, BIGINT AUTO_INCREMENT) |
-| Control scripts | start → status → start → restart → stop → status | all behaved as designed; port freed; MySQL801 untouched |
-| Manual browser pass | preview sandbox on :8011, desktop 1280 px and mobile 375 px, light and dark | flows worked; 5 UI bugs found and fixed (§3) |
-
-**Skipped (1):** `test_env_and_private_dirs_are_git_ignored` uses `git check-ignore`, and the project isn't a Git repository yet. The `.gitignore` *contents* are asserted in the same test before the skip.
+| Migrations | `flask db upgrade` on fresh SQLite + `flask db check`; applied to the real MySQL database | 3 revisions applied, no drift |
+| Real MySQL | app account `skin_ai_app` (SELECT/INSERT/UPDATE/DELETE only) | pages served from MySQL; DDL correctly refused |
+| Control scripts | start → status → start → restart → stop | all as designed (restart race fixed, §3) |
+| End-to-end with the **real** trained models | throwaway SQLite sandbox: upload → quality check → consent → inference → result page → heatmap, both checkers | works; see §5 for what it showed |
+| Browser pass | desktop 1280 px and phone 375 px, light and dark, Tailwind build | no horizontal overflow; UI bugs fixed (§3) |
 
 ## 2. What is covered
 
-| Area | Tests (file) | What is verified |
+| Area | Tests | What is verified |
 |---|---|---|
-| Registration & login | `test_auth.py` | Argon2id hashing; email normalisation; duplicate, weak, common and mismatched passwords; missing consent; invalid email; markup in names; generic login errors; lockout after 5 failures; inactive accounts; POST-only logout; open-redirect blocking; password change signs out other sessions; profile validation; account deletion (password + "DELETE" confirmation); CLI `create-admin` |
-| Authorization | `test_isolation_and_admin.py` | 14 protected pages redirect anonymous users; API returns 401; non-admin gets 403 on 9 admin pages, 2 admin APIs and 4 admin POST actions |
-| **User record isolation** | `test_isolation_and_admin.py` | Another user gets **404** on result, image, heatmap, preview, analyse, delete and feedback; their history, stats and CSV contain none of the owner's rows; admins can't open user images |
-| Admin | `test_isolation_and_admin.py` | No self-deactivation or self-demotion; last admin protected; deactivation ends sessions immediately; invalid role rejected; model activation; category edit validation; audit entries written |
-| Image upload | `test_upload.py` | Stored outside `/static`, UUID name, path-traversal filename ignored; **EXIF/GPS stripped**; PNG with alpha; rejects PHP-in-JPG, SVG, GIF, `.exe`, truncated and empty files, too-small images; **decompression bomb**; >8 MB → 413; blank image rejected; greyscale warned; duplicate reuse; polyglot payload removed by re-encoding |
-| ML inference | `test_prediction_flow.py` | Consent required; **stored scores equal an independent run of the exported model** on the stored image (no hard-coding); 7 scores sum to 1; "inconclusive" path; threshold/margin rule; identical scores for an identical image; Grad-CAM produced and served privately; tampered model refused (500 with a friendly message, nothing stored) |
-| History | `test_prediction_flow.py` | Filters (category, status, risk, dates), invalid filter handling, pagination, delete removes image and heatmap files, feedback validation, CSV export without PII |
-| Analytics | `test_prediction_flow.py`, `test_isolation_and_admin.py` | Dashboard figures, `/api/v1/me/stats`, `/api/v1/admin/analytics` and `/admin/overview` equal the database contents |
-| Security | `test_security.py` | **CSRF** enforced on login, register, logout, profile, password, delete account, upload and delete; **SQL-injection** payloads in login, filters, URLs and admin search are harmless (users table intact); CSP without `unsafe-inline`, nosniff, X-Frame-Options, Referrer-Policy; HttpOnly + SameSite cookies; `no-store` on private pages; no inline scripts, styles or handlers in any template; password hashes never rendered; 500 pages don't leak tracebacks; login rate limit (6th attempt → 429); **SECRET_KEY value not present in any project file** |
-| Services | `tests/unit/test_services.py` | Hashing round-trip and salting, password policy, safe redirects, OpenCV quality checks (blank, dark, overexposed, blurry, greyscale) |
-| ML pipeline | `tests/ml/*` | Preprocessing contract, grouped split with **no lesion leakage**, reproducible splits, class weights, augmentation randomness, metric maths against a hand-computed example, **end-to-end pipeline** (EDA → split → train both architectures → evaluate → export → predictor → tamper rejection) |
-| Theme & brand | `test_health.py` | DermaCareAI branding; `theme.js` loads before CSS; dark-mode CSS present |
+| Registration & login | `test_auth.py` | Argon2id hashing; email normalisation; weak/common/mismatched passwords; consent; generic login errors; lockout after 5 failures; inactive accounts; POST-only logout; open-redirect blocking; password change signs out other sessions; profile validation; account deletion; CLI `create-admin` |
+| Authorization | `test_isolation_and_admin.py` | protected pages redirect; API returns 401; non-admins get 403 on all admin pages, APIs and actions |
+| **Record isolation** | `test_isolation_and_admin.py` | another user gets 404 on result, photo, heatmap, preview, analyse, delete and feedback; their history, stats and CSV stay empty; admins can't open user photos |
+| Admin | `test_isolation_and_admin.py`, `test_two_checkers.py` | no self-deactivation/demotion; last admin protected; deactivation ends sessions; model activation is **per checker**; category edits; audit log |
+| Upload safety | `test_upload.py` | private storage, random names, path traversal ignored, **EXIF/GPS removed**, PHP/SVG/GIF/EXE/truncated/empty/tiny files rejected, decompression bomb, >8 MB → 413, blank photo rejected, greyscale warned, polyglot payload removed |
+| ML inference | `test_prediction_flow.py` | consent required; stored scores equal an independent run of the exported model (nothing hard-coded); "not sure" path; deterministic; heatmap; tampered model refused |
+| **Two checkers** | `test_two_checkers.py` | all 17 conditions seeded; rash photos use only the rash model and its 10 conditions; mole photos use the mole model; a checker with no model is reported, never faked; invalid checker rejected; rash results carry the early-version warning |
+| History & analytics | `test_prediction_flow.py`, `test_isolation_and_admin.py` | filters, pagination, delete removes files, feedback, CSV without personal data; dashboard and analytics equal the database |
+| Security | `test_security.py` | CSRF on every state-changing form; SQL-injection payloads harmless; CSP without `unsafe-inline`, nosniff, frame and referrer headers; HttpOnly/SameSite cookies; no-store on private pages; no inline scripts/styles; hashes never rendered; no tracebacks on 500; login rate limit; SECRET_KEY not in any file; `.env`, uploads, data and models git-ignored |
+| ML pipeline | `tests/ml/*` | preprocessing contract, grouped split without leakage, class weights, augmentation, metric maths, full pipeline smoke test |
 
-## 3. Bugs found and fixed during this review
+## 3. Bugs found and fixed
 
 | # | Bug | Found by | Fix |
 |---|---|---|---|
-| 1 | Decompression-bomb images were rejected with a misleading "not a valid image" message | pytest | Catch Pillow bomb errors separately → "The image dimensions are too large." |
-| 2 | When no model is installed, the upload POST error wasn't shown (only the generic empty state) | pytest | Error alert now rendered in the no-model state |
-| 3 | Header "Create account" button had invisible text (nav link colour overrode the button) | browser | Specific `.nav a.btn` rule |
-| 4 | Page content had no side gutter on narrow screens (`.page` reset the container padding) | browser | `.page` and `.error-page` set only vertical padding |
-| 5 | Default `<figure>` margins indented image frames | browser | `figure { margin: 0 }` |
-| 6 | Result headline (99%) and score list (98.5%) rounded differently; alternatives at 0.2% shown as "0%" | browser | One decimal place everywhere; alternatives shown only if ≥ 5%, otherwise an explicit sentence |
-| 7 | `.gitignore` didn't cover `*.keras` model files outside `ml/artifacts/` | review | Added `*.keras` |
-| 8 | Test-harness flaw: a shared app context leaked the logged-in user between test clients, hiding session bugs | pytest | Per-request reset in `tests/conftest.py`. The app itself was not affected |
+| 1 | Decompression bombs rejected with a misleading message | pytest | dedicated "too large" message |
+| 2 | Upload error hidden when no model installed | pytest | error shown in that state |
+| 3–6 | Invisible header button text; missing side gutter; `<figure>` indent; inconsistent rounding of scores | browser | CSS and template fixes |
+| 7 | `*.keras` model files not git-ignored outside `ml/artifacts` | review | added to `.gitignore` |
+| 8 | Test harness shared login state between test clients | pytest | per-request reset in `conftest.py` |
+| 9 | TF op determinism made augmentation 11× slower | profiling | determinism off by default (documented) |
+| 10 | HAM10000 download gave up after one connection drop | real download | automatic resume with retries |
+| 11 | Condition `code` column too short (16) for `contact_dermatitis` — invisible on SQLite | **real MySQL** | widened to 32 + migration |
+| 12 | `db_upgrade.ps1` treated Alembic's normal stderr logging as failure | real MySQL | judged by exit codes |
+| 13 | SCIN contains identical photos in different cases → possible train/test leakage | data check | conflicting duplicates dropped, cases sharing a photo kept in one split |
+| 14 | `restart.ps1` mistook Windows' leftover PID-0 port entry for another program | real restart | PID 0 ignored; stop waits for the port |
 
-## 4. Not verified, and known limitations (stated plainly)
+## 4. Model results (held-out test sets, never used for training or selection)
 
-- **No real model has been trained.** HAM10000 hasn't been downloaded (`scripts/download_ham10000.ps1`, about 2.8 GB). No accuracy or other metrics exist yet, and none are shown anywhere. End-to-end tests use a **tiny CNN trained on nothing**, whose outputs are real Keras inference but meaningless as diagnoses.
-- **MySQL has not been exercised live.** The database and users need your MySQL root password, which you enter yourself via `scripts/db_setup.ps1`. Tests ran on SQLite. The migration's MySQL DDL was rendered offline but not executed. After setup, run the same suite on MySQL with `TEST_DATABASE_URL` (use a separate test database).
-- **Rate limiting uses in-memory storage**, which is fine for one Waitress process. Multiple processes would need Redis.
-- **HTTPS** isn't configured (local development). `ProductionConfig` enables Secure cookies, HSTS and HTTPS redirects once it runs behind TLS.
-- **Live OS theme switching** (changing the OS theme while a page is open) is coded but couldn't be confirmed in the embedded browser. Saved choices, OS default on load, and reload persistence were confirmed.
-- Manual browser checks covered all page types at 1280 px and 375 px, but not screen readers or other browsers (Firefox, Safari).
-- Not done: penetration testing with external tools, load testing, dependency CVE scanning (`pip-audit` isn't installed).
+**Mole or spot checker** — EfficientNetB0, HAM10000, 1,431 test photos:
+balanced accuracy **55.4%**, macro-F1 0.545, macro AUC 0.926; malignant/pre-malignant sensitivity **59.1%**
+(specificity 90.6%); **melanoma sensitivity 42%**. When ≥70% sure (59% of photos) it is right 92.8% of the time.
+Training was interrupted at round 16 of 30 and finished from the best saved checkpoint (documented in the model card).
+
+**Rash or other skin problem checker** — EfficientNetB0, SCIN, 453 test photos (218 cases):
+balanced accuracy **26.2%** (chance 10%), macro-F1 0.26, macro AUC 0.708. Reasonable on acne (F1 0.63) and eczema (0.50);
+very poor on fungal infection, psoriasis and cold sores (F1 ≤ 0.07). Enabled at the owner's request and clearly labelled
+**"Early version: often unsure"** on every page where it appears.
+
+## 5. Not verified / known limitations (stated plainly)
+
+- **Accuracy is limited.** In the real end-to-end check a melanoma test photo was reported as "Common mole, 58%"
+  (melanoma 25% as runner-up). The site always shows all scores and recommends a doctor, but this is a real weakness.
+- **Not a medical device;** no clinical validation. Metrics are retrospective agreement with dataset labels.
+- The automated suite runs on SQLite; MySQL was exercised by migrations, seeding and live pages, not by the full suite.
+- Rate limiting uses in-memory storage (fine for one process). HTTPS is not configured (local use).
+- Not done: penetration testing with external tools, load testing, dependency CVE scan, screen-reader testing.

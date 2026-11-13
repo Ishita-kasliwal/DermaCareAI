@@ -43,8 +43,19 @@ def _weights(s) -> dict:
         return {}
 
 
+def ensure_label_files() -> None:
+    """Fetch the small SCIN case/label CSVs (~2 MB) if they're not present (e.g. on Colab)."""
+    ROOT.mkdir(parents=True, exist_ok=True)
+    for name in ("scin_cases.csv", "scin_labels.csv"):
+        dest = ROOT / name
+        if not dest.exists():
+            print(f"fetching {name} ...", flush=True)
+            urllib.request.urlretrieve(FILE_URL + "dataset/" + name, dest)
+
+
 def select_cases(groups_cfg: dict) -> pd.DataFrame:
     """One row per (case, image) for cases whose top label maps to a qualifying group."""
+    ensure_label_files()
     cases = pd.read_csv(ROOT / "scin_cases.csv", dtype={"case_id": str})
     labels = pd.read_csv(ROOT / "scin_labels.csv", dtype={"case_id": str})
     df = cases.merge(labels, on="case_id", how="inner")

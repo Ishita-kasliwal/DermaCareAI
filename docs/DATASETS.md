@@ -63,6 +63,36 @@ The exact counts per class are **computed from your downloaded copy** by `ml/src
 - ❌ **Not intended:** diagnosis, triage, treatment decisions, use without a clinician, or commercial deployment.
   The trained model is **not a medical device** and makes **no claim of clinical diagnostic accuracy**.
 
+## SCIN — Skin Condition Image Network (used for the "rash or other skin problem" checker)
+
+- **Source:** Google Research & Stanford Medicine, https://github.com/google-research-datasets/scin ·
+  public bucket `gs://dx-scin-public-data` · paper arXiv:2402.18545.
+- **Licence:** SCIN Data Use License, a Creative Commons-style licence: sharing and adapting are allowed with
+  attribution, and commercial use isn't restricted. **Re-identifying or re-linking contributors is strictly
+  prohibited.** The licence text doesn't mention ML training explicitly. The authors' FAQ describes use for research and
+  development. We store no contributor data beyond condition, skin type and shot type.
+- **Content:** 5,033 cases / 10,407 smartphone photos from US internet users (2023). 3,061 cases have dermatologist
+  condition labels (up to 3 dermatologists, each giving up to 3 conditions, merged into weighted labels).
+- **What we used** (`ml/src/scin_label_analysis.py`, `ml/configs/scin_groups.yaml`, `ml/src/scin_prepare.py`):
+  only cases where one condition holds **≥ 50%** of the dermatologists' weight. Closely related labels were grouped
+  into 10 everyday conditions, and only groups with ≥ 40 cases were kept:
+  eczema (461 cases), contact dermatitis (290), hives (182), insect bite (144), folliculitis (101), fungal infection (93),
+  acne/rosacea (88), psoriasis (65), shingles (54), cold sores (51).
+  Only those photos were downloaded (~3.9 GB of 12.6 GB, each MD5-verified).
+- **Duplicates:** SCIN contains a few identical photos in different cases. Photos whose cases disagree on the
+  condition were dropped (2). Other repeats are kept once, and cases sharing a photo are kept in the same split.
+  Final set: **3,168 photos, 1,521 split groups**.
+- **Limitations:** small classes (tests of 14–139 cases per condition), labels that reflect dermatologist disagreement,
+  everyday photos of varying quality, and a US-only, female/younger-skewed contributor group. It does cover more skin tones
+  than HAM10000, although darker skin is still under-represented.
+
+## Not usable
+
+- **DermNet** (often re-shared on Kaggle): DermNet's terms state that its free watermarked images **may not be used for AI
+  training**. A paid licence is required.
+- **Fitzpatrick17k** (114 conditions): annotations are CC BY-NC-SA 3.0. The images must be fetched from two third-party
+  atlases (many links may be dead), or requested from the authors. It's a possible future addition for the rash checker.
+
 ## ISIC 2019 (planned extension)
 
 - 25,331 training images in 8 categories (MEL, NV, BCC, AK, BKL, DF, VASC, **SCC**). The challenge test set adds an outlier "UNK" class.

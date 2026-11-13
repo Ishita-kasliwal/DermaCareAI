@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import keras
 
-SUPPORTED = ("mobilenetv2", "efficientnetb0")
+SUPPORTED = ("mobilenetv2", "efficientnetb0", "efficientnetb3")
 
 
 def build_model(name: str, num_classes: int, image_size: int, weights: str | None = "imagenet",
@@ -25,11 +25,10 @@ def build_model(name: str, num_classes: int, image_size: int, weights: str | Non
         backbone = keras.applications.MobileNetV2(
             input_shape=shape, include_top=False, weights=weights, pooling="avg"
         )
-    elif name == "efficientnetb0":
+    elif name in ("efficientnetb0", "efficientnetb3"):
         x = inputs  # EfficientNet (Keras) contains its own Rescaling + Normalization layers
-        backbone = keras.applications.EfficientNetB0(
-            input_shape=shape, include_top=False, weights=weights, pooling="avg"
-        )
+        builder = keras.applications.EfficientNetB0 if name == "efficientnetb0" else keras.applications.EfficientNetB3
+        backbone = builder(input_shape=shape, include_top=False, weights=weights, pooling="avg")
     else:
         raise ValueError(f"unknown model {name!r}; supported: {SUPPORTED}")
 

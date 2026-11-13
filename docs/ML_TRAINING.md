@@ -51,13 +51,39 @@ It is therefore **off** by default, so reruns can differ by small floating-point
 
 ## Training time on this laptop (CPU only)
 
-There's no NVIDIA GPU here, so training runs on the i5-1335U CPU. Expect several hours for both models
-with the default epoch counts. Options:
+There's no NVIDIA GPU here, so training runs on the i5-1335U CPU: about 2.5 min per round for MobileNetV2 and
+4–6 min for EfficientNetB0 at 224 px. If training is interrupted, finish from the saved best checkpoints instead of
+starting over:
 
-- Train one model at a time with `--models efficientnetb0`.
-- Run the same code on Google Colab or Kaggle with a free GPU. Clone the repo there, put HAM10000 under
-  `ml/data/raw/HAM10000`, `pip install -r requirements.txt`, then run `python -m ml.src.run_pipeline`.
-  Copy `ml/artifacts/models/<version>/` back afterwards.
+```powershell
+.\.venv\Scripts\python.exe -m ml.src.finalize_runs --config ml/configs/train.yaml --runs ml/artifacts/runs/<run1> ml/artifacts/runs/<run2>
+```
+
+## Train on a free GPU (Google Colab)
+
+The GPU configs aim mainly at **catching more melanomas**:
+
+| | CPU config (`train.yaml`) | GPU config (`train_gpu.yaml`) |
+|---|---|---|
+| Photo size | 224 px | **300 px** |
+| Models | MobileNetV2, EfficientNetB0 | **EfficientNetB3**, EfficientNetB0 |
+| Training rounds | up to 30 | up to 52 |
+| Extra weight | none | **melanoma ×2**, BCC and sun-damage patch ×1.3 |
+| Test-time augmentation | none | original + horizontal + vertical flip, averaged (also used by the website) |
+| Mixed precision | no | yes (about 2× faster on GPU) |
+
+The rash checker has its own `train_scin_gpu.yaml`. Steps:
+
+1. Commit your work, then run `.\scripts\make_colab_bundle.ps1`. This creates `run\dermacare_colab_bundle.zip`,
+   which holds code only, with no data, models or `.env`.
+2. Open `notebooks/train_on_colab.ipynb` in Google Colab (File → Upload notebook) and choose a **T4 GPU** runtime.
+3. Run the cells. The notebook uploads the bundle, installs the same TensorFlow/Keras versions as your laptop,
+   downloads the data from the official sources, trains, shows the test results and downloads the model.
+4. Unzip the model into `ml\artifacts\models\` (mole) or `ml\artifacts\scin\models\` (rash), then:
+   `.\.venv\Scripts\flask.exe --app wsgi register-model <folder> --activate` and `.\scripts\restart.ps1`.
+
+The split uses the same seed and grouping, so the new model is tested on exactly the same held-out photos as the
+current one, and the results are directly comparable.
 
 ## Interpreting results
 

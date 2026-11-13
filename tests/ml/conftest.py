@@ -43,10 +43,10 @@ def make_cfg(data_root, out_dir, image_size=64):
         "data": {"root": str(data_root), "metadata_csv": "HAM10000_metadata.csv",
                  "classes": CLASSES, "group_column": "lesion_id",
                  "split": {"train": 0.7, "val": 0.15, "test": 0.15}},
-        "preprocess": {"image_size": image_size, "crop": "center_square"},
+        "preprocess": {"image_size": image_size, "crop": "center_square", "tta": ["hflip", "vflip"]},
         "augmentation": {"enabled": True, "flip": "horizontal_and_vertical", "rotation": 0.5,
                          "zoom": 0.1, "contrast": 0.1, "brightness": 0.1},
-        "imbalance": {"method": "class_weight", "power": 0.5},
+        "imbalance": {"method": "class_weight", "power": 0.5, "boost": {"mel": 2.0}},
         "training": {"batch_size": 8, "early_stopping_patience": 2, "monitor": "val_macro_f1"},
         "models": [
             {"name": "mobilenetv2", "weights": None, "dropout": 0.2,

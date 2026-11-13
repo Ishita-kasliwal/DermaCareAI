@@ -131,10 +131,17 @@ def plot_confusion(cm: np.ndarray, classes: list[str], path: Path, title: str) -
 
 
 def evaluate_model(model, ds, split_df: pd.DataFrame, classes: list[str], out_dir: Path,
-                   split_name: str) -> dict:
-    """ds must be the NON-shuffled dataset built from split_df (same order)."""
+                   split_name: str, tta=()) -> dict:
+    """ds must be the NON-shuffled dataset built from split_df (same order).
+    `tta` applies the same test-time flips the deployed predictor uses, and averages them."""
+    import tensorflow as tf
+
     out_dir.mkdir(parents=True, exist_ok=True)
     probs = model.predict(ds, verbose=0)
+    for t in tta:
+        flip = tf.image.flip_left_right if t == "hflip" else tf.image.flip_up_down
+        probs = probs + model.predict(ds.map(lambda x, y, f=flip: (f(x), y)), verbose=0)
+    probs = probs / (1 + len(tta))
     y_true = split_df["label"].values
     if len(probs) != len(y_true):
         raise RuntimeError("prediction count does not match split size")
