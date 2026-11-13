@@ -59,6 +59,15 @@ class BaseConfig:
     INCONCLUSIVE_MARGIN = float(_env("INCONCLUSIVE_MARGIN", "0.10"))
     ENABLE_GRADCAM = _env("ENABLE_GRADCAM", "true").lower() == "true"
 
+    # Optional email for password-reset links (leave MAIL_SERVER empty to use admin-issued links only)
+    MAIL_SERVER = _env("MAIL_SERVER", "")
+    MAIL_PORT = int(_env("MAIL_PORT", "587") or 587)
+    MAIL_USE_SSL = _env("MAIL_USE_SSL", "false").lower() == "true"
+    MAIL_USERNAME = _env("MAIL_USERNAME", "")
+    MAIL_PASSWORD = _env("MAIL_PASSWORD", "")
+    MAIL_FROM = _env("MAIL_FROM", "")
+    FORGOT_RATE_LIMIT = "5 per hour"
+
     # Rate limits (per client)
     LOGIN_RATE_LIMIT = "5 per minute"
     REGISTER_RATE_LIMIT = "10 per hour"
@@ -70,7 +79,12 @@ class BaseConfig:
     # Sessions / cookies
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
-    SESSION_COOKIE_SECURE = False
+    # PUBLIC_MODE=1 is set only by scripts/public_start.ps1 (app behind the Cloudflare tunnel, served over HTTPS)
+    PUBLIC_MODE = _env("PUBLIC_MODE", "0") == "1"
+    # Number of trusted reverse proxies in front of the app (cloudflared = 1); 0 = direct access only
+    TRUST_PROXY = int(_env("TRUST_PROXY", "1" if _env("PUBLIC_MODE", "0") == "1" else "0"))
+    SESSION_COOKIE_SECURE = PUBLIC_MODE
+    REMEMBER_COOKIE_SECURE = PUBLIC_MODE
     PERMANENT_SESSION_LIFETIME = 30 * 60  # 30-minute idle timeout
     REMEMBER_COOKIE_HTTPONLY = True
 

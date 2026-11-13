@@ -33,6 +33,22 @@
       document.addEventListener("themechange", function () { syncThemeButton(themeBtn); });
     }
 
+    // --- copy-to-clipboard (admin reset link)
+    var copyBtn = document.querySelector("[data-copy-button]");
+    var copySrc = document.querySelector("[data-copy-source]");
+    if (copyBtn && copySrc) {
+      copySrc.addEventListener("focus", function () { copySrc.select(); });
+      copyBtn.addEventListener("click", function () {
+        var done = function () { copyBtn.textContent = "Copied!"; window.setTimeout(function () { copyBtn.textContent = "Copy link"; }, 2000); };
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(copySrc.value).then(done, function () { copySrc.select(); });
+        } else {
+          copySrc.select();
+          try { document.execCommand("copy"); done(); } catch (e) { /* user can copy manually */ }
+        }
+      });
+    }
+
     // --- mobile navigation
     var toggle = document.querySelector("[data-nav-toggle]");
     var nav = document.getElementById("site-nav");

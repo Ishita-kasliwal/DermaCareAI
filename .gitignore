@@ -39,6 +39,9 @@ ml/artifacts/*
 *.h5
 *.zip
 
+# ---- Local tool binaries (e.g. cloudflared.exe) ----
+tools/
+
 # ---- Node (only used to build Tailwind CSS) ----
 node_modules/
 

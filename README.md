@@ -50,6 +50,9 @@ Faster, more accurate training on a free GPU: see [docs/ML_TRAINING.md](docs/ML_
 | STATUS  | `.\scripts\status.ps1`     |
 | RESTART | `.\scripts\restart.ps1`    |
 
+**Temporary public link** (Cloudflare quick tunnel, works while this laptop is on): `.\scripts\public_start.ps1`,
+`.\scripts\public_status.ps1`, `.\scripts\public_stop.ps1`. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
 App: http://127.0.0.1:8010 · logs: `run/app.err.log`. The scripts act only on the PID in `run/app.pid`,
 after verifying that it is this project's `.venv` interpreter with a matching start time.
 

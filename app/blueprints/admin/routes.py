@@ -1,5 +1,16 @@
+from datetime import timedelta
+
 import sqlalchemy as sa
-from flask import Response, abort, flash, redirect, render_template, request, stream_with_context, url_for
+from flask import (
+    Response,
+    abort,
+    flash,
+    redirect,
+    render_template,
+    request,
+    stream_with_context,
+    url_for,
+)
 from flask_login import current_user
 
 from app.blueprints.admin import bp
@@ -7,10 +18,12 @@ from app.extensions import db
 from app.forms import ClassEditForm, ConfirmForm, RoleForm, UserSearchForm
 from app.ml.registry import registry
 from app.models import AuditLog, DiseaseClass, ModelVersion, Prediction, User
+from app.models.entities import utcnow
 from app.security.decorators import admin_required
 from app.services import export_service
 from app.services.analytics_service import admin_overview, parse_range
 from app.services.audit_service import audit
+from app.services.password_reset import ADMIN_LINK_MAX_AGE, reset_url
 
 
 @bp.before_request
@@ -58,7 +71,46 @@ def users():
         .group_by(Prediction.user_id)).all())
     filters = {k: v for k, v in request.args.items() if k != "page" and v}
     return render_template("admin/users.html", form=form, pagination=pagination, counts=counts,
-                           filters=filters, confirm=ConfirmForm(), role_form=RoleForm())
+                           filters=filters, confirm=ConfirmForm(), role_form=RoleForm(),
+                           reset_requests=_open_reset_requests())
+
+
+def _open_reset_requests() -> dict[int, object]:
+    """user_id -> time of a reset request in the last 7 days that hasn't been followed by a reset."""
+    since = utcnow() - timedelta(days=7)
+    rows = db.session.execute(
+        db.select(AuditLog.user_id, AuditLog.action, sa.func.max(AuditLog.created_at))
+        .where(AuditLog.user_id.is_not(None), AuditLog.created_at >= since,
+               AuditLog.action.in_(("password_reset_requested", "password_reset_done", "password_change")))
+        .group_by(AuditLog.user_id, AuditLog.action)).all()
+    latest: dict[int, dict[str, object]] = {}
+    for uid, action, ts in rows:
+        latest.setdefault(uid, {})[action] = ts
+    out = {}
+    for uid, acts in latest.items():
+        req = acts.get("password_reset_requested")
+        done = max([t for a, t in acts.items() if a != "password_reset_requested"], default=None)
+        if req and (done is None or req > done):
+            out[uid] = req
+    return out
+
+
+@bp.post("/users/<public_id>/reset-link")
+def reset_link(public_id):
+    """Create a 24-hour, single-use password reset link for a user (for when email isn't set up)."""
+    if not ConfirmForm().validate_on_submit():
+        abort(400)
+    user = _user_or_404(public_id)
+    if user.id == current_user.id:
+        flash("To change your own password, use My account.", "info")
+        return redirect(url_for("admin.users"))
+    if not user.is_active_flag:
+        flash(f"{user.full_name}'s account is switched off. Reactivate it first.", "error")
+        return redirect(url_for("admin.users"))
+    link = reset_url(user, max_age=ADMIN_LINK_MAX_AGE)
+    audit("admin_reset_link_created", current_user, "user", user.public_id)
+    resp = render_template("admin/reset_link.html", target=user, link=link)
+    return resp, 200, {"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"}
 
 
 @bp.post("/users/<public_id>/active")

@@ -47,6 +47,15 @@ def create_app(config_name: str | None = None) -> Flask:
     if not app.debug and not app.testing:
         logging.basicConfig(level=logging.INFO)
 
+    if app.config.get("TRUST_PROXY"):
+        # Behind cloudflared: use X-Forwarded-For / -Proto from exactly N trusted proxies, so rate limits,
+        # lockouts and audit IP hashes see the real visitor, not 127.0.0.1. The app itself only listens on
+        # 127.0.0.1, so these headers can only come from the local tunnel.
+        from werkzeug.middleware.proxy_fix import ProxyFix
+
+        n = int(app.config["TRUST_PROXY"])
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=n, x_proto=n, x_host=n)
+
     _init_extensions(app)
     _register_blueprints(app)
     _register_error_handlers(app)

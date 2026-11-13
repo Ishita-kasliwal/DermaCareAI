@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Reset link · Administration{% endblock %}
+{% block head %}<meta name="referrer" content="no-referrer">{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head"><div><p class="eyebrow">Administration · Users</p><h1>Password reset link</h1></div></div>
+  {% include "admin/_subnav.html" %}
+  <div class="form-card narrow">
+    <p>Send this link to <strong>{{ target.full_name }}</strong> ({{ target.email }}) through a private channel you trust, for example a direct message.</p>
+    <div class="field">
+      <label for="reset-link">Reset link</label>
+      <input id="reset-link" type="text" value="{{ link }}" readonly data-copy-source>
+    </div>
+    <div class="btn-row mt-3">
+      <button class="btn btn-primary" type="button" data-copy-button>Copy link</button>
+      <a class="btn btn-secondary" href="{{ url_for('admin.users') }}">Back to users</a>
+    </div>
+    <ul class="mt-5 list-disc pl-5 text-sm text-slate-600 dark:text-slate-300">
+      <li>Works <strong>once</strong>, for <strong>24 hours</strong>.</li>
+      <li>It stops working as soon as the password is changed, including if you create another link and it gets used.</li>
+      <li>This page isn't saved anywhere. If you lose the link, just create a new one.</li>
+    </ul>
+  </div>
+</div>
+{% endblock %}

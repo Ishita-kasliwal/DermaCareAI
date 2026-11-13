@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}Choose a new password{% endblock %}
+{% block head %}<meta name="referrer" content="no-referrer">{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="auth-wrap">
+    <h1>Choose a new password</h1>
+    {% if invalid %}
+      <div class="form-card">
+        <div class="alert alert-error" role="alert"><p>{{ invalid }}</p></div>
+        <a class="btn btn-primary" href="{{ url_for('auth.forgot_password') }}">Ask for a new link</a>
+      </div>
+    {% else %}
+      <p class="lead">For {{ user.email }}. After this, you'll be logged out everywhere and can log in with the new password.</p>
+      <div class="form-card">
+        <form class="form" method="post" novalidate data-loading-form>
+          {{ form.hidden_tag() }}
+          <div class="field{{ ' has-error' if form.password.errors }}">
+            {{ form.password.label() }}
+            <ul class="pw-rules" id="password-hint">
+              <li>At least {{ min_length }} characters</li>
+              <li>Not an easy-to-guess password, and not your name or email</li>
+            </ul>
+            {{ form.password(autocomplete='new-password', required=true, minlength=min_length, autofocus=true, aria_describedby='password-hint' ~ (' password-error' if form.password.errors else '')) }}
+            {% if form.password.errors %}<p class="error" id="password-error">{{ form.password.errors|join(' ') }}</p>{% endif %}
+          </div>
+          {{ field(form.confirm, autocomplete='new-password', required=true) }}
+          <button class="btn btn-primary" type="submit">Save new password</button>
+        </form>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -26,7 +26,7 @@
               <td data-label="Name">{{ u.full_name }}{% if u.id == current_user.id %} <span class="muted small">(you)</span>{% endif %}</td>
               <td data-label="Email">{{ u.email }}</td>
               <td data-label="Role">{{ 'Administrator' if u.role == 'admin' else 'User' }}</td>
-              <td data-label="Status">{% if u.is_active_flag %}<span class="badge badge-low">Active</span>{% else %}<span class="badge badge-neutral">Deactivated</span>{% endif %}</td>
+              <td data-label="Status">{% if u.is_active_flag %}<span class="badge badge-low">Active</span>{% else %}<span class="badge badge-neutral">Deactivated</span>{% endif %}{% if reset_requests.get(u.id) %}<br><span class="badge badge-medium mt-1" title="Asked on {{ reset_requests[u.id]|datetimefmt }}">Asked for reset</span>{% endif %}</td>
               <td data-label="Analyses" class="num">{{ counts.get(u.id, 0) }}</td>
               <td data-label="Joined">{{ u.created_at|datefmt }}</td>
               <td data-label="Last sign-in">{{ u.last_login_at|datetimefmt if u.last_login_at else 'Never' }}</td>
@@ -36,6 +36,10 @@
                     <form class="inline-form" method="post" action="{{ url_for('admin.toggle_active', public_id=u.public_id) }}" data-confirm="{{ 'Deactivate' if u.is_active_flag else 'Reactivate' }} {{ u.full_name }}?">
                       {{ confirm.hidden_tag() }}
                       <button class="btn btn-sm {{ 'btn-danger' if u.is_active_flag else 'btn-secondary' }}" type="submit">{{ 'Deactivate' if u.is_active_flag else 'Reactivate' }}<span class="visually-hidden"> {{ u.full_name }}</span></button>
+                    </form>
+                    <form class="inline-form" method="post" action="{{ url_for('admin.reset_link', public_id=u.public_id) }}" data-confirm="Create a 24-hour password reset link for {{ u.full_name }}?">
+                      {{ confirm.hidden_tag() }}
+                      <button class="btn btn-secondary btn-sm" type="submit">Reset link<span class="visually-hidden"> for {{ u.full_name }}</span></button>
                     </form>
                     <form class="inline-form actions" method="post" action="{{ url_for('admin.change_role', public_id=u.public_id) }}" data-confirm="Change the role of {{ u.full_name }}?">
                       {{ role_form.hidden_tag() }}

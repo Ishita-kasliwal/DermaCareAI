@@ -66,6 +66,16 @@ class LoginForm(FlaskForm):
     next = HiddenField()
 
 
+class ForgotPasswordForm(FlaskForm):
+    email = EmailField("Email", validators=[DataRequired("Please enter your email."), Length(max=254)])
+
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField("New password", validators=[DataRequired("Please choose a new password."), Length(max=128)])
+    confirm = PasswordField("Type the new password again", validators=[
+        DataRequired("Please type the new password again."), EqualTo("password", "The two passwords don't match.")])
+
+
 class ProfileForm(FlaskForm):
     full_name = StringField("Your name", validators=[
         DataRequired("Please enter your name."), Length(2, 120, "Please enter between 2 and 120 characters."),

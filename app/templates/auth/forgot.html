@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}Forgot your password{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="auth-wrap">
+    <h1>Forgot your password?</h1>
+    <p class="lead">No problem. We'll help you choose a new one.</p>
+    <div class="form-card">
+      {% if sent %}
+        <div class="alert alert-success" role="status">
+          <p><strong>Thanks, we've got your request.</strong>
+          {% if mail_enabled %}
+            If an account exists for that email, we've sent a reset link to it. The link works for 1 hour. Check your spam folder too.
+          {% else %}
+            If an account exists for that email, the site admin can now send you a reset link. Please contact them and they'll share a link that works for 24 hours.
+          {% endif %}</p>
+        </div>
+        <p class="form-footer"><a href="{{ url_for('auth.login') }}">Back to log in</a></p>
+      {% else %}
+        <form class="form" method="post" action="{{ url_for('auth.forgot_password') }}" novalidate data-loading-form>
+          {{ form.hidden_tag() }}
+          {{ field(form.email, autocomplete='email', required=true, autofocus=true, hint='Enter the email you signed up with.') }}
+          <button class="btn btn-primary" type="submit">Get a reset link</button>
+        </form>
+        <p class="form-footer">Remembered it? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+      {% endif %}
+    </div>
+    <p class="small muted">For your privacy we show the same message whether or not an account exists for that email.</p>
+  </div>
+</div>
+{% endblock %}
