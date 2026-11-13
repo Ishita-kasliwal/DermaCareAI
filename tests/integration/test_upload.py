@@ -23,7 +23,7 @@ def test_upload_blocked_when_no_model(client, user):
     r = client.get("/analyze")
     assert b"The AI isn" in r.data and b"t ready yet" in r.data
     r = upload(client, image_bytes())
-    assert r.status_code == 400 and b"the AI isn&#39;t installed" in r.data
+    assert r.status_code == 400 and b"isn&#39;t installed yet" in r.data
     assert db.session.scalar(db.select(db.func.count(ImageRow.id))) == 0
 
 

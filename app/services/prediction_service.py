@@ -53,9 +53,10 @@ def inconclusive_reasons(pred: Prediction) -> list[str]:
 def run_prediction(user: User, image: Image) -> Prediction:
     if image.user_id != user.id or image.deleted_at is not None:
         raise PermissionError("image not owned by user")
-    mv = registry.active_version()
+    domain = image.domain or "lesion"
+    mv = registry.active_version(domain)
     if mv is None:
-        raise ModelUnavailableError("No trained model is installed yet.")
+        raise ModelUnavailableError("The AI for this kind of check isn't ready yet.")
     predictor = registry.get_predictor(mv)
 
     path = resolve_storage_key(image.storage_key)

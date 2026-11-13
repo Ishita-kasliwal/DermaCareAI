@@ -2,17 +2,18 @@
 {% block title %}Models · Administration{% endblock %}
 {% block content %}
 <div class="container page">
-  <div class="page-head"><div><p class="eyebrow">Administration</p><h1>Model versions</h1><p class="muted">Every analysis records the model version that produced it. Activating a version affects new analyses only.</p></div></div>
+  <div class="page-head"><div><p class="eyebrow">Administration</p><h1>Model versions</h1><p class="muted">Every analysis records the model version that produced it. Each checker (mole/spot and rash/other) has its own active model. Activating a version affects new analyses only.</p></div></div>
   {% include "admin/_subnav.html" %}
 
   {% if versions %}
     <div class="table-wrap">
       <table class="responsive">
-        <thead><tr><th scope="col">Version</th><th scope="col">Architecture</th><th scope="col" class="num">Test balanced acc.</th><th scope="col" class="num">Test macro F1</th><th scope="col" class="num">Threshold</th><th scope="col" class="num">Analyses</th><th scope="col">Registered</th><th scope="col">Status</th></tr></thead>
+        <thead><tr><th scope="col">Version</th><th scope="col">Checker</th><th scope="col">Architecture</th><th scope="col" class="num">Test balanced acc.</th><th scope="col" class="num">Test macro F1</th><th scope="col" class="num">Threshold</th><th scope="col" class="num">Analyses</th><th scope="col">Registered</th><th scope="col">Status</th></tr></thead>
         <tbody>
           {% for m in versions %}
             <tr>
               <td data-label="Version" class="mono">{{ m.version }}</td>
+              <td data-label="Checker">{{ 'Mole or spot' if m.domain == 'lesion' else 'Rash or other' }}</td>
               <td data-label="Architecture">{{ m.architecture }}</td>
               <td data-label="Test balanced acc." class="num">{{ m.balanced_accuracy|pct(1) }}</td>
               <td data-label="Test macro F1" class="num">{{ m.macro_f1|pct(1) }}</td>

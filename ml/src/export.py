@@ -10,12 +10,39 @@ from ml.src.evaluate import metrics_markdown
 from ml.src.utils import config_hash, resolve, save_json, sha256_file
 from skinai_ml.classes import CLASS_INFO
 
-DATASET_INFO = {
-    "name": "HAM10000",
-    "doi": "10.7910/DVN/DBW86T",
-    "paper": "Tschandl, Rosendahl & Kittler, Sci Data 5, 180161 (2018), doi:10.1038/sdata.2018.161",
-    "license": "CC BY-NC 4.0",
-    "attribution": "(c) by ViDIR Group, Department of Dermatology, Medical University of Vienna",
+DATASETS = {
+    "lesion": {
+        "name": "HAM10000",
+        "doi": "10.7910/DVN/DBW86T",
+        "paper": "Tschandl, Rosendahl & Kittler, Sci Data 5, 180161 (2018), doi:10.1038/sdata.2018.161",
+        "license": "CC BY-NC 4.0",
+        "attribution": "(c) by ViDIR Group, Department of Dermatology, Medical University of Vienna",
+    },
+    "general": {
+        "name": "SCIN (Skin Condition Image Network)",
+        "source": "https://github.com/google-research-datasets/scin",
+        "paper": "Ward et al., Creating an Empirical Dermatology Dataset Through Crowdsourcing With "
+                 "Web Search Advertisements, JAMA Netw Open (2024), arXiv:2402.18545",
+        "license": "SCIN Data Use License (re-identification of contributors prohibited)",
+        "attribution": "SCIN dataset, Google Research and Stanford Medicine",
+    },
+}
+DATASET_INFO = DATASETS["lesion"]  # backwards compatibility
+
+LIMITATIONS = {
+    "lesion": [
+        "Dermoscopic images only; smartphone photos are out of distribution.",
+        "Trained mostly on lighter skin types (Austria/Australia); performance on darker skin is unknown.",
+        "Closed set of 7 classes; other conditions are forced into one of them.",
+        "HAM10000 lacks patient IDs; lesion-level grouping cannot exclude same-patient overlap.",
+    ],
+    "general": [
+        "Everyday smartphone photos from US internet users (2023); other populations are under-represented.",
+        "Labels come from dermatologist panels that often disagreed; only cases where one condition held "
+        ">= 50% of the panel's weight were used.",
+        "Closed set of 10 condition groups; many skin conditions are not covered and will be forced into one.",
+        "Small classes (about 50-100 cases); per-class test metrics rest on very few cases.",
+    ],
 }
 
 
@@ -35,8 +62,10 @@ def export_model(cfg: dict, train_info: dict, val_metrics: dict, test_metrics: d
     save_json(preprocess_config_from(cfg).to_dict(), out / "preprocess_config.json")
     save_json({"validation": val_metrics, "test": test_metrics}, out / "metrics.json")
 
+    domain = cfg.get("domain", "lesion")
     manifest = {
         "version": run_name,
+        "domain": domain,
         "architecture": train_info["model"],
         "model_file": model_file.name,
         "model_sha256": sha256_file(model_file),
@@ -50,7 +79,7 @@ def export_model(cfg: dict, train_info: dict, val_metrics: dict, test_metrics: d
         "config": cfg,
         "splits_fingerprint": splits_fingerprint,
         "group_column": cfg["data"].get("group_column", "lesion_id"),
-        "dataset": DATASET_INFO,
+        "dataset": DATASETS.get(domain, DATASET_INFO),
         "environment": train_info["environment"],
         "intended_use": "Research/education, non-commercial. Not a medical device.",
     }
@@ -75,11 +104,8 @@ def _model_card(m: dict, val: dict, test: dict, classes: list[str], comparison) 
         f"- Environment: TF {m['environment']['tensorflow']}, Python {m['environment']['python']}",
         "",
         "## Limitations",
-        "- Dermoscopic images only; smartphone photos are out of distribution.",
-        "- Trained mostly on lighter skin types (Austria/Australia); performance on darker skin is unknown.",
-        "- Closed set of 7 classes; other conditions are forced into one of them.",
-        "- HAM10000 lacks patient IDs; lesion-level grouping cannot exclude same-patient overlap.",
-        "- **Metrics below are retrospective benchmark results on held-out HAM10000 lesions. "
+        *[f"- {line}" for line in LIMITATIONS.get(m.get("domain", "lesion"), LIMITATIONS["lesion"])],
+        f"- **Metrics below are retrospective benchmark results on held-out {m['dataset']['name']} cases. "
         "They are not clinical diagnostic accuracy. Not a medical device.**",
         "",
         "## Results",

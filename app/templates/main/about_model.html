@@ -1,8 +1,37 @@
 {% extends "base.html" %}
 {% from "_macros.html" import risk_badge %}
 {% block title %}About the AI{% endblock %}
+
+{% macro performance(mv, classes) -%}
+  {% set test = ((mv.metrics or {}).get('test') or {}) if mv else {} %}
+  {% if mv and test %}
+    <p>Results for the current AI (<span class="mono">{{ mv.version }}</span>, {{ mv.architecture }}) on
+      {{ test.n_images }} test photos it never saw while learning:</p>
+    <div class="figures">
+      <div class="figure"><div class="value">{{ test.balanced_accuracy|pct(1) }}</div><div class="label">Balanced accuracy (fair across all types)</div></div>
+      <div class="figure"><div class="value">{{ test.macro_f1|pct(1) }}</div><div class="label">F1-score (balance of hits and misses)</div></div>
+      {% if test.malignant_vs_benign and test.malignant_vs_benign.sensitivity is not none %}
+        <div class="figure"><div class="value">{{ test.malignant_vs_benign.sensitivity|pct(1) }}</div><div class="label">Serious spots it caught</div></div>
+      {% endif %}
+    </div>
+    <div class="table-wrap">
+      <table>
+        <caption class="visually-hidden">Test results for each condition</caption>
+        <thead><tr><th scope="col">Condition</th><th scope="col" class="num">Test photos</th><th scope="col" class="num">Precision</th><th scope="col" class="num">Sensitivity</th><th scope="col" class="num">Specificity</th><th scope="col" class="num">F1</th></tr></thead>
+        <tbody>
+          {% for c in classes %}
+            {% set m = test.per_class.get(c.code, {}) %}
+            <tr><th scope="row">{{ c.name }}</th><td class="num">{{ m.support }}</td><td class="num">{{ m.precision|pct(1) }}</td><td class="num">{{ m.recall_sensitivity|pct(1) }}</td><td class="num">{{ m.specificity|pct(1) }}</td><td class="num">{{ m.f1|pct(1) }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="note"><p><strong>This AI hasn't been trained yet</strong>, so there are no results to show. We never show estimated or borrowed numbers. Real test results appear here as soon as it's installed.</p></div>
+  {% endif %}
+{%- endmacro %}
+
 {% block content %}
-{% set test = metrics.get('test') or {} %}
 <div class="container page">
   <div class="page-head">
     <div>
@@ -15,88 +44,74 @@
   <div class="grid-2 wide-left">
     <div class="prose">
       <h2>What it does</h2>
-      <p>You give it one photo of a skin spot. It gives back a score for each of 7 common types of skin spots, and the
-        scores add up to 100%. We only name one type when its score is high enough and clearly ahead of the rest.
-        Otherwise we tell you the AI <em>isn't sure</em>.</p>
+      <p>{{ brand }} has <strong>two AI checkers</strong>. You choose the one that fits your photo:</p>
+      <ul>
+        <li><strong>Mole or spot</strong>: compares a close-up photo of one spot with {{ by_domain['lesion']|length }} types of moles and skin spots, including skin cancers.</li>
+        <li><strong>Rash or other skin problem</strong>: compares an everyday phone photo with {{ by_domain['general']|length }} common conditions such as eczema, hives, fungal infections, acne and shingles.</li>
+      </ul>
+      <p>Each checker gives a score for every condition it knows, and the scores add up to 100%. We only name one condition
+        when its score is high enough and clearly ahead of the rest. Otherwise we tell you the AI <em>isn't sure</em>.</p>
 
       <h2>What it learned from</h2>
-      <p>The AI learned from <strong>HAM10000</strong>, a free public collection of 10,015 close-up skin photos
-        taken with a skin magnifier (dermatoscope). The photos come from a hospital in Vienna, Austria, and a skin
-        clinic in Queensland, Australia. More than half were confirmed by a lab test (biopsy).</p>
-      <p class="cite">Tschandl P., Rosendahl C., Kittler H. The HAM10000 dataset. <em>Scientific Data</em> 5, 180161 (2018). doi:10.1038/sdata.2018.161 · CC BY-NC 4.0 licence.</p>
+      <p><strong>Mole or spot:</strong> <em>HAM10000</em>, a free public collection of 10,015 close-up skin photos taken with a
+        skin magnifier (dermatoscope) at a hospital in Vienna, Austria, and a skin clinic in Queensland, Australia. More than
+        half were confirmed by a lab test (biopsy).</p>
+      <p class="cite">Tschandl P., Rosendahl C., Kittler H. The HAM10000 dataset. <em>Scientific Data</em> 5, 180161 (2018). doi:10.1038/sdata.2018.161 · CC BY-NC 4.0.</p>
+      <p><strong>Rash or other skin problem:</strong> <em>SCIN</em> (Skin Condition Image Network) from Google Research: phone photos
+        shared by volunteers in the USA in 2023, each looked at by up to three dermatologists. We only used photos where the
+        dermatologists mostly agreed on one condition, which gave about 1,500 cases (3,200 photos) across 10 conditions.</p>
+      <p class="cite">SCIN dataset, Google Research &amp; Stanford Medicine · github.com/google-research-datasets/scin · SCIN Data Use License.</p>
 
       <h2>How it was built</h2>
       <ul>
-        <li>We started from AI models that already understand everyday photos (MobileNetV2 and EfficientNetB0), then taught them about skin spots. We keep whichever did better.</li>
-        <li>Every photo is cropped to a square and resized the same way, both when the AI learns and when it checks your photo.</li>
+        <li>We started from AI models that already understand everyday photos (MobileNetV2 and EfficientNetB0), then taught them about skin. For each checker we keep whichever did better.</li>
+        <li>Every photo is cropped to a square and resized the same way when the AI learns and when it checks your photo.</li>
         <li>While learning, photos were flipped, turned and lightened or darkened, so the AI copes with different photos.</li>
-        <li>Most photos in the collection are ordinary moles, so we gave the rarer types extra weight to keep the AI fair.</li>
-        <li>Photos of the same spot were never split between learning and testing, so the test results aren't inflated.</li>
+        <li>Common conditions get less weight and rare ones more, so the AI doesn't just guess the most common answer.</li>
+        <li>Photos of the same spot or person were never split between learning and testing, so test results aren't inflated.</li>
       </ul>
 
       <h2>How well it works</h2>
-      {% if model and test %}
-        <p>These are results for the current AI (<span class="mono">{{ model.version }}</span>) on {{ test.n_images }}
-          test photos it never saw while learning:</p>
-        <div class="figures">
-          <div class="figure"><div class="value">{{ test.balanced_accuracy|pct(1) }}</div><div class="label">Balanced accuracy (fair across all types)</div></div>
-          <div class="figure"><div class="value">{{ test.macro_f1|pct(1) }}</div><div class="label">F1-score (overall balance of hits and misses)</div></div>
-          {% if test.malignant_vs_benign and test.malignant_vs_benign.sensitivity is not none %}
-            <div class="figure"><div class="value">{{ test.malignant_vs_benign.sensitivity|pct(1) }}</div><div class="label">Serious spots it caught</div></div>
-          {% endif %}
-        </div>
-        <div class="table-wrap">
-          <table>
-            <caption class="visually-hidden">Test results for each type</caption>
-            <thead><tr><th scope="col">Type</th><th scope="col" class="num">Test photos</th><th scope="col" class="num">Precision</th><th scope="col" class="num">Sensitivity</th><th scope="col" class="num">Specificity</th><th scope="col" class="num">F1</th></tr></thead>
-            <tbody>
-              {% for c in classes %}
-                {% set m = test.per_class.get(c.code, {}) %}
-                <tr><th scope="row">{{ c.name }}</th><td class="num">{{ m.support }}</td><td class="num">{{ m.precision|pct(1) }}</td><td class="num">{{ m.recall_sensitivity|pct(1) }}</td><td class="num">{{ m.specificity|pct(1) }}</td><td class="num">{{ m.f1|pct(1) }}</td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        <p class="small muted"><strong>Sensitivity</strong> = how often it finds a type when it's really there. <strong>Specificity</strong> = how often it correctly says "not this type". These results come from photos in the same collection. They are <strong>not</strong> the same as a doctor's accuracy, and real-life results (especially phone photos) will likely be lower.</p>
-      {% else %}
-        <div class="note">
-          <p><strong>The AI hasn't been trained yet</strong>, so there are no results to show. We never show estimated or borrowed numbers. Real test results will appear here as soon as a trained AI is installed.</p>
-        </div>
-      {% endif %}
+      {% for ck in checkers %}
+        <h3>{{ ck.title }}</h3>
+        {{ performance(models.get(ck.domain), by_domain[ck.domain]) }}
+      {% endfor %}
+      <p class="small muted"><strong>Sensitivity</strong> = how often it finds a condition when it's really there. <strong>Specificity</strong> = how often it correctly says "not this one". These results come from photos in the same collections, are <strong>not</strong> the same as a doctor's accuracy, and real-life results will likely be lower. For the rash checker, some conditions had only about 10 test cases, so their numbers can swing a lot.</p>
 
       <h2>Things to keep in mind</h2>
       <ul>
-        <li><strong>Close-up photos work best.</strong> The AI learned from magnified skin photos. Normal phone photos may give less accurate results.</li>
-        <li><strong>Skin tone matters.</strong> Most photos it learned from show lighter skin, so it may be less accurate on darker skin.</li>
-        <li><strong>It only knows 7 types.</strong> Other conditions, like rashes or infections, will be matched to the closest of these 7.</li>
+        <li><strong>It doesn't know every skin disease.</strong> It knows {{ classes|length }} common conditions. Anything else will be matched to the closest one it knows.</li>
+        <li><strong>Photo type matters.</strong> The mole checker learned from magnified close-ups. The rash checker learned from normal phone photos.</li>
+        <li><strong>Skin tone matters.</strong> The mole photos are mostly of lighter skin. The rash photos include more skin tones, but darker skin is still under-represented.</li>
+        <li><strong>Doctors often disagree on rashes.</strong> The rash checker's training labels carry that uncertainty, so "not sure" results are more common there.</li>
         <li><strong>It is not a medical device.</strong> It hasn't been tested in real clinics.</li>
       </ul>
 
       <h2>Who it's for</h2>
-      <p>People who want to learn about a skin spot and prepare for a doctor's visit, plus students and researchers. It is for non-commercial use only, and it must never replace a doctor.</p>
+      <p>People who want to learn about a skin problem and prepare for a doctor's visit, plus students and researchers. It is for non-commercial use only, and it must never replace a doctor.</p>
     </div>
 
     <aside class="stack">
-      <section class="panel" aria-labelledby="active-h">
-        <h2 id="active-h">Current AI</h2>
-        {% if model %}
-          <dl class="meta-list">
-            <dt>Version</dt><dd class="mono">{{ model.version }}</dd>
-            <dt>Type</dt><dd>{{ model.architecture }}</dd>
-            <dt>Photo size</dt><dd>{{ model.input_size }} × {{ model.input_size }} pixels</dd>
-            <dt>Sure enough at</dt><dd>{{ model.confidence_threshold|pct }}</dd>
-            {% if model.trained_at %}<dt>Trained on</dt><dd>{{ model.trained_at|datefmt }}</dd>{% endif %}
-          </dl>
-        {% else %}
-          <p class="muted">Not installed yet.</p>
-        {% endif %}
-      </section>
-      <section class="panel" aria-labelledby="cats-h">
-        <h2 id="cats-h">The 7 types</h2>
-        <ul class="category-list">
-          {% for c in classes %}<li><span class="name">{{ c.name }}</span>{{ risk_badge(c.risk_level) }}</li>{% endfor %}
-        </ul>
-      </section>
+      {% for ck in checkers %}
+        {% set mv = models.get(ck.domain) %}
+        <section class="panel" aria-labelledby="ai-{{ ck.domain }}">
+          <div class="panel-head">
+            <h2 id="ai-{{ ck.domain }}">{{ ck.title }}</h2>
+            {% if mv %}<span class="badge badge-low">Ready</span>{% else %}<span class="badge badge-neutral">Not installed</span>{% endif %}
+          </div>
+          {% if mv %}
+            <dl class="meta-list mb-4">
+              <dt>Version</dt><dd class="mono">{{ mv.version }}</dd>
+              <dt>Type</dt><dd>{{ mv.architecture }}</dd>
+              <dt>Sure enough at</dt><dd>{{ mv.confidence_threshold|pct }}</dd>
+              {% if mv.trained_at %}<dt>Trained on</dt><dd>{{ mv.trained_at|datefmt }}</dd>{% endif %}
+            </dl>
+          {% endif %}
+          <ul class="category-list">
+            {% for c in by_domain[ck.domain] %}<li><span class="name">{{ c.name }}</span>{{ risk_badge(c.risk_level) }}</li>{% endfor %}
+          </ul>
+        </section>
+      {% endfor %}
     </aside>
   </div>
 </div>

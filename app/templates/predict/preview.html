@@ -7,9 +7,15 @@
     <div>
       <span class="eyebrow">Step 2 of 3</span>
       <h1>Check your photo</h1>
-      <p class="muted">Make sure this is the right spot. If anything below says "Check", a new photo may give a better result.</p>
+      <p class="muted">Make sure this is the right photo. If anything below says "Check", a new photo may give a better result.</p>
     </div>
   </div>
+
+  <p class="mb-5 inline-flex flex-wrap items-center gap-2 rounded-full bg-white px-4 py-2 text-sm shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-white/10">
+    <span class="text-slate-500 dark:text-slate-400">You're checking:</span>
+    <strong class="text-slate-900 dark:text-white">{{ domain_labels.get(image.domain, image.domain) }}</strong>
+    <a href="{{ url_for('predict.upload', check='general' if image.domain == 'lesion' else 'lesion') }}">Wrong choice? Start again</a>
+  </p>
 
   {% if error %}<div class="alert alert-error" role="alert"><p>{{ error }}</p></div>{% endif %}
 

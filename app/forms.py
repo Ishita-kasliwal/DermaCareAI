@@ -93,7 +93,10 @@ class DeleteAccountForm(FlaskForm):
 
 
 class UploadForm(FlaskForm):
-    image = FileField("Photo of the skin spot", validators=[FileRequired("Please choose a photo to upload.")])
+    check_type = RadioField("What are you checking?", choices=[
+        ("lesion", "A mole or spot"), ("general", "A rash or other skin problem")],
+        default="lesion", validators=[InputRequired("Please choose what you are checking.")])
+    image = FileField("Photo of the skin", validators=[FileRequired("Please choose a photo to upload.")])
 
 
 class AnalyzeForm(FlaskForm):

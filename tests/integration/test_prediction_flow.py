@@ -58,7 +58,7 @@ def test_full_flow_stores_real_model_output(client, user, active_model, model_di
     html = page.data.decode()
     assert "Common mole (melanocytic nevus)" in html
     assert "This is not a diagnosis" in html
-    assert "see a dermatologist" in html
+    assert "see a doctor or dermatologist" in html
     assert "How your photo matched all 7 types" in html
     assert "Other close matches" in html
     assert f"AI confidence <strong>{probs['nv'] * 100:.1f}%</strong>" in html

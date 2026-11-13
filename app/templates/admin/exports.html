@@ -4,7 +4,7 @@
 {% set info = {
   'fact_predictions': ('One row per analysis', 'prediction_id, user_key, created_at, model_version, predicted_class_code, confidence, status, quality_ok, inference_ms'),
   'fact_prediction_scores': ('One row per analysis and category', 'prediction_id, class_code, probability'),
-  'dim_disease_classes': ('The seven categories', 'class_code, name, risk_level, display_order'),
+  'dim_disease_classes': ('All skin conditions (both checkers)', 'class_code, name, checker, risk_level, display_order'),
   'dim_model_versions': ('Registered model versions', 'model_version, architecture, input_size, test metrics, threshold, is_active, dates'),
   'fact_feedback': ('Clinician feedback reports', 'prediction_id, is_correct, suggested_class_code, created_at'),
 } %}

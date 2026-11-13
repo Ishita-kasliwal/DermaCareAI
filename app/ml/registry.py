@@ -1,6 +1,7 @@
-"""Loads the ACTIVE model version (from the model_versions table) once and caches it.
+"""Loads the ACTIVE model version for each checker ("domain") and caches it.
 
-TensorFlow is imported lazily, so pages that don't need the model stay fast.
+Domains: "lesion" (mole or spot) and "general" (rash or other skin problem). Each has at most one
+active model in the model_versions table. TensorFlow is imported lazily.
 """
 
 from __future__ import annotations
@@ -15,6 +16,8 @@ from app.config import ROOT_DIR
 from app.extensions import db
 from app.models import ModelVersion
 
+DOMAINS = ("lesion", "general")
+
 
 class ModelUnavailableError(RuntimeError):
     pass
@@ -23,26 +26,30 @@ class ModelUnavailableError(RuntimeError):
 class ModelRegistry:
     def __init__(self):
         self._lock = threading.Lock()
-        self._predictors: dict[tuple[int, str], object] = {}
+        self._predictors: dict[str, tuple[tuple[int, str], object]] = {}
 
     @staticmethod
-    def active_version() -> ModelVersion | None:
-        return db.session.scalar(db.select(ModelVersion).filter_by(is_active=True))
+    def active_version(domain: str = "lesion") -> ModelVersion | None:
+        return db.session.scalar(db.select(ModelVersion).filter_by(is_active=True, domain=domain))
+
+    @classmethod
+    def active_versions(cls) -> dict[str, ModelVersion | None]:
+        return {d: cls.active_version(d) for d in DOMAINS}
 
     @staticmethod
     def model_dir(mv: ModelVersion) -> Path:
         p = Path(mv.file_path)
         return p if p.is_absolute() else ROOT_DIR / p
 
-    def get_predictor(self, mv: ModelVersion | None = None):
-        mv = mv or self.active_version()
+    def get_predictor(self, mv: ModelVersion | None = None, domain: str = "lesion"):
+        mv = mv or self.active_version(domain)
         if mv is None:
-            raise ModelUnavailableError("The AI isn't ready yet. No trained model has been installed.")
+            raise ModelUnavailableError("The AI for this kind of check isn't ready yet.")
         key = (mv.id, mv.file_sha256)
         with self._lock:
-            pred = self._predictors.get(key)
-            if pred is not None:
-                return pred
+            cached = self._predictors.get(mv.domain)
+            if cached is not None and cached[0] == key:
+                return cached[1]
             from skinai_ml.prediction import SkinLesionPredictor
 
             directory = self.model_dir(mv)
@@ -53,8 +60,8 @@ class ModelRegistry:
             if manifest.get("model_sha256") != mv.file_sha256:
                 raise ModelUnavailableError("Model checksum does not match the registered version.")
             pred = SkinLesionPredictor(directory, confidence_threshold=mv.confidence_threshold)
-            self._predictors = {key: pred}  # keep only the active one in memory
-            current_app.logger.info("model loaded: %s", mv.version)
+            self._predictors[mv.domain] = (key, pred)  # one loaded model per domain
+            current_app.logger.info("model loaded: %s (%s)", mv.version, mv.domain)
             return pred
 
     def clear(self) -> None:

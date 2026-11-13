@@ -111,7 +111,8 @@ def admin_overview() -> dict:
         "inconclusive_rate": (status["inconclusive"] / total) if total else None,
         "feedback_total": int(fb_total),
         "feedback_agreement": (fb_correct / fb_total) if fb_total else None,
-        "active_model": db.session.scalar(db.select(ModelVersion).filter_by(is_active=True)),
+        "active_models": {d: db.session.scalar(db.select(ModelVersion).filter_by(is_active=True, domain=d))
+                          for d in ("lesion", "general")},
     }
 
 

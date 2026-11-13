@@ -26,39 +26,43 @@ from app.security.passwords import hash_password
 from app.services.catalog import seed_disease_classes
 
 CLASSES = ["akiec", "bcc", "bkl", "df", "mel", "nv", "vasc"]
+GENERAL_CLASSES = ["acne", "cold_sores", "contact_dermatitis", "eczema", "folliculitis", "fungal",
+                   "insect_bite", "psoriasis", "shingles", "urticaria"]
 PASSWORD = "Correct-Horse-91"
 
 
 # ----------------------------------------------------------------- tiny real model
-def _export_tiny_model(directory: Path, version: str, favour: str | None) -> Path:
+def _export_tiny_model(directory: Path, version: str, favour: str | None, classes=None,
+                       domain: str = "lesion") -> Path:
     import keras
 
+    classes = classes or CLASSES
     keras.utils.set_random_seed(0)
     inputs = keras.Input((64, 64, 3), dtype="float32")
     x = keras.layers.Rescaling(1 / 255.0)(inputs)
     x = keras.layers.Conv2D(8, 3, activation="relu", name="conv_a")(x)
     x = keras.layers.Conv2D(8, 3, activation="relu", name="conv_b")(x)
     x = keras.layers.GlobalAveragePooling2D()(x)
-    dense = keras.layers.Dense(7, activation="softmax", name="probs")
+    dense = keras.layers.Dense(len(classes), activation="softmax", name="probs")
     out = dense(x)
     model = keras.Model(inputs, out)
     w, b = dense.get_weights()
     w[:] = w * 0.01
     b[:] = 0.0
     if favour:
-        b[CLASSES.index(favour)] = 6.0
+        b[classes.index(favour)] = 6.0
     dense.set_weights([w, b])
 
     directory.mkdir(parents=True, exist_ok=True)
     model.save(directory / "model.keras")
     sha = hashlib.sha256((directory / "model.keras").read_bytes()).hexdigest()
     (directory / "labels.json").write_text(json.dumps(
-        [{"index": i, "code": c, "name": c, "risk_level": "low"} for i, c in enumerate(CLASSES)]))
+        [{"index": i, "code": c, "name": c, "risk_level": "low"} for i, c in enumerate(classes)]))
     (directory / "preprocess_config.json").write_text(json.dumps(
         {"image_size": 64, "crop": "center_square", "resize_method": "bilinear", "antialias": True}))
     (directory / "manifest.json").write_text(json.dumps({
-        "version": version, "architecture": "tinycnn-test", "model_file": "model.keras",
-        "model_sha256": sha, "num_classes": 7, "classes": CLASSES, "image_size": 64,
+        "version": version, "domain": domain, "architecture": "tinycnn-test", "model_file": "model.keras",
+        "model_sha256": sha, "num_classes": len(classes), "classes": classes, "image_size": 64,
         "confidence_threshold": 0.5, "environment": {"timestamp_utc": "2026-11-10T00:00:00+00:00"}}))
     (directory / "metrics.json").write_text(json.dumps({"validation": {}, "test": {}}))
     return directory
@@ -70,6 +74,8 @@ def model_dirs(tmp_path_factory):
     return {
         "confident": _export_tiny_model(root / "tiny-confident", "tiny-confident", favour="nv"),
         "uniform": _export_tiny_model(root / "tiny-uniform", "tiny-uniform", favour=None),
+        "general": _export_tiny_model(root / "tiny-general", "tiny-general", favour="eczema",
+                                      classes=GENERAL_CLASSES, domain="general"),
     }
 
 
@@ -141,9 +147,10 @@ def logout(client):
 
 def register_model(directory: Path, active=True) -> ModelVersion:
     manifest = json.loads((directory / "manifest.json").read_text())
+    domain = manifest.get("domain", "lesion")
     if active:
-        _db.session.execute(_db.update(ModelVersion).values(is_active=False))
-    mv = ModelVersion(version=manifest["version"], architecture=manifest["architecture"],
+        _db.session.execute(_db.update(ModelVersion).where(ModelVersion.domain == domain).values(is_active=False))
+    mv = ModelVersion(version=manifest["version"], domain=domain, architecture=manifest["architecture"],
                       file_path=str(directory), file_sha256=manifest["model_sha256"],
                       input_size=64, confidence_threshold=0.5, is_active=active)
     _db.session.add(mv)
@@ -173,8 +180,8 @@ def image_bytes(fmt="JPEG", size=(320, 260), mode="RGB", seed=1, exif=None, colo
     return buf.getvalue()
 
 
-def upload(client, data: bytes, filename="lesion.jpg"):
-    return client.post("/analyze", data={"image": (io.BytesIO(data), filename)},
+def upload(client, data: bytes, filename="lesion.jpg", check="lesion"):
+    return client.post("/analyze", data={"image": (io.BytesIO(data), filename), "check_type": check},
                        content_type="multipart/form-data")
 
 

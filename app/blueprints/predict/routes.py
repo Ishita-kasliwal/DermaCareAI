@@ -13,6 +13,7 @@ from app.services.prediction_service import get_owned_prediction, inconclusive_r
 
 
 ALT_MIN = 0.05  # only discuss alternatives the model gave a non-trivial score
+DOMAIN_LABELS = {"lesion": "A mole or spot", "general": "A rash or other skin problem"}
 
 
 def _user_key():
@@ -24,14 +25,22 @@ def _user_key():
 @limiter.limit(lambda: current_app.config["UPLOAD_RATE_LIMIT"], methods=["POST"], key_func=_user_key)
 def upload():
     form = UploadForm()
-    model = registry.active_version()
+    models = registry.active_versions()
+    if request.method == "GET":
+        wanted = request.args.get("check")
+        if wanted in models:
+            form.check_type.data = wanted
+        if models.get(form.check_type.data) is None:  # pre-select a checker that is actually installed
+            form.check_type.data = next((d for d, mv in models.items() if mv), form.check_type.data)
     error = None
     if form.validate_on_submit():
-        if model is None:
-            error = "We can't check photos yet because the AI isn't installed."
+        domain = form.check_type.data
+        if models.get(domain) is None:
+            error = ("The AI for this kind of check isn't installed yet, so we can't check this photo. "
+                     "Please try the other option, or come back later.")
         else:
             try:
-                image, reused = store_upload(current_user, form.image.data)
+                image, reused = store_upload(current_user, form.image.data, domain)
             except ImageValidationError as e:
                 error = str(e)
             else:
@@ -40,7 +49,9 @@ def upload():
                 return redirect(url_for("predict.preview", image_id=image.public_id))
     elif form.is_submitted():
         error = "; ".join(e for errs in form.errors.values() for e in errs)
-    return render_template("predict/upload.html", form=form, model=model, error=error,
+    any_model = any(models.values())
+    return render_template("predict/upload.html", form=form, models=models, model=any_model, error=error,
+                           domain_labels=DOMAIN_LABELS,
                            max_mb=current_app.config["MAX_UPLOAD_MB"],
                            min_side=current_app.config["MIN_IMAGE_SIDE"]), (400 if error else 200)
 
@@ -50,7 +61,7 @@ def upload():
 def preview(image_id):
     image = get_owned_image(current_user, image_id) or abort(404)
     return render_template("predict/preview.html", image=image, form=AnalyzeForm(),
-                           model=registry.active_version())
+                           model=registry.active_version(image.domain), domain_labels=DOMAIN_LABELS)
 
 
 @bp.post("/analyze/<image_id>")
@@ -59,17 +70,17 @@ def preview(image_id):
 def analyze(image_id):
     image = get_owned_image(current_user, image_id) or abort(404)
     form = AnalyzeForm()
-    model = registry.active_version()
+    model = registry.active_version(image.domain)
     if not form.validate_on_submit():
-        return render_template("predict/preview.html", image=image, form=form, model=model), 400
+        return render_template("predict/preview.html", image=image, form=form, model=model, domain_labels=DOMAIN_LABELS), 400
     try:
         pred = run_prediction(current_user, image)
     except ModelUnavailableError as e:
-        return render_template("predict/preview.html", image=image, form=form, model=model,
+        return render_template("predict/preview.html", image=image, form=form, model=model, domain_labels=DOMAIN_LABELS,
                                error=str(e)), 503
     except Exception:
         current_app.logger.exception("prediction failed")
-        return render_template("predict/preview.html", image=image, form=form, model=model,
+        return render_template("predict/preview.html", image=image, form=form, model=model, domain_labels=DOMAIN_LABELS,
                                error="Sorry, something went wrong while checking your photo. "
                                      "Please try again in a moment."), 500
     return redirect(url_for("predict.result", prediction_id=pred.public_id))

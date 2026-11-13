@@ -164,6 +164,6 @@ def test_env_and_private_dirs_are_git_ignored():
 
 def test_upload_rate_limit_key_is_per_user(client, user, active_model):
     login(client)
-    r = client.post("/analyze", data={"image": (__import__("io").BytesIO(image_bytes()), "a.jpg")},
+    r = client.post("/analyze", data={"image": (__import__("io").BytesIO(image_bytes()), "a.jpg"), "check_type": "lesion"},
                     content_type="multipart/form-data")
     assert r.status_code == 302

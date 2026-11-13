@@ -1,0 +1,36 @@
+# Proposed grouping of SCIN dermatologist labels into everyday skin-condition groups.
+# A case belongs to a group when its top-weighted label is in that group and holds
+# at least `min_weight` of the dermatologists' weight. Groups below `min_cases` are dropped.
+min_weight: 0.5
+min_cases: 40
+groups:
+  eczema:
+    name: "Eczema (atopic dermatitis)"
+    labels: [Eczema, "Acute dermatitis, NOS", "Chronic dermatitis, NOS", "Acute and chronic dermatitis", Lichen Simplex Chronicus]
+  contact_dermatitis:
+    name: "Contact dermatitis (skin reaction)"
+    labels: [Allergic Contact Dermatitis, Irritant Contact Dermatitis, "CD - Contact dermatitis", Photodermatitis]
+  urticaria:
+    name: "Hives (urticaria)"
+    labels: [Urticaria]
+  insect_bite:
+    name: "Insect bite"
+    labels: [Insect Bite]
+  folliculitis:
+    name: "Folliculitis (inflamed hair follicles)"
+    labels: [Folliculitis]
+  psoriasis:
+    name: "Psoriasis"
+    labels: [Psoriasis]
+  fungal:
+    name: "Fungal skin infection (tinea)"
+    labels: [Tinea, Tinea Versicolor]
+  shingles:
+    name: "Shingles (herpes zoster)"
+    labels: [Herpes Zoster]
+  cold_sores:
+    name: "Cold sores (herpes simplex)"
+    labels: [Herpes Simplex]
+  acne:
+    name: "Acne"
+    labels: [Acne, Rosacea, Perioral Dermatitis]

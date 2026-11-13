@@ -38,8 +38,8 @@ def my_stats():
 @api_auth(admin=True)
 def overview():
     o = admin_overview()
-    mv = o.pop("active_model")
-    o["active_model"] = mv.version if mv else None
+    models = o.pop("active_models")
+    o["active_models"] = {d: (mv.version if mv else None) for d, mv in models.items()}
     return jsonify(o)
 
 

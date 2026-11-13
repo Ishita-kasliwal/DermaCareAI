@@ -1,0 +1,53 @@
+# Training config for the "rash or other skin problem" checker (SCIN, 10 condition groups).
+# Prepare the data first:  python -m ml.src.scin_prepare
+# Then train:              python -m ml.src.run_pipeline --config ml/configs/train_scin.yaml
+
+domain: general
+seed: 42
+deterministic: false
+output_dir: ml/artifacts/scin           # separate from the mole/spot model's artifacts
+
+data:
+  root: ml/data/raw/SCIN
+  metadata_csv: scin_metadata.csv
+  image_glob: ["images/*.png"]
+  classes: [acne, cold_sores, contact_dermatitis, eczema, folliculitis, fungal, insect_bite, psoriasis, shingles, urticaria]
+  group_column: lesion_id                # = SCIN case: all photos of one case stay in one split
+  split: {train: 0.70, val: 0.15, test: 0.15}
+
+preprocess:
+  image_size: 224
+  crop: center_square
+
+augmentation:
+  enabled: true
+  flip: horizontal                       # clinical photos: no vertical flips (body orientation)
+  rotation: 0.08                         # about +/-30 degrees
+  zoom: 0.15
+  contrast: 0.2
+  brightness: 0.2
+
+imbalance:
+  method: class_weight
+  power: 0.5
+
+training:
+  batch_size: 32
+  early_stopping_patience: 5
+  monitor: val_macro_f1
+  label_smoothing: 0.1                   # labels come from a panel that often disagrees
+
+models:
+  - name: mobilenetv2
+    weights: imagenet
+    dropout: 0.4
+    stage1: {epochs: 12, learning_rate: 1.0e-3}
+    stage2: {epochs: 20, learning_rate: 1.0e-5, unfreeze_last: 40}
+  - name: efficientnetb0
+    weights: imagenet
+    dropout: 0.4
+    stage1: {epochs: 12, learning_rate: 1.0e-3}
+    stage2: {epochs: 20, learning_rate: 1.0e-5, unfreeze_last: 60}
+
+inference:
+  confidence_threshold: 0.45

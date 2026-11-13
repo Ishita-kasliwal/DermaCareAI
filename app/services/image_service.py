@@ -103,8 +103,11 @@ def decode_and_sanitise(data: bytes) -> tuple[np.ndarray, bytes]:
     return np.asarray(img, dtype=np.uint8), out.getvalue()
 
 
-def store_upload(user: User, file_storage) -> tuple[Image, bool]:
-    """Validate and store an uploaded file for `user`. Returns (image, reused_existing)."""
+def store_upload(user: User, file_storage, domain: str = "lesion") -> tuple[Image, bool]:
+    """Validate and store an uploaded file for `user`. Returns (image, reused_existing).
+    `domain` is the checker the user chose: "lesion" (mole or spot) or "general" (rash or other)."""
+    if domain not in ("lesion", "general"):
+        raise ImageValidationError("Please choose what you are checking.")
     if file_storage is None or not file_storage.filename:
         raise ImageValidationError("Please choose a photo to upload.")
     if not _extension_ok(file_storage.filename):
@@ -121,6 +124,9 @@ def store_upload(user: User, file_storage) -> tuple[Image, bool]:
         db.select(Image).filter_by(user_id=user.id, sha256=digest).where(Image.deleted_at.is_(None))
     )
     if existing is not None and resolve_storage_key(existing.storage_key).exists():
+        if existing.domain != domain:
+            existing.domain = domain
+            db.session.commit()
         return existing, True
 
     now = utcnow()
@@ -130,7 +136,7 @@ def store_upload(user: User, file_storage) -> tuple[Image, bool]:
     path.write_bytes(jpeg)
 
     image = Image(
-        user_id=user.id, storage_key=key, sha256=digest, mime_type="image/jpeg",
+        user_id=user.id, storage_key=key, sha256=digest, mime_type="image/jpeg", domain=domain,
         width=int(rgb.shape[1]), height=int(rgb.shape[0]), size_bytes=len(jpeg),
         blur_score=report.blur_score, brightness=report.brightness, contrast=report.contrast,
         quality_ok=report.ok, quality_issues=report.issues,

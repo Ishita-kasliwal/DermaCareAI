@@ -79,9 +79,9 @@ def fact_prediction_scores(user: User | None = None) -> Iterator[str]:
 
 
 def dim_disease_classes() -> Iterator[str]:
-    rows = ([c.code, c.name, c.risk_level, c.display_order]
+    rows = ([c.code, c.name, c.domain, c.risk_level, c.display_order]
             for c in db.session.scalars(db.select(DiseaseClass).order_by(DiseaseClass.display_order)))
-    return _stream(["class_code", "name", "risk_level", "display_order"], rows)
+    return _stream(["class_code", "name", "checker", "risk_level", "display_order"], rows)
 
 
 def dim_model_versions() -> Iterator[str]:

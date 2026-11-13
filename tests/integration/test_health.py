@@ -18,7 +18,7 @@ def test_public_pages_render(client):
 def test_brand_and_theme_assets(client, app):
     html = client.get("/").data.decode()
     assert app.config["BRAND_NAME"] == "DermaCareAI"
-    assert "<title>Check a skin spot with AI · DermaCareAI</title>" in html
+    assert "<title>Check your skin with AI · DermaCareAI</title>" in html
     # theme.js must load before the stylesheet so a saved dark theme applies without a flash
     assert html.index("js/theme.js") < html.index("css/app.css")
     assert 'data-theme-toggle' in html and 'name="color-scheme" content="light dark"' in html
@@ -37,5 +37,5 @@ def test_404_page(client):
 
 def test_about_page_without_model_shows_no_fake_metrics(client):
     r = client.get("/about-model")
-    assert b"The AI hasn't been trained yet" in r.data
+    assert b"This AI hasn't been trained yet" in r.data
     assert b"Balanced accuracy" not in r.data

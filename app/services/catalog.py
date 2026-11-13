@@ -43,9 +43,71 @@ CLASS_CONTENT = {
         "Harmless spots made of tiny blood vessels, such as cherry angiomas. They are usually red, purple or blue.",
         "Usually harmless. See a doctor if it bleeds again and again or grows quickly.",
     ),
+    # ---- rash or other skin problem (SCIN)
+    "eczema": (
+        "Dry, itchy, inflamed skin that often comes and goes. It's very common, especially in the creases "
+        "of elbows and knees, and is not contagious.",
+        "Moisturise often, use gentle soap and avoid things that trigger it. See a doctor or pharmacist if it "
+        "keeps you awake, spreads, oozes or looks infected.",
+    ),
+    "contact_dermatitis": (
+        "A red, itchy rash where the skin touched something that irritates it or causes an allergy, such as "
+        "soaps, metals, plants, cosmetics or chemicals.",
+        "Try to find and avoid what caused it, and wash the area gently. See a doctor if it's severe, on your "
+        "face or genitals, or doesn't improve within a couple of weeks.",
+    ),
+    "urticaria": (
+        "Raised, itchy welts (hives) that can appear and fade within hours, often due to an allergy, "
+        "infection or stress.",
+        "Antihistamines from a pharmacist often help. Get emergency help straight away if you have swelling of "
+        "the lips, tongue or throat, or trouble breathing.",
+    ),
+    "insect_bite": (
+        "Small itchy or painful bumps from bites or stings by insects such as mosquitoes, fleas, bed bugs or "
+        "spiders.",
+        "Clean the area, use a cold pack and avoid scratching. See a doctor if it becomes very red, hot, "
+        "swollen or painful, or if you feel unwell.",
+    ),
+    "folliculitis": (
+        "Small red bumps or pimples around hair follicles, often after shaving, sweating or tight clothing. "
+        "Usually caused by mild infection or irritation.",
+        "Keep the area clean and avoid shaving it for a while. See a doctor if it spreads, keeps coming back or "
+        "forms painful lumps.",
+    ),
+    "fungal": (
+        "A fungal infection of the skin, such as ringworm or athlete's foot. It often looks like a red, scaly, "
+        "ring-shaped patch, or lighter or darker patches on the body.",
+        "Antifungal creams from a pharmacist often work well. Keep the skin clean and dry. See a doctor if it "
+        "spreads or doesn't improve after two weeks of treatment.",
+    ),
+    "acne": (
+        "Spots, blackheads or redness on the face, chest or back. This group also includes rosacea, which "
+        "causes facial redness and small bumps.",
+        "Gentle skin care and over-the-counter treatments often help. See a doctor if it's painful, leaves "
+        "scars or affects how you feel.",
+    ),
+    "psoriasis": (
+        "Thick, red or darker patches covered in silvery scales, often on elbows, knees or the scalp. "
+        "It's a long-term condition and is not contagious.",
+        "It's worth seeing a doctor. There are effective treatments, and a doctor can confirm it's psoriasis.",
+    ),
+    "shingles": (
+        "A painful rash with blisters, usually in a band on one side of the body. It's caused by the chickenpox "
+        "virus waking up again.",
+        "Please see a doctor soon, ideally within 3 days of the rash appearing, because antiviral medicine works "
+        "best early. Get urgent help if it's near your eye.",
+    ),
+    "cold_sores": (
+        "Small, painful blisters, usually on or around the lips, caused by the herpes simplex virus. They tend to "
+        "come back from time to time.",
+        "They usually heal by themselves in 1-2 weeks, and antiviral creams can help. Avoid kissing and sharing "
+        "cups while you have one. See a doctor if they're frequent or severe.",
+    ),
 }
 
-DISPLAY_ORDER = ["mel", "bcc", "akiec", "bkl", "nv", "df", "vasc"]
+DISPLAY_ORDER = ["mel", "bcc", "akiec", "bkl", "nv", "df", "vasc",
+                 "eczema", "contact_dermatitis", "urticaria", "insect_bite", "folliculitis", "fungal",
+                 "acne", "psoriasis", "shingles", "cold_sores"]
 
 
 def seed_disease_classes(db, update_text: bool = False) -> int:
@@ -73,6 +135,7 @@ def seed_disease_classes(db, update_text: bool = False) -> int:
             row.advice = advice
         row.name = info.name
         row.risk_level = info.risk_level
+        row.domain = info.domain
         row.display_order = order
     db.session.commit()
     return created

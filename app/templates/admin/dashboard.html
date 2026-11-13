@@ -15,19 +15,22 @@
 
   <div class="grid-2 wide-right">
     <section class="panel" aria-labelledby="model-h">
-      <div class="panel-head"><h2 id="model-h">Active model</h2><a href="{{ url_for('admin.models') }}">Manage</a></div>
-      {% if o.active_model %}
-        {% set m = o.active_model %}
-        <dl class="meta-list">
-          <dt>Version</dt><dd class="mono">{{ m.version }}</dd>
-          <dt>Architecture</dt><dd>{{ m.architecture }}</dd>
-          <dt>Test balanced accuracy</dt><dd>{{ m.balanced_accuracy|pct(1) }}</dd>
-          <dt>Test macro F1</dt><dd>{{ m.macro_f1|pct(1) }}</dd>
-          <dt>Threshold</dt><dd>{{ m.confidence_threshold|pct }}</dd>
-        </dl>
-      {% else %}
-        <div class="note"><p><strong>No model is active.</strong> Users can't run analyses. Train a model (docs/ML_TRAINING.md), then run <span class="mono">flask --app wsgi register-model &lt;dir&gt; --activate</span>.</p></div>
-      {% endif %}
+      <div class="panel-head"><h2 id="model-h">Active models</h2><a href="{{ url_for('admin.models') }}">Manage</a></div>
+      {% for domain, title in [('lesion', 'Mole or spot'), ('general', 'Rash or other skin problem')] %}
+        {% set m = o.active_models.get(domain) %}
+        <h3 class="mt-4 first:mt-0">{{ title }}</h3>
+        {% if m %}
+          <dl class="meta-list">
+            <dt>Version</dt><dd class="mono">{{ m.version }}</dd>
+            <dt>Architecture</dt><dd>{{ m.architecture }}</dd>
+            <dt>Test balanced accuracy</dt><dd>{{ m.balanced_accuracy|pct(1) }}</dd>
+            <dt>Test macro F1</dt><dd>{{ m.macro_f1|pct(1) }}</dd>
+            <dt>Threshold</dt><dd>{{ m.confidence_threshold|pct }}</dd>
+          </dl>
+        {% else %}
+          <div class="note"><p><strong>No model is active for this checker.</strong> Train one (docs/ML_TRAINING.md), then run <span class="mono">flask --app wsgi register-model &lt;dir&gt; --activate</span>.</p></div>
+        {% endif %}
+      {% endfor %}
     </section>
 
     <section class="panel" aria-labelledby="act-h">

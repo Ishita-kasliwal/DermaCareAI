@@ -78,10 +78,11 @@ class DiseaseClass(db.Model):
     __tablename__ = "disease_classes"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    code: Mapped[str] = mapped_column(sa.String(16), unique=True)
+    code: Mapped[str] = mapped_column(sa.String(32), unique=True)
     name: Mapped[str] = mapped_column(sa.String(120))
     description: Mapped[str] = mapped_column(sa.Text, default="")
     risk_level: Mapped[str] = mapped_column(RISK_ENUM)
+    domain: Mapped[str] = mapped_column(sa.String(16), default="lesion", server_default="lesion", index=True)
     advice: Mapped[str] = mapped_column(sa.Text, default="")
     display_order: Mapped[int] = mapped_column(sa.Integer, default=0)
 
@@ -91,6 +92,7 @@ class ModelVersion(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     version: Mapped[str] = mapped_column(sa.String(80), unique=True)
+    domain: Mapped[str] = mapped_column(sa.String(16), default="lesion", server_default="lesion", index=True)
     architecture: Mapped[str] = mapped_column(sa.String(40))
     file_path: Mapped[str] = mapped_column(sa.String(255))  # directory, relative to project root
     file_sha256: Mapped[str] = mapped_column(sa.String(64))
@@ -115,6 +117,7 @@ class Image(db.Model):
     storage_key: Mapped[str] = mapped_column(sa.String(255), unique=True)  # relative path under UPLOAD_DIR
     sha256: Mapped[str] = mapped_column(sa.String(64))
     mime_type: Mapped[str] = mapped_column(sa.String(40), default="image/jpeg")
+    domain: Mapped[str] = mapped_column(sa.String(16), default="lesion", server_default="lesion")
     width: Mapped[int] = mapped_column(sa.Integer)
     height: Mapped[int] = mapped_column(sa.Integer)
     size_bytes: Mapped[int] = mapped_column(sa.Integer)

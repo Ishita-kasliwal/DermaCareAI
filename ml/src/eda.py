@@ -98,8 +98,9 @@ def run_eda(cfg: dict, samples_per_class: int = 5) -> dict:
                 a.imshow(Image.open(pick[k]).convert("RGB"))
             if k == 0:
                 a.set_title(f"{c}: {CLASS_INFO[c].name}"[:38], fontsize=8, loc="left")
-    fig.suptitle("Sample images per class (HAM10000, CC BY-NC 4.0, ViDIR Group, MedUni Vienna)",
-                 fontsize=9)
+    credit = cfg.get("dataset_credit", "HAM10000, CC BY-NC 4.0, ViDIR Group, MedUni Vienna"
+                     if cfg.get("domain", "lesion") == "lesion" else "SCIN, Google Research")
+    fig.suptitle(f"Sample images per class ({credit})", fontsize=9)
     fig.tight_layout()
     fig.savefig(out / "sample_images.png", dpi=110)
     plt.close(fig)

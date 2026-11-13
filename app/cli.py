@@ -76,6 +76,7 @@ def register_cli(app):
         if mv is None:
             mv = ModelVersion(version=manifest["version"])
             db.session.add(mv)
+        mv.domain = manifest.get("domain", "lesion")
         mv.architecture = manifest["architecture"]
         mv.file_path = str(rel).replace("\\", "/")
         mv.file_sha256 = manifest["model_sha256"]
@@ -91,11 +92,12 @@ def register_cli(app):
         ts = manifest.get("environment", {}).get("timestamp_utc")
         mv.trained_at = datetime.fromisoformat(ts).replace(tzinfo=None) if ts else None
         if activate:
-            db.session.execute(sa.update(ModelVersion).values(is_active=False))
+            db.session.execute(sa.update(ModelVersion).where(ModelVersion.domain == mv.domain)
+                               .values(is_active=False))
             mv.is_active = True
         db.session.commit()
         registry.clear()
-        click.echo(f"Registered {mv.version}{' (active)' if mv.is_active else ''}")
+        click.echo(f"Registered {mv.version} [{mv.domain}]{' (active)' if mv.is_active else ''}")
 
     @app.cli.command("purge")
     @click.option("--dry-run", is_flag=True)

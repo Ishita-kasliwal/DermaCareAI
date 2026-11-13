@@ -119,7 +119,8 @@ def activate_model(model_id):
     if not registry.model_dir(mv).joinpath("manifest.json").exists():
         flash("The files for this model version are missing on disk, so it can't be activated.", "error")
         return redirect(url_for("admin.models"))
-    db.session.execute(sa.update(ModelVersion).values(is_active=False))
+    # one active model per checker ("domain"); other checkers are unaffected
+    db.session.execute(sa.update(ModelVersion).where(ModelVersion.domain == mv.domain).values(is_active=False))
     mv.is_active = True
     db.session.commit()
     registry.clear()

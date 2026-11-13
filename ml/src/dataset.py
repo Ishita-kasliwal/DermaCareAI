@@ -41,16 +41,17 @@ def load_metadata(cfg: dict) -> pd.DataFrame:
     if not meta_path.exists():
         raise DatasetNotFoundError(DOWNLOAD_HELP.format(root=root))
 
-    df = pd.read_csv(meta_path)
+    group_col = cfg["data"].get("group_column", "lesion_id")
+    # IDs are text (SCIN ids look like large negative integers; never let pandas parse them)
+    df = pd.read_csv(meta_path, dtype={"image_id": str, group_col: str})
     missing = [c for c in REQUIRED_COLUMNS if c not in df.columns]
     if missing:
         raise ValueError(f"metadata is missing columns {missing}; found {list(df.columns)}")
-
-    group_col = cfg["data"].get("group_column", "lesion_id")
     if group_col not in df.columns:
         raise ValueError(f"group column '{group_col}' not in metadata")
 
-    index = {p.stem: p for p in root.rglob("*.jpg")}
+    patterns = cfg["data"].get("image_glob", ["**/*.jpg"])
+    index = {p.stem: p for pattern in patterns for p in root.glob(pattern)}
     if not index:
         raise DatasetNotFoundError(DOWNLOAD_HELP.format(root=root))
     df["path"] = df["image_id"].map(lambda i: str(index[i]) if i in index else None)
@@ -134,7 +135,7 @@ def get_or_create_splits(cfg: dict) -> pd.DataFrame:
     split_csv = out_dir / f"splits_seed{cfg['seed']}.csv"
     df = load_metadata(cfg)
     if split_csv.exists():
-        saved = pd.read_csv(split_csv)[["image_id", "split"]]
+        saved = pd.read_csv(split_csv, dtype={"image_id": str})[["image_id", "split"]]
         df = df.merge(saved, on="image_id", how="left")
         if df["split"].isna().any():
             raise ValueError(f"{split_csv} does not match the metadata; delete it to regenerate")
