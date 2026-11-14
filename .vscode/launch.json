@@ -1,0 +1,33 @@
+{
+  // Run and Debug (F5). Uses the project's .venv (see .vscode/settings.json).
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "DermaCareAI: Debug website (port 8020)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "flask",
+      "args": ["--app", "wsgi", "run", "--host", "127.0.0.1", "--port", "8020", "--no-reload"],
+      "env": { "FLASK_DEBUG": "0", "TF_CPP_MIN_LOG_LEVEL": "2" },
+      "envFile": "${workspaceFolder}/.env",
+      "cwd": "${workspaceFolder}",
+      "justMyCode": true,
+      "console": "integratedTerminal",
+      "serverReadyAction": {
+        "pattern": "Running on (http://127\\.0\\.0\\.1:[0-9]+)",
+        "uriFormat": "%s",
+        "action": "openExternally"
+      }
+    },
+    {
+      "name": "DermaCareAI: Debug current test file",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["${file}", "-q"],
+      "cwd": "${workspaceFolder}",
+      "justMyCode": false,
+      "console": "integratedTerminal"
+    }
+  ]
+}

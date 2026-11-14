@@ -1,0 +1,93 @@
+{
+  // DermaCareAI tasks: Terminal -> Run Task... (or Ctrl+Shift+P -> "Tasks: Run Task")
+  "version": "2.0.0",
+  "options": {
+    "cwd": "${workspaceFolder}"
+  },
+  "presentation": { "reveal": "always", "panel": "shared", "clear": true },
+  "tasks": [
+    {
+      "label": "DermaCareAI: Start website",
+      "type": "shell",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start.ps1",
+      "problemMatcher": [],
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "DermaCareAI: Stop website",
+      "type": "shell",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/stop.ps1",
+      "problemMatcher": []
+    },
+    {
+      "label": "DermaCareAI: Status",
+      "type": "shell",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/status.ps1",
+      "problemMatcher": []
+    },
+    {
+      "label": "DermaCareAI: Restart website",
+      "type": "shell",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/restart.ps1",
+      "problemMatcher": []
+    },
+    {
+      "label": "DermaCareAI: Open in browser",
+      "type": "shell",
+      "command": "Start-Process http://127.0.0.1:8010",
+      "options": { "shell": { "executable": "powershell.exe", "args": ["-NoProfile", "-Command"] } },
+      "problemMatcher": []
+    },
+    {
+      "label": "DermaCareAI: Public link - start",
+      "type": "shell",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/public_start.ps1",
+      "problemMatcher": []
+    },
+    {
+      "label": "DermaCareAI: Public link - status",
+      "type": "shell",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/public_status.ps1",
+      "problemMatcher": []
+    },
+    {
+      "label": "DermaCareAI: Public link - stop",
+      "type": "shell",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/public_stop.ps1",
+      "problemMatcher": []
+    },
+    {
+      "label": "DermaCareAI: Run tests (fast)",
+      "type": "shell",
+      "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe -m pytest -m \"not slow\" -q",
+      "problemMatcher": [],
+      "group": { "kind": "test", "isDefault": true }
+    },
+    {
+      "label": "DermaCareAI: Run all tests",
+      "type": "shell",
+      "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe -m pytest -q",
+      "problemMatcher": [],
+      "group": "test"
+    },
+    {
+      "label": "DermaCareAI: Training status",
+      "type": "shell",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/training_status.ps1",
+      "problemMatcher": []
+    },
+    {
+      "label": "DermaCareAI: Rebuild CSS (Tailwind)",
+      "type": "shell",
+      "command": "npm run build:css",
+      "problemMatcher": []
+    },
+    {
+      "label": "DermaCareAI: Watch CSS (Tailwind)",
+      "type": "shell",
+      "command": "npm run watch:css",
+      "isBackground": true,
+      "problemMatcher": []
+    }
+  ]
+}
