@@ -26,7 +26,7 @@ def test_brand_and_theme_assets(client, app):
     assert "tailwindcss" in css, "app.css should be the Tailwind build"
     assert ".dark " in css or ".dark:" in css, "class-based dark mode rules present"
     js = client.get("/static/js/theme.js").data.decode()
-    assert 'classList.toggle("dark"' in js and "prefers-color-scheme: dark" in js
+    assert 'classList.toggle("dark"' in js and 'saved() || "light"' in js, "light by default; dark only when chosen"
 
 
 def test_404_page(client):

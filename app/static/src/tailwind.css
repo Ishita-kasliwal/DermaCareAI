@@ -11,19 +11,19 @@
 @layer base {
   /* Colour tokens read by charts.js and the SVG artwork */
   :root {
-    --primary: #1f6358; --primary-soft: rgba(47, 152, 134, .14); --accent: #ef6640;
+    --primary: #1f6358; --primary-soft: rgba(47, 152, 134, .14); --accent: #2f9886;
     --ink-2: #334155; --muted: #64748b; --line: #e2e8f0; --surface: #ffffff;
     --high: #be123c; --medium: #b45309; --low: #15803d;
     --art-bg: #f1f5f9; --art-skin: #f1d3c1; --art-skin-2: #e5b9a2; --art-lesion: #6b3a28; --art-lesion-2: #3e2017;
-    --logo-ring: #1f6358; --logo-mark: #ef6640;
+    --logo-ring: #1f6358; --logo-mark: #ffffff;
     color-scheme: light;
   }
   .dark {
-    --primary: #4db5a3; --primary-soft: rgba(77, 181, 163, .16); --accent: #fb8360;
+    --primary: #4db5a3; --primary-soft: rgba(77, 181, 163, .16); --accent: #4db5a3;
     --ink-2: #cbd5e1; --muted: #94a3b8; --line: #1e293b; --surface: #0f172a;
     --high: #fb7185; --medium: #fbbf24; --low: #4ade80;
     --art-bg: #111c2e; --art-skin: #8a6655; --art-skin-2: #77574a; --art-lesion: #3c2219; --art-lesion-2: #24130e;
-    --logo-ring: #4db5a3; --logo-mark: #fb8360;
+    --logo-ring: #4db5a3; --logo-mark: #0f172a;
     color-scheme: dark;
   }
 
@@ -74,7 +74,7 @@
   .rule { @apply my-6 border-0 border-t border-slate-200 dark:border-white/10; }
 
   /* header & nav */
-  .site-header { @apply sticky top-0 z-30 border-b border-slate-200/80 bg-white/85 backdrop-blur-md dark:border-white/10 dark:bg-slate-950/80; }
+  .site-header { @apply sticky top-0 z-30 border-b border-slate-200 bg-white dark:border-white/10 dark:bg-slate-950; }
   .site-header .container { @apply flex min-h-[68px] flex-wrap items-center gap-4 lg:flex-nowrap; }
   .brand { @apply inline-flex items-center gap-2.5 font-display text-xl font-extrabold tracking-tight text-slate-900 no-underline hover:text-slate-900 dark:text-white dark:hover:text-white; }
   .brand .ai { @apply text-coral-500 dark:text-coral-400; }
@@ -115,7 +115,7 @@
   .sidebar-user span { @apply block truncate text-sm text-slate-500 dark:text-slate-400; }
   .sidebar-backdrop { @apply fixed inset-0 z-30 bg-slate-900/40 lg:hidden; }
   .app-main { @apply flex min-h-screen min-w-0 flex-col; }
-  .topbar { @apply sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur-md sm:px-6 dark:border-white/10 dark:bg-slate-950/85; }
+  .topbar { @apply sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200 bg-white px-4 sm:px-6 dark:border-white/10 dark:bg-slate-950; }
   .topbar .header-tools { @apply ml-auto; }
   .topbar .nav-toggle { @apply px-2.5; }
   .topbar .nav-toggle svg { @apply h-5 w-5; }
@@ -203,7 +203,7 @@
   .badge-plain::before { @apply hidden; }
 
   /* stat tiles */
-  .figures { @apply mb-8 grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3; }
+  .figures { @apply mb-8 grid grid-cols-2 gap-3 xl:grid-cols-4; }
   .figure { @apply rounded-2xl bg-white px-5 py-4 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-white/10; }
   .figure .value { @apply font-display text-3xl font-bold leading-tight text-slate-900 dark:text-white; }
   .figure .label { @apply text-sm font-medium text-slate-500 dark:text-slate-400; }
@@ -257,7 +257,7 @@
   .trust-row { @apply mt-6 flex list-none flex-wrap gap-x-6 gap-y-2 p-0 text-sm text-slate-600 dark:text-slate-300; }
   .trust-row li { @apply inline-flex items-center gap-2; }
   .trust-row svg { @apply h-[18px] w-[18px] text-brand-600 dark:text-brand-400; }
-  .hero-art { @apply relative rounded-3xl bg-white p-6 shadow-lift ring-1 ring-slate-200 dark:bg-slate-900 dark:shadow-none dark:ring-white/10; }
+  .hero-art { @apply relative rounded-3xl bg-white p-6 ring-1 ring-slate-200 dark:bg-slate-900 dark:shadow-none dark:ring-white/10; }
   .hero-art svg.art { @apply block h-auto w-full; }
   .art-bg { fill: var(--art-bg); }
   .art-skin { fill: var(--art-skin); }
@@ -270,7 +270,7 @@
   .art-caption { @apply mt-4 flex items-center gap-3 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:bg-white/5 dark:text-slate-300; }
   .art-caption p { @apply m-0; }
   .feature-grid { @apply grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3; }
-  .feature { @apply rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:shadow-card dark:bg-slate-900 dark:ring-white/10 dark:hover:ring-white/20; }
+  .feature { @apply rounded-2xl bg-white p-6 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-white/10 dark:hover:ring-white/20; }
   .feature h3 { @apply mb-2 mt-3; }
   .feature p { @apply m-0 text-slate-500 dark:text-slate-400; }
   .steps { @apply m-0 grid list-none gap-4 p-0 [counter-reset:step] md:grid-cols-3; }

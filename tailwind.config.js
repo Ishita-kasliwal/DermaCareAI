@@ -12,9 +12,10 @@ module.exports = {
           50: "#effaf8", 100: "#d7f2ec", 200: "#b0e4da", 300: "#7fcfc0", 400: "#4db5a3",
           500: "#2f9886", 600: "#237a6c", 700: "#1f6358", 800: "#1c4f47", 900: "#19423c", 950: "#0a2622",
         },
+        // Flat, single-colour look: the old orange "coral" accent now uses the same green as the brand.
         coral: {
-          50: "#fff5f1", 100: "#ffe7de", 200: "#ffcdbd", 300: "#ffa98f", 400: "#fb8360",
-          500: "#ef6640", 600: "#d84e2a", 700: "#b43d20", 800: "#91341f", 900: "#772f1e",
+          50: "#effaf8", 100: "#d7f2ec", 200: "#b0e4da", 300: "#7fcfc0", 400: "#4db5a3",
+          500: "#2f9886", 600: "#237a6c", 700: "#1f6358", 800: "#1c4f47", 900: "#19423c",
         },
         ink: { 950: "#0b1214" },
       },
@@ -26,10 +27,13 @@ module.exports = {
         mono: ["Consolas", '"Cascadia Mono"', "Menlo", "monospace"],
       },
       maxWidth: { content: "1160px", reading: "680px" },
+      // Flat design: cards use a thin border, not shadows. "lift" is kept only for the phone menu.
       boxShadow: {
-        card: "0 1px 2px rgb(15 23 42 / 0.04), 0 4px 16px rgb(15 23 42 / 0.06)",
-        lift: "0 2px 4px rgb(15 23 42 / 0.05), 0 12px 32px rgb(15 23 42 / 0.10)",
+        sm: "none",
+        card: "none",
+        lift: "0 8px 24px rgb(15 23 42 / 0.12)",
       },
+      borderRadius: { "2xl": "0.75rem", "3xl": "1rem" },
     },
   },
   plugins: [],

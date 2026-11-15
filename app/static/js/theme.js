@@ -1,10 +1,9 @@
 /* Applies the colour theme before first paint (loaded synchronously in <head>).
    Tailwind uses class-based dark mode: <html class="dark">.
-   A saved choice ("light"/"dark") wins; otherwise we follow the operating system, live. */
+   Light by default; dark only when the person picks it with the theme button (saved). */
 (function () {
   var KEY = "dermacareai-theme";
   var root = document.documentElement;
-  var media = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
 
   function saved() {
     try {
@@ -14,7 +13,7 @@
   }
 
   function apply() {
-    var t = saved() || (media && media.matches ? "dark" : "light");
+    var t = saved() || "light";
     root.classList.toggle("dark", t === "dark");
     root.setAttribute("data-theme", t);
     return t;
@@ -30,12 +29,4 @@
   };
 
   apply();
-  if (media && media.addEventListener) {
-    media.addEventListener("change", function () {
-      if (!saved()) {
-        apply();
-        document.dispatchEvent(new CustomEvent("themechange"));
-      }
-    });
-  }
 })();

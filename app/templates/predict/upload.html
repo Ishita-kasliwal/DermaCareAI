@@ -37,8 +37,7 @@
                   <span class="block text-sm text-slate-500 dark:text-slate-400">
                     {% if opt.data == 'lesion' %}A single mole, freckle or spot. Close-up photos work best.{% else %}A rash or itchy, red or scaly patch: skin irritation, eczema or ringworm. Face photos are fine.{% endif %}
                   </span>
-                  {% if not ready %}<span class="mt-1 block text-xs font-semibold text-amber-700 dark:text-amber-300">Not available yet: this AI hasn't been installed</span>
-                  {% elif opt.data == 'general' and models[opt.data].accuracy %}<span class="mt-1 inline-block rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800 ring-1 ring-amber-200 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/30">New: right about {{ (models[opt.data].accuracy * 100)|round|int }}% of the time in tests</span>{% endif %}
+                  {% if not ready %}<span class="mt-1 block text-xs font-semibold text-amber-700 dark:text-amber-300">Not available yet: this AI hasn't been installed</span>{% endif %}
                 </span>
               </label>
             {% endfor %}
