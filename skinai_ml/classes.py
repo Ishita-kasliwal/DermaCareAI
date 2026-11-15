@@ -41,6 +41,9 @@ _ALL = (
     LesionClass("psoriasis", "Psoriasis", "medium", "general"),
     LesionClass("shingles", "Shingles (herpes zoster)", "high", "general"),
     LesionClass("cold_sores", "Cold sores (herpes simplex)", "low", "general"),
+    # --- general (user-provided rash dataset, used by the current rash checker)
+    LesionClass("dermatitis", "Skin irritation (dermatitis)", "low", "general"),
+    LesionClass("ringworm", "Ringworm (fungal infection)", "low", "general"),
 )
 
 CLASS_INFO: dict[str, LesionClass] = {c.code: c for c in _ALL}

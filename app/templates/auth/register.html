@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import field, check %}
+{% from "_macros.html" import field, check, google_button %}
 {% block title %}Sign up{% endblock %}
 {% block content %}
 <div class="container page">
@@ -7,6 +7,7 @@
     <h1>Create your free account</h1>
     <p class="lead">It takes less than a minute. Your account keeps your photos and results private.</p>
     <div class="form-card">
+      {% if google_enabled %}{{ google_button('Sign up with Google') }}{% endif %}
       <form class="form" method="post" action="{{ url_for('auth.register') }}" novalidate data-loading-form>
         {{ form.hidden_tag() }}
         {{ field(form.full_name, autocomplete='name', required=true) }}

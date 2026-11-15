@@ -89,7 +89,7 @@
       <div class="mb-10 last:mb-0">
         <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2">
           <h3 class="m-0 text-lg">{{ ck.title }} <span class="font-normal text-slate-500 dark:text-slate-400">· {{ by_domain[ck.domain]|length }} conditions</span></h3>
-          {% if models.get(ck.domain) and ck.domain == 'general' %}<span class="badge badge-medium">Early version</span>{% elif models.get(ck.domain) %}<span class="badge badge-low">Ready</span>{% else %}<span class="badge badge-neutral">Coming soon</span>{% endif %}
+          {% if models.get(ck.domain) and ck.domain == 'general' %}<span class="badge badge-medium">New</span>{% elif models.get(ck.domain) %}<span class="badge badge-low">Ready</span>{% else %}<span class="badge badge-neutral">Coming soon</span>{% endif %}
         </div>
         <p class="muted small">{{ ck.intro }}</p>
         <ul class="category-list cards">

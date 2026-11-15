@@ -1,3 +1,5 @@
+import json
+
 from flask import render_template
 from flask_login import current_user, login_required
 
@@ -13,9 +15,25 @@ CHECKERS = [
 ]
 
 
+def _model_codes(mv) -> set[str] | None:
+    """Category codes the installed model can actually name (from its labels.json)."""
+    if mv is None:
+        return None
+    try:
+        labels = json.loads((registry.model_dir(mv) / "labels.json").read_text(encoding="utf-8"))
+        return {item["code"] for item in labels}
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
 def _classes_by_domain():
     rows = class_rows()
-    return {c["domain"]: [r for r in rows if r.domain == c["domain"]] for c in CHECKERS}
+    models = registry.active_versions()
+    out = {}
+    for c in CHECKERS:
+        codes = _model_codes(models.get(c["domain"]))
+        out[c["domain"]] = [r for r in rows if r.domain == c["domain"] and (codes is None or r.code in codes)]
+    return out
 
 
 @bp.get("/")

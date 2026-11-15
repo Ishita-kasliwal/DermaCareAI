@@ -11,11 +11,30 @@
     </div>
   </div>
 
-  <p class="mb-5 inline-flex flex-wrap items-center gap-2 rounded-full bg-white px-4 py-2 text-sm shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-white/10">
+  {% set face = (image.quality_issues or [])|selectattr('code','equalto','face')|list %}
+  {% if face and other_available %}
+    <div class="alert alert-warning items-center" role="alert">
+      <div class="flex-1">
+        <p><strong>This looks like a photo of a face.</strong> The mole checker only works on a close-up of one spot,
+          so it would probably give a wrong answer here. For acne, redness or rashes, use the rash checker.</p>
+      </div>
+      <form method="post" action="{{ url_for('predict.switch', image_id=image.public_id) }}" class="m-0 flex-none">
+        {{ switch_form.hidden_tag() }}
+        <button class="btn btn-primary btn-sm" type="submit">Switch to the rash checker</button>
+      </form>
+    </div>
+  {% endif %}
+
+  <div class="mb-5 inline-flex flex-wrap items-center gap-2 rounded-full bg-white px-4 py-2 text-sm shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-white/10">
     <span class="text-slate-500 dark:text-slate-400">You're checking:</span>
     <strong class="text-slate-900 dark:text-white">{{ domain_labels.get(image.domain, image.domain) }}</strong>
-    <a href="{{ url_for('predict.upload', check='general' if image.domain == 'lesion' else 'lesion') }}">Wrong choice? Start again</a>
-  </p>
+    {% if other_available %}
+      <form method="post" action="{{ url_for('predict.switch', image_id=image.public_id) }}" class="m-0 inline">
+        {{ switch_form.hidden_tag() }}
+        <button class="linklike text-brand-700 underline dark:text-brand-300" type="submit">Wrong choice? Switch</button>
+      </form>
+    {% endif %}
+  </div>
 
   {% if error %}<div class="alert alert-error" role="alert"><p>{{ error }}</p></div>{% endif %}
 

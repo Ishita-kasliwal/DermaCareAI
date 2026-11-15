@@ -8,7 +8,13 @@ from app.ml.registry import ModelUnavailableError, registry
 from app.models import DiseaseClass, Feedback
 from app.services.analytics_service import class_rows
 from app.services.audit_service import audit
-from app.services.image_service import ImageValidationError, get_owned_image, resolve_storage_key, store_upload
+from app.services.image_service import (
+    ImageValidationError,
+    get_owned_image,
+    resolve_storage_key,
+    store_upload,
+    switch_checker,
+)
 from app.services.prediction_service import get_owned_prediction, inconclusive_reasons, run_prediction
 
 
@@ -60,8 +66,26 @@ def upload():
 @login_required
 def preview(image_id):
     image = get_owned_image(current_user, image_id) or abort(404)
-    return render_template("predict/preview.html", image=image, form=AnalyzeForm(),
+    other = "general" if image.domain == "lesion" else "lesion"
+    return render_template("predict/preview.html", image=image, form=AnalyzeForm(), switch_form=ConfirmForm(),
+                           other_available=registry.active_version(other) is not None,
                            model=registry.active_version(image.domain), domain_labels=DOMAIN_LABELS)
+
+
+@bp.post("/analyze/<image_id>/switch")
+@login_required
+def switch(image_id):
+    """Send an uploaded photo to the other checker without uploading it again."""
+    image = get_owned_image(current_user, image_id) or abort(404)
+    if not ConfirmForm().validate_on_submit():
+        abort(400)
+    target = "general" if image.domain == "lesion" else "lesion"
+    if registry.active_version(target) is None:
+        flash("That checker isn't available yet.", "error")
+    else:
+        switch_checker(image, target)
+        flash(f"Okay! This photo will now be checked as: {DOMAIN_LABELS[target].lower()}.", "success")
+    return redirect(url_for("predict.preview", image_id=image.public_id))
 
 
 @bp.post("/analyze/<image_id>")

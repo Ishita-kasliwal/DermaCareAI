@@ -47,7 +47,7 @@
       <p>{{ brand }} has <strong>two AI checkers</strong>. You choose the one that fits your photo:</p>
       <ul>
         <li><strong>Mole or spot</strong>: compares a close-up photo of one spot with {{ by_domain['lesion']|length }} types of moles and skin spots, including skin cancers.</li>
-        <li><strong>Rash or other skin problem</strong>: compares an everyday phone photo with {{ by_domain['general']|length }} common conditions such as eczema, hives, fungal infections, acne and shingles.</li>
+        <li><strong>Rash or other skin problem</strong>: compares an everyday phone photo with {{ by_domain['general']|length }} common conditions: skin irritation (dermatitis), eczema and ringworm.</li>
       </ul>
       <p>Each checker gives a score for every condition it knows, and the scores add up to 100%. We only name one condition
         when its score is high enough and clearly ahead of the rest. Otherwise we tell you the AI <em>isn't sure</em>.</p>
@@ -57,14 +57,14 @@
         skin magnifier (dermatoscope) at a hospital in Vienna, Austria, and a skin clinic in Queensland, Australia. More than
         half were confirmed by a lab test (biopsy).</p>
       <p class="cite">Tschandl P., Rosendahl C., Kittler H. The HAM10000 dataset. <em>Scientific Data</em> 5, 180161 (2018). doi:10.1038/sdata.2018.161 · CC BY-NC 4.0.</p>
-      <p><strong>Rash or other skin problem:</strong> <em>SCIN</em> (Skin Condition Image Network) from Google Research: phone photos
-        shared by volunteers in the USA in 2023, each looked at by up to three dermatologists. We only used photos where the
-        dermatologists mostly agreed on one condition, which gave about 1,500 cases (3,200 photos) across 10 conditions.</p>
-      <p class="cite">SCIN dataset, Google Research &amp; Stanford Medicine · github.com/google-research-datasets/scin · SCIN Data Use License.</p>
+      <p><strong>Rash or other skin problem:</strong> a small set of 172 skin rash photos (skin irritation, eczema and
+        ringworm) on different skin tones, supplied for this project. It is a small set, so the results are a rough guide only.
+        In our tests (5 rounds, each time checking photos the AI had not seen) it was right 76% of the time overall, and 85%
+        of the time when it was at least 70% sure.</p>
 
       <h2>How it was built</h2>
       <ul>
-        <li>We started from AI models that already understand everyday photos (MobileNetV2 and EfficientNetB0), then taught them about skin. For each checker we keep whichever did better.</li>
+        <li>We started from AI models that already understand everyday photos (MobileNetV2, EfficientNetB0 and EfficientNetB3), then taught them about skin. For each checker we keep whichever did better.</li>
         <li>Every photo is cropped to a square and resized the same way when the AI learns and when it checks your photo.</li>
         <li>While learning, photos were flipped, turned and lightened or darkened, so the AI copes with different photos.</li>
         <li>Common conditions get less weight and rare ones more, so the AI doesn't just guess the most common answer.</li>
@@ -97,7 +97,7 @@
         <section class="panel" aria-labelledby="ai-{{ ck.domain }}">
           <div class="panel-head">
             <h2 id="ai-{{ ck.domain }}">{{ ck.title }}</h2>
-            {% if mv and ck.domain == 'general' %}<span class="badge badge-medium">Early version</span>{% elif mv %}<span class="badge badge-low">Ready</span>{% else %}<span class="badge badge-neutral">Not installed</span>{% endif %}
+            {% if mv and ck.domain == 'general' %}<span class="badge badge-medium">New</span>{% elif mv %}<span class="badge badge-low">Ready</span>{% else %}<span class="badge badge-neutral">Not installed</span>{% endif %}
           </div>
           {% if mv %}
             <dl class="meta-list mb-4">

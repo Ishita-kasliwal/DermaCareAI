@@ -35,6 +35,7 @@ ml/artifacts/*
 *.pt
 *.pth
 *.onnx
+!app/assets/face_detection_yunet_2023mar.onnx
 *.ckpt
 *.h5
 *.zip

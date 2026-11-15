@@ -18,10 +18,10 @@ def _pred(pid) -> Prediction:
     return db.session.scalar(db.select(Prediction).filter_by(public_id=pid))
 
 
-def test_all_17_conditions_seeded_with_checker(app):
+def test_all_19_conditions_seeded_with_checker(app):
     rows = list(db.session.scalars(db.select(DiseaseClass)))
-    assert len(rows) == 17
-    assert sorted(r.code for r in rows if r.domain == "general") == sorted(GENERAL_CLASSES)
+    assert len(rows) == 19
+    assert sorted(r.code for r in rows if r.domain == "general") == sorted(GENERAL_CLASSES + ["dermatitis", "ringworm"])
     assert len([r for r in rows if r.domain == "lesion"]) == 7
     assert all(r.description and r.advice for r in rows)
 
@@ -40,8 +40,7 @@ def test_rash_photo_uses_rash_model_and_only_its_conditions(client, user, model_
     html = client.get(f"/results/{pred.public_id}").data.decode()
     assert "How your photo matched all 10 types" in html
     assert "Eczema (atopic dermatitis)" in html
-    assert "Early version." in html, "rash results carry the early-version warning"
-    assert "Early version: often unsure" in client.get("/analyze").data.decode()
+    assert "Good to know." in html and "only knows 10 conditions" in html, "rash results carry the limits warning"
 
     # the mole checker still uses the mole model
     iid2 = image_id_from(upload(client, image_bytes(seed=61), check="lesion"))

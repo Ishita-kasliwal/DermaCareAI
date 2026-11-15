@@ -7,14 +7,15 @@ Upload a photo of your skin and choose what you're checking. DermaCareAI has **t
 | Checker | Learned from | Conditions | Test balanced accuracy |
 |---|---|---|---|
 | **Mole or spot** | HAM10000 (10,015 dermoscopic photos) | 7: melanoma, basal cell carcinoma, sun-damage patch, age spot, firm bump, common mole, blood-vessel spot | 55.4% |
-| **Rash or other skin problem** *(early version)* | SCIN, Google Research (3,168 phone photos) | 10: eczema, contact dermatitis, hives, insect bite, folliculitis, fungal infection, acne/rosacea, psoriasis, shingles, cold sores | 26.2% |
+| **Rash or other skin problem** | Skin-rash photo set supplied for this project (172 photos, several skin tones) | 3: skin irritation (dermatitis), eczema, ringworm | 77.5% (5-fold cross-validation; 85% accuracy on the 74% of photos where it is at least 70% sure) |
 
 Each result shows every score, alternatives, a Grad-CAM heatmap and plain-English advice, and says **"not sure"**
 when the AI isn't confident. Results are stored in MySQL with private per-user history, Chart.js analytics,
-Power BI-ready CSV exports, and light and dark themes. Full numbers and limits: [Testing report](docs/TESTING_REPORT.md).
+Excel and Power BI-ready CSV downloads, optional "Continue with Google" sign-in, a face-photo warning for the
+mole checker, and light and dark themes. Full numbers and limits: [Testing report](docs/TESTING_REPORT.md).
 
 Docs: [Architecture](docs/ARCHITECTURE.md) · [Datasets & licensing](docs/DATASETS.md) ·
-[ML training](docs/ML_TRAINING.md) · [Testing report](docs/TESTING_REPORT.md)
+[ML training](docs/ML_TRAINING.md) · [Testing report](docs/TESTING_REPORT.md) · [Google sign-in](docs/GOOGLE_SIGNIN.md)
 
 ## Stack
 Flask 3 · Jinja2 · Tailwind CSS 3.4 · Chart.js 4.4.7 (vendored) · Waitress · TensorFlow/Keras · OpenCV · Pillow ·
@@ -24,7 +25,7 @@ Pandas · NumPy · scikit-learn · SQLAlchemy + Alembic · MySQL 8 · Python 3.1
 ```powershell
 .\scripts\setup_venv.ps1              # .venv with Python 3.12 + dependencies
 .\scripts\db_setup.ps1                # creates skin_ai_db + 2 least-privilege users (asks for YOUR MySQL root password)
-.\scripts\db_upgrade.ps1              # applies migrations, seeds all 17 conditions
+.\scripts\db_upgrade.ps1              # applies migrations, seeds all 19 conditions
 .\.venv\Scripts\flask.exe --app wsgi create-admin   # prompts for the admin password
 ```
 
@@ -35,10 +36,13 @@ Pandas · NumPy · scikit-learn · SQLAlchemy + Alembic · MySQL 8 · Python 3.1
 .\.venv\Scripts\python.exe -m ml.src.run_pipeline --config ml/configs/train.yaml
 .\.venv\Scripts\flask.exe --app wsgi register-model "ml\artifacts\models\$(Get-Content ml\artifacts\models\LATEST)" --activate
 
-# Rash or other skin problem checker (SCIN, ~3.9 GB of selected photos)
-.\.venv\Scripts\python.exe -m ml.src.scin_prepare
-.\.venv\Scripts\python.exe -m ml.src.run_pipeline --config ml/configs/train_scin.yaml
-.\.venv\Scripts\flask.exe --app wsgi register-model "ml\artifacts\scin\models\$(Get-Content ml\artifacts\scin\models\LATEST)" --activate
+# Rash or other skin problem checker (the supplied rash photo zips in Downloads)
+.\.venv\Scripts\python.exe -m ml.src.face_prepare
+.\.venv\Scripts\python.exe -m ml.src.face_cv --only dermatitis eczema ringworm   # honest 5-fold estimate
+.\.venv\Scripts\python.exe -m ml.src.face_train
+.\.venv\Scripts\flask.exe --app wsgi register-model "ml\artifacts\face\models\$(Get-Content ml\artifacts\face\models\LATEST)" --activate
+# Older option with more conditions but much weaker results (SCIN, 10 conditions, 26% balanced accuracy):
+# ml.src.scin_prepare + ml/configs/train_scin.yaml
 ```
 Faster, more accurate training on a free GPU: see [docs/ML_TRAINING.md](docs/ML_TRAINING.md#train-on-a-free-gpu-google-colab).
 

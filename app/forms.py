@@ -88,16 +88,15 @@ class ProfileForm(FlaskForm):
 
 
 class PasswordChangeForm(FlaskForm):
-    current_password = PasswordField("Current password", validators=[
-        DataRequired("Please enter your current password."), Length(max=128)])
+    # Optional here: Google-only accounts have no current password. auth_service checks it when one exists.
+    current_password = PasswordField("Current password", validators=[Optional(), Length(max=128)])
     new_password = PasswordField("New password", validators=[DataRequired("Please choose a new password."), Length(max=128)])
     confirm = PasswordField("Type the new password again", validators=[
         DataRequired("Please type the new password again."), EqualTo("new_password", "The two passwords don't match.")])
 
 
 class DeleteAccountForm(FlaskForm):
-    password = PasswordField("Your password", validators=[
-        DataRequired("Please enter your password to confirm."), Length(max=128)])
+    password = PasswordField("Your password", validators=[Optional(), Length(max=128)])  # checked in auth_service
     confirm_text = StringField('Type DELETE to confirm', validators=[
         DataRequired("Please type DELETE to confirm."), Regexp(r"^DELETE$", message="Please type DELETE in capital letters.")])
 

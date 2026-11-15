@@ -103,10 +103,23 @@ CLASS_CONTENT = {
         "They usually heal by themselves in 1-2 weeks, and antiviral creams can help. Avoid kissing and sharing "
         "cups while you have one. See a doctor if they're frequent or severe.",
     ),
+    "dermatitis": (
+        "Red, itchy, irritated skin, often from something that touched the skin, like soap, metal, plants or "
+        "a new product. It is not contagious.",
+        "Try to find and stop using whatever caused it, and keep the skin moisturised. See a doctor or "
+        "pharmacist if it spreads, oozes, or doesn't get better in two weeks.",
+    ),
+    "ringworm": (
+        "A common skin infection caused by a fungus (not a worm). It usually looks like a red, itchy, "
+        "ring-shaped patch with a clearer middle. It can spread by touch or shared towels.",
+        "Antifungal creams from a pharmacist usually clear it in 2-4 weeks. Keep the skin clean and dry and "
+        "don't share towels. See a doctor if it's on your scalp or doesn't get better.",
+    ),
 }
 
 DISPLAY_ORDER = ["mel", "bcc", "akiec", "bkl", "nv", "df", "vasc",
-                 "eczema", "contact_dermatitis", "urticaria", "insect_bite", "folliculitis", "fungal",
+                 "dermatitis", "eczema", "ringworm",
+                 "contact_dermatitis", "urticaria", "insect_bite", "folliculitis", "fungal",
                  "acne", "psoriasis", "shingles", "cold_sores"]
 
 

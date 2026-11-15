@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -34,6 +36,31 @@ class QualityReport:
         return any(i["severity"] == "error" for i in self.issues)
 
 
+_FACE_MODEL = Path(__file__).resolve().parents[1] / "assets" / "face_detection_yunet_2023mar.onnx"
+_face_lock = threading.Lock()
+_face_detector = None
+
+
+def detect_face(rgb: np.ndarray) -> bool:
+    """True if a human face is visible (OpenCV YuNet). Used to warn when a face photo is sent to the mole
+    checker. Returns False if the detector isn't available, so it never blocks an upload."""
+    global _face_detector
+    try:
+        with _face_lock:
+            if _face_detector is None:
+                if not _FACE_MODEL.exists():
+                    return False
+                _face_detector = cv2.FaceDetectorYN.create(str(_FACE_MODEL), "", (320, 320), 0.8)
+            h, w = rgb.shape[:2]
+            s = 640 / max(h, w)
+            img = cv2.resize(rgb, (max(1, int(w * s)), max(1, int(h * s))))[:, :, ::-1].copy()
+            _face_detector.setInputSize((img.shape[1], img.shape[0]))
+            _, faces = _face_detector.detect(img)
+        return faces is not None and len(faces) > 0
+    except Exception:  # noqa: BLE001 - optional helper; never break uploads
+        return False
+
+
 def assess(rgb: np.ndarray) -> QualityReport:
     h, w = rgb.shape[:2]
     scale = ANALYSIS_SIDE / max(h, w)
@@ -51,6 +78,10 @@ def assess(rgb: np.ndarray) -> QualityReport:
     def add(code, message, severity):
         report.issues.append({"code": code, "message": message, "severity": severity})
 
+    if detect_face(rgb):
+        add("face", "this looks like a photo of a face. The mole checker needs a close-up of ONE spot, so it can "
+                    "give wrong answers on face photos. For acne, redness or rashes, use the rash checker.",
+            "warning")
     if contrast < BLANK_CONTRAST:
         add("blank", "This photo looks almost blank, as if the camera was covered. "
                      "Please take a photo of the skin spot itself.", "error")

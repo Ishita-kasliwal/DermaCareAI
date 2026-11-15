@@ -92,8 +92,40 @@
   .nav a, .nav button.linklike { @apply block rounded-lg px-3 py-2 font-medium text-slate-600 no-underline hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white; }
   .nav a[aria-current="page"] { @apply bg-brand-50 font-semibold text-brand-700 dark:bg-brand-400/10 dark:text-brand-300; }
   .nav a.btn { @apply my-1 inline-flex bg-brand-700 px-4 text-white hover:bg-brand-800 hover:text-white dark:bg-brand-400 dark:text-slate-950 dark:hover:bg-brand-300; }
+  .btn-google { @apply mb-1 flex w-full items-center justify-center gap-3 rounded-xl bg-white px-4 py-2.5 font-semibold text-slate-800 no-underline shadow-sm ring-1 ring-slate-300 transition hover:bg-slate-50 hover:text-slate-900 dark:bg-slate-800 dark:text-white dark:ring-white/15 dark:hover:bg-slate-700; }
+  .btn-google svg { @apply h-5 w-5 flex-none; }
+  .or-divider { @apply my-4 flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-slate-400 before:h-px before:flex-1 before:bg-slate-200 before:content-[''] after:h-px after:flex-1 after:bg-slate-200 after:content-[''] dark:before:bg-white/10 dark:after:bg-white/10; }
   button.linklike { @apply cursor-pointer border-0 bg-transparent p-0 font-[inherit]; }
   .inline-form { @apply m-0 inline; }
+
+  /* ---------- signed-in app shell: sidebar + top bar (CattleCare-style) ---------- */
+  .brand-mark { @apply inline-grid h-9 w-9 flex-none place-items-center rounded-xl bg-brand-800 text-white dark:bg-brand-400 dark:text-slate-950; }
+  .app-shell { @apply min-h-screen lg:grid lg:grid-cols-[268px_minmax(0,1fr)]; }
+  .sidebar { @apply fixed inset-y-0 left-0 z-40 flex w-[268px] -translate-x-full flex-col border-r border-slate-200 bg-white transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 dark:border-white/10 dark:bg-slate-950; }
+  .sidebar.open { @apply translate-x-0 shadow-lift; }
+  .sidebar-top { @apply flex h-[76px] items-center justify-between px-5; }
+  .sidebar-close { @apply grid h-9 w-9 cursor-pointer place-items-center rounded-lg border-0 bg-transparent text-2xl text-slate-500 hover:bg-slate-100 lg:hidden dark:hover:bg-white/5; }
+  .side-nav { @apply flex flex-col gap-1 px-3; }
+  .side-nav a, .side-nav button { @apply flex w-full cursor-pointer items-center gap-3 rounded-xl border-0 bg-transparent px-4 py-3 text-left text-[0.98rem] font-medium text-slate-700 no-underline hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white; }
+  .side-nav svg { @apply h-5 w-5 flex-none; }
+  .side-nav a[aria-current="page"] { @apply bg-brand-800 font-semibold text-white hover:bg-brand-800 hover:text-white dark:bg-brand-400 dark:text-slate-950; }
+  .sidebar-bottom { @apply mt-auto border-t border-slate-200 py-4 dark:border-white/10; }
+  .sidebar-user { @apply px-7 pb-3; }
+  .sidebar-user strong { @apply block truncate text-slate-900 dark:text-white; }
+  .sidebar-user span { @apply block truncate text-sm text-slate-500 dark:text-slate-400; }
+  .sidebar-backdrop { @apply fixed inset-0 z-30 bg-slate-900/40 lg:hidden; }
+  .app-main { @apply flex min-h-screen min-w-0 flex-col; }
+  .topbar { @apply sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur-md sm:px-6 dark:border-white/10 dark:bg-slate-950/85; }
+  .topbar .header-tools { @apply ml-auto; }
+  .topbar .nav-toggle { @apply px-2.5; }
+  .topbar .nav-toggle svg { @apply h-5 w-5; }
+  .topbar-brand { @apply lg:hidden; }
+  .is-app main { @apply flex-1; }
+  .app-footer { @apply border-t border-slate-200 px-6 py-5 text-sm text-slate-500 dark:border-white/10 dark:text-slate-400; }
+  .app-footer p { @apply m-0 max-w-4xl; }
+  .app-footer strong { @apply text-slate-800 dark:text-slate-200; }
+  .nav-link { @apply inline-flex items-center rounded-lg px-3 py-2 font-medium text-slate-700 no-underline hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white; }
+  .nav-link[aria-current="page"] { @apply text-brand-700 dark:text-brand-300; }
 
   /* theme toggle */
   .theme-toggle { @apply inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:border-brand-500 hover:text-brand-700 dark:border-white/15 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-400 dark:hover:text-brand-300; }
@@ -109,6 +141,7 @@
 
   /* buttons */
   .btn { @apply inline-flex min-h-[46px] cursor-pointer items-center justify-center gap-2 rounded-full border border-transparent px-5 py-2.5 text-[0.97rem] font-semibold leading-tight no-underline transition-colors duration-150; }
+  .btn > svg { @apply h-5 w-5 flex-none; }
   .btn-primary { @apply bg-brand-700 text-white shadow-sm hover:bg-brand-800 hover:text-white dark:bg-brand-400 dark:text-slate-950 dark:hover:bg-brand-300 dark:hover:text-slate-950; }
   .btn-secondary { @apply border-slate-300 bg-white text-slate-800 hover:border-brand-500 hover:text-brand-700 dark:border-white/15 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-brand-400 dark:hover:text-brand-300; }
   .btn-ghost { @apply px-1.5 text-brand-700 hover:underline dark:text-brand-300; }

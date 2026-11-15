@@ -35,7 +35,8 @@ class User(UserMixin, db.Model):
     public_id: Mapped[str] = mapped_column(sa.String(36), unique=True, default=new_uuid)
     email: Mapped[str] = mapped_column(sa.String(254), unique=True, index=True)
     full_name: Mapped[str] = mapped_column(sa.String(120))
-    password_hash: Mapped[str] = mapped_column(sa.String(255))
+    password_hash: Mapped[str] = mapped_column(sa.String(255))  # "!google" = signs in with Google only
+    google_sub: Mapped[str | None] = mapped_column(sa.String(255), unique=True)  # Google account id
     role: Mapped[str] = mapped_column(ROLE_ENUM, default="user")
     is_active_flag: Mapped[bool] = mapped_column("is_active", sa.Boolean, default=True)
     # optional profile data (minimal; all optional)
@@ -61,6 +62,10 @@ class User(UserMixin, db.Model):
     @property
     def is_active(self) -> bool:  # Flask-Login hook
         return bool(self.is_active_flag) and self.deleted_at is None
+
+    @property
+    def has_password(self) -> bool:
+        return bool(self.password_hash) and not self.password_hash.startswith("!")
 
     @property
     def is_admin(self) -> bool:

@@ -77,7 +77,7 @@
     if (uc) {
       var status = uc.parentElement.querySelector("[data-chart-status]");
       getJSON(uc.getAttribute("data-src")).then(function (d) {
-        var rows = d.by_class;
+        var rows = d.by_class.filter(function (r) { return r.count > 0; });  // only categories you've had
         renderers.push(function (C) {
           make(uc.querySelector("canvas"), {
             type: "bar",

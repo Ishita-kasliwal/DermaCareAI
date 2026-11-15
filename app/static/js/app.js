@@ -49,15 +49,23 @@
       });
     }
 
-    // --- mobile navigation
+    // --- mobile navigation (slide-in sidebar for signed-in users)
     var toggle = document.querySelector("[data-nav-toggle]");
     var nav = document.getElementById("site-nav");
-    if (toggle && nav) {
-      toggle.addEventListener("click", function () {
-        var open = nav.classList.toggle("open");
-        toggle.setAttribute("aria-expanded", open ? "true" : "false");
-      });
+    var backdrop = document.querySelector(".sidebar-backdrop");
+    function setNav(open) {
+      if (!nav) return;
+      nav.classList.toggle("open", open);
+      if (toggle) toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      if (backdrop) backdrop.hidden = !open;
     }
+    if (toggle && nav) {
+      toggle.addEventListener("click", function () { setNav(!nav.classList.contains("open")); });
+    }
+    document.querySelectorAll("[data-nav-close]").forEach(function (el) {
+      el.addEventListener("click", function () { setNav(false); });
+    });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") setNav(false); });
 
     // --- confirmation before destructive actions
     document.querySelectorAll("form[data-confirm]").forEach(function (form) {

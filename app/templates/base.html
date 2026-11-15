@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="{{ brand }} is a friendly AI helper that looks at a photo of a skin spot and explains, in simple words, what it looks most like. It is not a doctor.">
+  <meta name="description" content="{{ brand }} is a friendly AI helper that looks at a photo of your skin and explains, in simple words, what it looks most like. It is not a doctor.">
   <title>{% block title %}{% endblock %}{% if self.title() %} · {% endif %}{{ brand }}</title>
   <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
   <meta name="color-scheme" content="light dark">
@@ -12,60 +12,81 @@
   <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
   {% block head %}{% endblock %}
 </head>
-<body>
+<body class="{{ 'is-app' if current_user.is_authenticated }}">
   <a class="skip-link" href="#main">Skip to main content</a>
+  {% from "_macros.html" import icon %}
   {% set ep = request.endpoint or '' %}
-  <header class="site-header">
-    <div class="container">
-      <a class="brand" href="{{ url_for('main.dashboard') if current_user.is_authenticated else url_for('main.index') }}" aria-label="{{ brand }} home">
-        <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-          <circle class="logo-ring" cx="16" cy="16" r="13" fill="none" stroke-width="2.5"/>
-          <path class="logo-mark" d="M11.5 17.5c1.2-3.6 4.8-5.6 8.6-4.6-1 3.9-4.6 6.3-8.6 4.6z"/>
-          <circle class="logo-ring" cx="16" cy="16" r="5.5" fill="none" stroke-width="1.2" stroke-dasharray="2 2"/>
+  {% macro logo() -%}
+    <a class="brand" href="{{ url_for('main.dashboard') if current_user.is_authenticated else url_for('main.index') }}" aria-label="{{ brand }} home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 32 32" focusable="false">
+          <circle cx="16" cy="16" r="12" fill="none" stroke="currentColor" stroke-width="3"/>
+          <path d="M11.5 17.5c1.2-3.6 4.8-5.6 8.6-4.6-1 3.9-4.6 6.3-8.6 4.6z" fill="currentColor"/>
         </svg>
-        <span class="brand-text"><span>{% if brand.endswith('AI') %}{{ brand[:-2] }}<span class="ai">AI</span>{% else %}{{ brand }}{% endif %}</span><span class="brand-sub">Your friendly skin-spot helper</span></span>
-      </a>
-      <div class="header-tools">
-        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode">
-          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20.7 14.6A8.5 8.5 0 0 1 9.4 3.3a8.5 8.5 0 1 0 11.3 11.3z"/></svg>
-          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
-          <span data-theme-label>Dark</span>
-        </button>
-        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-nav-toggle>Menu</button>
+      </span>
+      <span class="brand-text"><span>{% if brand.endswith('AI') %}{{ brand[:-2] }}<span class="ai">AI</span>{% else %}{{ brand }}{% endif %}</span></span>
+    </a>
+  {%- endmacro %}
+  {% macro theme_button() -%}
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode">
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20.7 14.6A8.5 8.5 0 0 1 9.4 3.3a8.5 8.5 0 1 0 11.3 11.3z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
+      <span data-theme-label>Dark</span>
+    </button>
+  {%- endmacro %}
+
+  {% if current_user.is_authenticated %}
+  {# ---------- signed-in app: sidebar on the left (CattleCare-style) ---------- #}
+  <div class="app-shell">
+    <aside class="sidebar" id="site-nav" aria-label="Main">
+      <div class="sidebar-top">
+        {{ logo() }}
+        <button class="sidebar-close" type="button" data-nav-close aria-label="Close menu">×</button>
       </div>
-      <nav class="nav" id="site-nav" aria-label="Main">
-        {% if current_user.is_authenticated %}
-          <ul class="nav-main">
-            <li><a href="{{ url_for('main.dashboard') }}" {% if ep == 'main.dashboard' %}aria-current="page"{% endif %}>Dashboard</a></li>
-            <li><a href="{{ url_for('predict.upload') }}" {% if ep.startswith('predict.') %}aria-current="page"{% endif %}>Check a spot</a></li>
-            <li><a href="{{ url_for('history.index') }}" {% if ep.startswith('history.') %}aria-current="page"{% endif %}>My history</a></li>
-            <li><a href="{{ url_for('main.about_model') }}" {% if ep == 'main.about_model' %}aria-current="page"{% endif %}>About the AI</a></li>
-            {% if current_user.is_admin %}
-              <li><a href="{{ url_for('admin.dashboard') }}" {% if ep.startswith('admin.') %}aria-current="page"{% endif %}>Admin</a></li>
-            {% endif %}
-          </ul>
-          <ul class="nav-user">
-            <li><a href="{{ url_for('account.profile') }}" {% if ep.startswith('account.') %}aria-current="page"{% endif %}>{{ current_user.first_name }}<span class="visually-hidden"> (my account)</span></a></li>
-            <li>
-              <form class="inline-form" method="post" action="{{ url_for('auth.logout') }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="linklike" type="submit">Log out</button>
-              </form>
-            </li>
-          </ul>
-        {% else %}
-          <ul class="nav-main">
-            <li><a href="{{ url_for('main.index') }}#how-it-works">How it works</a></li>
-            <li><a href="{{ url_for('main.about_model') }}" {% if ep == 'main.about_model' %}aria-current="page"{% endif %}>About the AI</a></li>
-          </ul>
-          <ul class="nav-user">
-            <li><a href="{{ url_for('auth.login') }}" {% if ep == 'auth.login' %}aria-current="page"{% endif %}>Log in</a></li>
-            <li><a class="btn btn-primary btn-sm" href="{{ url_for('auth.register') }}">Sign up free</a></li>
-          </ul>
+      <nav class="side-nav" aria-label="Pages">
+        <a href="{{ url_for('main.dashboard') }}" {% if ep == 'main.dashboard' %}aria-current="page"{% endif %}>{{ icon('home') }}<span>Home</span></a>
+        <a href="{{ url_for('predict.upload') }}" {% if ep.startswith('predict.') %}aria-current="page"{% endif %}>{{ icon('camera') }}<span>Check my skin</span></a>
+        <a href="{{ url_for('history.index') }}" {% if ep.startswith('history.') %}aria-current="page"{% endif %}>{{ icon('history') }}<span>My history</span></a>
+        <a href="{{ url_for('main.about_model') }}" {% if ep == 'main.about_model' %}aria-current="page"{% endif %}>{{ icon('info') }}<span>About the AI</span></a>
+        {% if current_user.is_admin %}
+          <a href="{{ url_for('admin.dashboard') }}" {% if ep.startswith('admin.') %}aria-current="page"{% endif %}>{{ icon('shield') }}<span>Admin</span></a>
         {% endif %}
       </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-user">
+          <strong>{{ current_user.full_name }}</strong>
+          <span>{{ current_user.email }}</span>
+        </div>
+        <nav class="side-nav" aria-label="Account">
+          <a href="{{ url_for('account.profile') }}" {% if ep.startswith('account.') %}aria-current="page"{% endif %}>{{ icon('settings') }}<span>Settings</span></a>
+          <form class="m-0" method="post" action="{{ url_for('auth.logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit">{{ icon('logout') }}<span>Log out</span></button>
+          </form>
+        </nav>
+      </div>
+    </aside>
+    <div class="sidebar-backdrop" data-nav-close hidden></div>
+    <div class="app-main">
+      <header class="topbar">
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-nav-toggle>{{ icon('menu') }}<span class="visually-hidden">Open menu</span></button>
+        <span class="topbar-brand">{{ logo() }}</span>
+        <div class="header-tools">{{ theme_button() }}</div>
+      </header>
+  {% else %}
+  {# ---------- visitors: simple top bar ---------- #}
+  <header class="site-header">
+    <div class="container">
+      {{ logo() }}
+      <div class="header-tools">
+        {{ theme_button() }}
+        <a class="nav-link hidden sm:inline-flex" href="{{ url_for('main.about_model') }}" {% if ep == 'main.about_model' %}aria-current="page"{% endif %}>About the AI</a>
+        <a class="nav-link" href="{{ url_for('auth.login') }}" {% if ep == 'auth.login' %}aria-current="page"{% endif %}>Log in</a>
+        <a class="btn btn-primary btn-sm" href="{{ url_for('auth.register') }}">Create account</a>
+      </div>
     </div>
   </header>
+  {% endif %}
 
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -81,14 +102,22 @@
     {% block content %}{% endblock %}
   </main>
 
+  {% if current_user.is_authenticated %}
+      <footer class="app-footer">
+        <p><strong>{{ brand }} is not a doctor.</strong> It helps you learn about a skin problem, but it can be wrong.
+          If something on your skin is new, changing, bleeding or worrying you, please see a doctor.</p>
+      </footer>
+    </div>
+  </div>
+  {% else %}
   <footer class="site-footer">
     <div class="container">
       <div>
         <p><strong>{{ brand }} is not a doctor and cannot give a diagnosis.</strong>
-          It helps you learn about a skin spot. If a spot is new, changing, bleeding or worrying you,
-          please see a skin doctor (dermatologist), whatever the result here says.</p>
-        <p class="small">The AI learned from the HAM10000 photo collection (CC BY-NC 4.0), © ViDIR Group,
-          Medical University of Vienna. For non-commercial use only.</p>
+          It helps you learn about a skin problem. If something on your skin is new, changing, bleeding or worrying
+          you, please see a doctor, whatever the result here says.</p>
+        <p class="small">AI training photos: HAM10000 (CC BY-NC 4.0, © ViDIR Group, Medical University of Vienna) and a
+          skin-rash photo set. For non-commercial use only.</p>
       </div>
       <nav aria-label="Footer">
         <a href="{{ url_for('main.about_model') }}">About the AI</a>
@@ -97,6 +126,7 @@
       </nav>
     </div>
   </footer>
+  {% endif %}
   {% block scripts %}{% endblock %}
 </body>
 </html>

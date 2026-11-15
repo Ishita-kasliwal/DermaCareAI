@@ -64,3 +64,12 @@ def export():
     return Response(stream_with_context(stream), mimetype="text/csv",
                     headers={"Content-Disposition": "attachment; filename=my_skin_analyses.csv",
                              "Cache-Control": "private, no-store"})
+
+
+@bp.get("/export.xlsx")
+@login_required
+def export_xlsx():
+    data = export_service.user_history_xlsx(current_user)
+    return Response(data, mimetype=export_service.XLSX_MIME,
+                    headers={"Content-Disposition": "attachment; filename=my_skin_checks.xlsx",
+                             "Cache-Control": "private, no-store"})

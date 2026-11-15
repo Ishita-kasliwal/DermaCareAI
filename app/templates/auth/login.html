@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import field %}
+{% from "_macros.html" import field, google_button %}
 {% block title %}Log in{% endblock %}
 {% block content %}
 <div class="container page">
@@ -8,6 +8,7 @@
     <p class="lead">Log in to check a spot or see your results.</p>
     <div class="form-card">
       {% if error %}<div class="alert alert-error" role="alert"><p>{{ error }}</p></div>{% endif %}
+      {% if google_enabled %}{{ google_button('Continue with Google', form.next.data) }}{% endif %}
       <form class="form" method="post" action="{{ url_for('auth.login') }}" novalidate data-loading-form>
         {{ form.hidden_tag() }}
         {{ field(form.email, autocomplete='email', required=true, autofocus=true) }}

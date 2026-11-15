@@ -15,6 +15,7 @@ waitress>=3.0
 
 # --- Security ---
 argon2-cffi>=23.1
+authlib>=1.3        # "Continue with Google" (OpenID Connect)
 
 # --- Database (MySQL) ---
 sqlalchemy>=2.0
@@ -27,6 +28,9 @@ tensorflow>=2.17
 # --- Image processing ---
 opencv-python-headless>=4.10
 pillow>=10.4
+
+# --- Excel downloads ---
+openpyxl>=3.1
 
 # --- ML support / analytics ---
 numpy

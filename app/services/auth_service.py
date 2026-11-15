@@ -106,9 +106,13 @@ def update_profile(user: User, full_name: str, birth_year: int | None, sex: str 
     audit("profile_update", user, "user", user.public_id)
 
 
-def change_password(user: User, current: str, new: str) -> None:
-    if not verify_password(user.password_hash, current):
-        raise AuthError("Your current password isn't right.", field="current_password")
+def change_password(user: User, current: str | None, new: str) -> None:
+    """Change (or, for a Google-only account, set) the password."""
+    if user.has_password:
+        if not current:
+            raise AuthError("Please enter your current password.", field="current_password")
+        if not verify_password(user.password_hash, current):
+            raise AuthError("Your current password isn't right.", field="current_password")
     problems = password_problems(new, user.email, user.full_name)
     if problems:
         raise AuthError(" ".join(problems), field="new_password")
@@ -124,8 +128,11 @@ def delete_account(user: User, password: str) -> None:
     """Deletes the user's images from disk immediately and anonymises the account row."""
     from app.services.image_service import delete_image_files
 
-    if not verify_password(user.password_hash, password):
-        raise AuthError("That password isn't right.", field="password")
+    if user.has_password:  # Google-only accounts confirm by typing DELETE (they're already logged in)
+        if not password:
+            raise AuthError("Please enter your password to confirm.", field="password")
+        if not verify_password(user.password_hash, password):
+            raise AuthError("That password isn't right.", field="password")
     now = utcnow()
     for image in user.images:
         delete_image_files(image)
@@ -139,6 +146,7 @@ def delete_account(user: User, password: str) -> None:
     user.full_name = "Deleted user"
     user.birth_year = user.sex = user.skin_type = None
     user.password_hash = "!deleted"
+    user.google_sub = None
     user.auth_version += 1
     db.session.commit()
     current_app.logger.info("account deleted: %s", user.public_id)

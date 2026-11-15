@@ -116,6 +116,8 @@ def store_upload(user: User, file_storage, domain: str = "lesion") -> tuple[Imag
     data = file_storage.stream.read(current_app.config["MAX_CONTENT_LENGTH"] + 1)
     rgb, jpeg = decode_and_sanitise(data)
     report = quality_service.assess(rgb)
+    if domain != "lesion":  # face photos are fine for the rash checker
+        report.issues = [i for i in report.issues if i["code"] != "face"]
     if report.rejected:
         raise ImageValidationError(report.issues[0]["message"])
 
@@ -144,6 +146,17 @@ def store_upload(user: User, file_storage, domain: str = "lesion") -> tuple[Imag
     db.session.add(image)
     db.session.commit()
     return image, False
+
+
+def switch_checker(image: Image, domain: str) -> None:
+    """Move an uploaded photo to the other checker (e.g. a face photo sent to the mole checker)."""
+    if domain not in ("lesion", "general"):
+        raise ImageValidationError("Please choose what you are checking.")
+    image.domain = domain
+    issues = [i for i in (image.quality_issues or []) if not (domain != "lesion" and i.get("code") == "face")]
+    image.quality_issues = issues
+    image.quality_ok = not any(i.get("severity") in ("warning", "error") for i in issues)
+    db.session.commit()
 
 
 def get_owned_image(user: User, public_id: str) -> Image | None:

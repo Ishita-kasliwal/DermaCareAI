@@ -86,6 +86,26 @@ The exact counts per class are **computed from your downloaded copy** by `ml/src
   everyday photos of varying quality, and a US-only, female/younger-skewed contributor group. It does cover more skin tones
   than HAM10000, although darker skin is still under-represented.
 
+## Skin-rash and facial photo sets (supplied by the project owner, 2026-11-15)
+
+Three zip files were supplied. Their original source and licence were not included with them, so they are used
+only for this educational project, and nothing from them is committed to this repository.
+
+| File | Contents | Used? |
+|---|---|---|
+| `skin dataset.zip` | `SkinRash/{Dermatitis,eczema,ringworm}/<skin tone>/`: 172 photos | ✅ the current rash checker |
+| `skin disease datset of acne redness.zip` | 30 people × 3 face photos, labelled acne / eye bags / redness | Tested, **not used** (see below) |
+| `Facial skin condition dataset.zip` | 45 face photos; the CSV has only id and gender | ❌ no condition labels |
+
+- Prepared by `ml/src/face_prepare.py` (path-safe extraction, near-duplicate check with dHash: 3 pairs, none with
+  conflicting labels; photos of the same person kept in the same fold).
+- Honest estimate with 5-fold grouped cross-validation (`ml/src/face_cv.py`, EfficientNetB3 features):
+  all 6 classes 63.7%; face classes alone 44%; **rash classes only 76.2% accuracy (77.5% balanced)**,
+  and 85% accuracy on the 74% of photos where the AI is at least 70% sure. The face classes were too small and
+  too alike (10 people each) to learn reliably, so only the 3 rash classes were shipped.
+- **Limitations:** very small (39–81 photos per condition), unknown origin and labelling process, no lab
+  confirmation. The 80–90% target is only reached when the AI is sure, not overall.
+
 ## Not usable
 
 - **DermNet** (often re-shared on Kaggle): DermNet's terms state that its free watermarked images **may not be used for AI

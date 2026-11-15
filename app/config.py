@@ -68,6 +68,10 @@ class BaseConfig:
     MAIL_FROM = _env("MAIL_FROM", "")
     FORGOT_RATE_LIMIT = "5 per hour"
 
+    # Optional "Continue with Google" (see docs/GOOGLE_SIGNIN.md). Both empty = button hidden.
+    GOOGLE_CLIENT_ID = _env("GOOGLE_CLIENT_ID", "")
+    GOOGLE_CLIENT_SECRET = _env("GOOGLE_CLIENT_SECRET", "")
+
     # Rate limits (per client)
     LOGIN_RATE_LIMIT = "5 per minute"
     REGISTER_RATE_LIMIT = "10 per hour"

@@ -9,7 +9,7 @@
   'fact_feedback': ('Clinician feedback reports', 'prediction_id, is_correct, suggested_class_code, created_at'),
 } %}
 <div class="container page">
-  <div class="page-head"><div><p class="eyebrow">Administration</p><h1>Data exports</h1><p class="muted">CSV files in a star schema for Power BI or Excel: UTF-8, ISO-8601 dates, one header row. Users appear only as a keyed pseudonym, never by name, email or image.</p></div></div>
+  <div class="page-head"><div><p class="eyebrow">Administration</p><h1>Data exports</h1><p class="my-3"><a class="btn btn-primary" href="{{ url_for('admin.export_workbook') }}">Download everything as one Excel file</a></p><p class="muted">Or download separate CSV files in a star schema for Power BI or Excel: UTF-8, ISO-8601 dates, one header row. Users appear only as a keyed pseudonym, never by name, email or image.</p></div></div>
   {% include "admin/_subnav.html" %}
   <div class="table-wrap">
     <table class="responsive">

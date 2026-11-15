@@ -6,7 +6,8 @@
   <div class="page-head">
     <div>
       <h1>My account</h1>
-      <p class="muted">Logged in as {{ current_user.email }} · member since {{ current_user.created_at|datefmt }}</p>
+      <p class="muted">Logged in as {{ current_user.email }} · member since {{ current_user.created_at|datefmt }}
+        {% if current_user.google_sub %} · <span class="font-semibold">linked to Google</span>{% endif %}</p>
     </div>
   </div>
 
@@ -26,23 +27,26 @@
 
     <div class="stack">
       <section class="form-card" aria-labelledby="pw-h">
-        <h2 id="pw-h">Change password</h2>
+        <h2 id="pw-h">{{ 'Change password' if current_user.has_password else 'Add a password' }}</h2>
+        {% if not current_user.has_password %}
+          <p class="muted small">You log in with Google. If you like, add a password so you can also log in with your email.</p>
+        {% endif %}
         <form class="form" method="post" action="{{ url_for('account.password') }}" novalidate data-loading-form>
           {{ password_form.hidden_tag() }}
-          {{ field(password_form.current_password, autocomplete='current-password', required=true) }}
+          {% if current_user.has_password %}{{ field(password_form.current_password, autocomplete='current-password', required=true) }}{% endif %}
           {{ field(password_form.new_password, autocomplete='new-password', required=true, minlength=min_length, hint='At least ' ~ min_length ~ ' characters. You will be logged out on your other devices.') }}
           {{ field(password_form.confirm, autocomplete='new-password', required=true) }}
-          <button class="btn btn-secondary" type="submit">Change password</button>
+          <button class="btn btn-secondary" type="submit">{{ 'Change password' if current_user.has_password else 'Save password' }}</button>
         </form>
       </section>
 
       <section class="form-card" aria-labelledby="del-h">
         <h2 id="del-h">Delete my account</h2>
         <p class="muted small">This deletes all your photos straight away and can't be undone. You may want to download your history first.</p>
-        <p><a href="{{ url_for('history.export') }}">Download my history (CSV)</a></p>
+        <p><a href="{{ url_for('history.export_xlsx') }}">Download my history (Excel)</a> · <a href="{{ url_for('history.export') }}">CSV</a></p>
         <form class="form" method="post" action="{{ url_for('account.delete') }}" novalidate data-confirm="Delete your account and all your photos for good?">
           {{ delete_form.hidden_tag() }}
-          {{ field(delete_form.password, autocomplete='current-password', required=true) }}
+          {% if current_user.has_password %}{{ field(delete_form.password, autocomplete='current-password', required=true) }}{% endif %}
           {{ field(delete_form.confirm_text, autocomplete='off', required=true) }}
           <button class="btn btn-danger" type="submit">Delete my account</button>
         </form>

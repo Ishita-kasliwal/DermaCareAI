@@ -15,6 +15,7 @@ from app.services.password_reset import (
     user_from_token,
 )
 from app.services.password_reset import reset_password as reset_with_token
+from app.services import google_auth
 
 
 @bp.route("/register", methods=["GET", "POST"])
@@ -106,6 +107,53 @@ def reset_password(token):
             return redirect(url_for("auth.login"))
     return render_template("auth/reset.html", form=form, invalid=None, user=user, min_length=MIN_LENGTH), (
         400 if form.errors else 200)
+
+
+@bp.get("/google")
+@limiter.limit(lambda: current_app.config["LOGIN_RATE_LIMIT"])
+def google_start():
+    """Send the person to Google to choose their account. Authlib stores state + nonce in the session."""
+    if current_user.is_authenticated:
+        return redirect(url_for("main.dashboard"))
+    if not google_auth.google_configured():
+        flash("Google sign-in isn't set up on this site yet. Please use your email and password.", "info")
+        return redirect(url_for("auth.login"))
+    session["google_next"] = safe_next_url(request.args.get("next", ""), url_for("main.dashboard"))
+    redirect_uri = url_for("auth.google_callback", _external=True)
+    try:
+        return google_auth.client().authorize_redirect(redirect_uri)
+    except Exception:  # noqa: BLE001 - e.g. no internet to reach Google
+        current_app.logger.exception("google sign-in start failed")
+        flash("We couldn't reach Google just now. Please try again, or use your email and password.", "error")
+        return redirect(url_for("auth.login"))
+
+
+@bp.get("/google/callback")
+@limiter.limit(lambda: current_app.config["LOGIN_RATE_LIMIT"])
+def google_callback():
+    if not google_auth.google_configured():
+        return redirect(url_for("auth.login"))
+    if request.args.get("error"):  # the person pressed Cancel on Google's page
+        flash("Google sign-in was cancelled. You can try again or use your email and password.", "info")
+        return redirect(url_for("auth.login"))
+    target = session.pop("google_next", None) or url_for("main.dashboard")
+    try:
+        token = google_auth.client().authorize_access_token()  # checks state, nonce and the ID token
+        info = token.get("userinfo") or {}
+        user = google_auth.user_from_google(info)
+    except AuthError as e:
+        audit("login_fail", None, details={"reason": "google", "message": e.message[:80]})
+        flash(e.message, "error")
+        return redirect(url_for("auth.login"))
+    except Exception:  # noqa: BLE001 - bad/expired state, network error, invalid token
+        current_app.logger.exception("google sign-in failed")
+        flash("Google sign-in didn't work this time. Please try again.", "error")
+        return redirect(url_for("auth.login"))
+    session.clear()  # new session on login (prevents fixation)
+    login_user(user)
+    session.permanent = True
+    flash(f"Welcome, {user.first_name}! You're logged in with Google.", "success")
+    return redirect(safe_next_url(target, url_for("main.dashboard")))
 
 
 @bp.post("/logout")

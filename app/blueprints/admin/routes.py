@@ -225,6 +225,14 @@ def exports():
     return render_template("admin/exports.html", names=list(export_service.ADMIN_EXPORTS))
 
 
+@bp.get("/exports/dermacareai_data.xlsx")
+def export_workbook():
+    audit("admin_export", current_user, "export", "workbook.xlsx")
+    return Response(export_service.admin_workbook_xlsx(), mimetype=export_service.XLSX_MIME,
+                    headers={"Content-Disposition": "attachment; filename=dermacareai_data.xlsx",
+                             "Cache-Control": "private, no-store"})
+
+
 @bp.get("/exports/<name>.csv")
 def export_file(name):
     fn = export_service.ADMIN_EXPORTS.get(name) or abort(404)

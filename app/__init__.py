@@ -85,6 +85,10 @@ def _init_extensions(app: Flask) -> None:
         permissions_policy={"camera": "()", "geolocation": "()", "microphone": "()"},
     )
 
+    from app.services.google_auth import init_google
+
+    init_google(app)
+
     from app.services.auth_service import load_user_from_session
 
     @login_manager.user_loader
@@ -147,7 +151,10 @@ def _register_hooks(app: Flask) -> None:
     def inject_globals():
         from datetime import date
 
-        return {"current_year": date.today().year, "brand": app.config["BRAND_NAME"]}
+        from app.services.google_auth import google_configured
+
+        return {"current_year": date.today().year, "brand": app.config["BRAND_NAME"],
+                "google_enabled": google_configured(app)}
 
     def _as_dt(value):
         from datetime import datetime
