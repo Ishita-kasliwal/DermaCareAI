@@ -140,6 +140,16 @@
       });
     }
 
+    // --- "Back to the list" links: go back in history (keeps the search results) when we came from this site
+    document.querySelectorAll("a[data-back-link]").forEach(function (a) {
+      a.addEventListener("click", function (e) {
+        if (document.referrer && document.referrer.indexOf(location.origin) === 0 && history.length > 1) {
+          e.preventDefault();
+          history.back();
+        }
+      });
+    });
+
     // --- loading state on submit (prevents double submission)
     document.querySelectorAll("form[data-loading-form]").forEach(function (form) {
       form.addEventListener("submit", function () {

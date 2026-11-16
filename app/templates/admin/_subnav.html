@@ -5,6 +5,7 @@
   <a href="{{ url_for('admin.users') }}" {% if ep == 'admin.users' %}aria-current="page"{% endif %}>Users</a>
   <a href="{{ url_for('admin.models') }}" {% if ep == 'admin.models' %}aria-current="page"{% endif %}>Models</a>
   <a href="{{ url_for('admin.categories') }}" {% if ep in ['admin.categories', 'admin.edit_category'] %}aria-current="page"{% endif %}>Categories</a>
+  <a href="{{ url_for('admin.appointments') }}" {% if ep == 'admin.appointments' %}aria-current="page"{% endif %}>Appointments</a>
   <a href="{{ url_for('admin.audit_log') }}" {% if ep == 'admin.audit_log' %}aria-current="page"{% endif %}>Audit log</a>
   <a href="{{ url_for('admin.exports') }}" {% if ep == 'admin.exports' %}aria-current="page"{% endif %}>Exports</a>
 </nav>

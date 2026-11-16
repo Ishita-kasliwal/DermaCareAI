@@ -39,7 +39,7 @@ def test_rash_photo_uses_rash_model_and_only_its_conditions(client, user, model_
     assert pred.predicted_class.code == "eczema"
     html = client.get(f"/results/{pred.public_id}").data.decode()
     assert "Top 3 possibilities" in html
-    assert "Eczema (atopic dermatitis)" in html
+    assert ">Eczema<" in html
     assert "Good to know." in html and "only knows a few common problems" in html, "rash results carry the limits warning"
 
     # the mole checker still uses the mole model

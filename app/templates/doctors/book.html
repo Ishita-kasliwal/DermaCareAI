@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field, icon %}
+{% block title %}Ask for an appointment{% endblock %}
+{% block content %}
+<div class="container page narrow">
+  <div class="page-head">
+    <div>
+      <a class="small" href="{{ url_for('doctors.find') }}" data-back-link>&larr; Back to the list</a>
+      <h1>Ask for an appointment</h1>
+    </div>
+  </div>
+
+  <section class="panel clinic-summary" aria-labelledby="clinic-h">
+    <h2 id="clinic-h" class="clinic-name">{{ clinic.name }}</h2>
+    {% if clinic.address %}<p class="small muted">{{ clinic.address }}</p>{% endif %}
+    <div class="clinic-actions">
+      {% if clinic.tel_href %}
+        <a class="btn btn-secondary clinic-btn" href="{{ clinic.tel_href }}">{{ icon('phone') }} Call {{ clinic.display_phone }}</a>
+      {% else %}
+        <span class="btn clinic-btn is-unavailable" aria-disabled="true">{{ icon('phone') }} Phone number not available</span>
+      {% endif %}
+      {% if has_location %}
+        <a class="btn btn-secondary clinic-btn" href="{{ clinic.directions_url }}" target="_blank" rel="noopener noreferrer">{{ icon('pin') }} Directions<span class="visually-hidden"> (opens Google Maps)</span></a>
+      {% endif %}
+    </div>
+  </section>
+
+  <div class="alert alert-info" role="note">
+    <p><strong>How this works:</strong> we save your request so you have the details in one place. The clinic does
+      <strong>not</strong> get a message from us, so please call them to confirm a time.</p>
+  </div>
+
+  <form class="form" method="post" action="{{ url_for('doctors.book') }}" novalidate data-loading-form>
+    {{ form.hidden_tag() }}
+    {% if condition %}<p class="small muted">For: <strong>{{ condition }}</strong> (from your skin check)</p>{% endif %}
+    {{ field(form.patient_name, autocomplete="name", maxlength=80) }}
+    {{ field(form.patient_phone, hint="10 digits, for example 9876543210", autocomplete="tel-national", inputmode="numeric", maxlength=14) }}
+    {{ field(form.preferred_date) }}
+    <fieldset class="field{{ ' has-error' if form.time_slot.errors }}">
+      <legend>{{ form.time_slot.label.text }}</legend>
+      <div class="radio-list">
+        {% for opt in form.time_slot %}<div class="check">{{ opt() }} {{ opt.label() }}</div>{% endfor %}
+      </div>
+      {% if form.time_slot.errors %}<p class="error">{{ form.time_slot.errors|join(' ') }}</p>{% endif %}
+    </fieldset>
+    {{ field(form.note, rows=3, maxlength=500) }}
+    {% if form.clinic_name.errors or form.prediction.errors %}
+      <div class="alert alert-warning" role="alert"><p>Something about this clinic's details looks wrong. Please go back to the list and try again.</p></div>
+    {% endif %}
+    <div class="btn-row"><button class="btn btn-primary clinic-btn" type="submit">{{ icon('calendar') }} Save my request</button></div>
+  </form>
+</div>
+{% endblock %}

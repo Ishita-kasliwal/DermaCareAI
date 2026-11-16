@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 import threading
 import time
 import urllib.parse
@@ -53,6 +54,23 @@ class Clinic:
     def maps_url(self) -> str:
         q = f"{self.name}, {self.address}" if self.address else f"{self.lat},{self.lon}"
         return "https://www.google.com/maps/search/?" + urllib.parse.urlencode({"api": 1, "query": q})
+
+    @property
+    def directions_url(self) -> str:
+        """Google Maps directions to the clinic (opens in a new tab)."""
+        return f"https://www.google.com/maps/dir/?api=1&destination={self.lat:.6f},{self.lon:.6f}"
+
+    @property
+    def display_phone(self) -> str:
+        """First number only: listings often hold several ("0731...;98...")."""
+        first = re.split(r"[;,/]", self.phone or "")[0].strip()
+        return first if len(re.sub(r"\D", "", first)) >= 8 else ""
+
+    @property
+    def tel_href(self) -> str:
+        """tel: link (digits and a leading + only), or "" when there is no usable number."""
+        num = self.display_phone
+        return "tel:" + ("+" if num.startswith("+") else "") + re.sub(r"\D", "", num) if num else ""
 
 
 @dataclass

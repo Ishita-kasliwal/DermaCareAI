@@ -139,6 +139,10 @@ def delete_account(user: User, password: str) -> None:
         image.deleted_at = image.deleted_at or now
     for pred in user.predictions:
         pred.deleted_at = pred.deleted_at or now
+    # appointment requests hold a name and phone number: remove them completely
+    from app.models import Appointment
+
+    db.session.execute(db.delete(Appointment).where(Appointment.user_id == user.id))
     audit("account_delete", user, "user", user.public_id, commit=False)
     user.deleted_at = now
     user.is_active_flag = False

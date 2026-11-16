@@ -39,9 +39,18 @@
               <div class="clinic-main">
                 <h3 class="clinic-name">{{ c.name }}</h3>
                 <p class="small muted">{{ c.address or 'Address not listed' }}</p>
+                {% if c.display_phone %}<p class="small">{{ c.display_phone }}</p>{% endif %}
               </div>
               {% if c.distance_km is not none %}<span class="clinic-distance">{{ '%.1f'|format(c.distance_km) }} km</span>{% endif %}
-              <a class="btn btn-secondary btn-sm" href="{{ c.maps_url }}" target="_blank" rel="noopener noreferrer">See on map</a>
+              <div class="clinic-actions">
+                {% if c.tel_href %}
+                  <a class="btn btn-secondary clinic-btn" href="{{ c.tel_href }}">{{ icon('phone') }} Call</a>
+                {% else %}
+                  <span class="btn clinic-btn is-unavailable" aria-disabled="true">{{ icon('phone') }} Phone number not available</span>
+                {% endif %}
+                <a class="btn btn-secondary clinic-btn" href="{{ c.directions_url }}" target="_blank" rel="noopener noreferrer">{{ icon('pin') }} Directions<span class="visually-hidden"> (opens Google Maps)</span></a>
+                <a class="btn btn-primary clinic-btn" href="{{ url_for('doctors.book', name=c.name, address=c.address, phone=c.display_phone, lat='%.6f'|format(c.lat), lon='%.6f'|format(c.lon), prediction=form.prediction.data or None) }}">{{ icon('calendar') }} Book</a>
+              </div>
             </li>
           {% endfor %}
         </ul>

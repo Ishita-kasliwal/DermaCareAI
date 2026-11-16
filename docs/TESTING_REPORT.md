@@ -7,7 +7,7 @@
 
 | Run | How | Result |
 |---|---|---|
-| Full automated suite | `.\.venv\Scripts\python.exe -m pytest tests` | **171 passed, 0 failed, 0 skipped** |
+| Full automated suite | `.\.venv\Scripts\python.exe -m pytest tests` | **191 passed, 0 failed, 0 skipped** |
 | Lint (errors, bugbear) | `ruff check app skinai_ml ml tests --select F,E9,B` | clean |
 | Migrations | `flask db upgrade` on fresh SQLite + `flask db check`; applied to the real MySQL database | 4 revisions applied (adds `users.google_sub`), no drift |
 | Real MySQL | app account `skin_ai_app` (SELECT/INSERT/UPDATE/DELETE only) | pages served from MySQL; DDL correctly refused |

@@ -21,6 +21,8 @@ from app.services.prediction_service import (
     inconclusive_reasons,
     run_prediction,
 )
+from app.services.tone import wording_for
+from skinai_ml.classes import simple_name
 
 ALT_MIN = 0.05  # only discuss alternatives the model gave a non-trivial score
 MAX_PHOTOS = 5  # photos per upload
@@ -245,13 +247,17 @@ def analyze(image_id):
 def result(prediction_id):
     pred = get_owned_prediction(current_user, prediction_id) or abort(404)
     fb_form = FeedbackForm(formdata=None)
-    fb_form.suggested_class.choices = [("", "Select a category")] + [(c.code, c.name) for c in class_rows()]
+    fb_form.suggested_class.choices = [("", "Choose what the doctor said")] + [
+        (c.code, simple_name(c.code, c.name)) for c in class_rows() if c.code != "unfamiliar"]
     # Home care: tips only when the AI is sure; the "see a doctor" message for cancers is shown even when unsure.
     care = care_for(pred.predicted_class.code)
     if not care.urgent and pred.status != "confident":
         care = None
+    kind = ("unfamiliar" if pred.predicted_class.code == "unfamiliar"
+            else "unclear" if pred.status != "confident" else "clear")
+    words = wording_for(pred.public_id, kind, pred.predicted_class.risk_level)
     return render_template(
-        "predict/result.html", pred=pred, reasons=inconclusive_reasons(pred), care=care,
+        "predict/result.html", pred=pred, reasons=inconclusive_reasons(pred), care=care, words=words,
         alternatives=[s for s in pred.scores[1:3] if s.probability >= ALT_MIN], alt_min=ALT_MIN,
         fb_form=fb_form, delete_form=ConfirmForm(), doctor_form=DoctorSearchForm(formdata=None),
     )

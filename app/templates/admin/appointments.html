@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination as paginate %}
+{% block title %}Appointments · Administration{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head"><div><p class="eyebrow">Administration</p><h1>Appointment requests</h1>
+    <p class="muted">Requests people made from a clinic card, newest first. Clinics are not contacted automatically. These hold names and phone numbers, so please keep them private.</p></div></div>
+  {% include "admin/_subnav.html" %}
+  {% if pagination.items %}
+    <div class="table-wrap">
+      <table class="responsive">
+        <thead><tr><th scope="col">Requested (IST)</th><th scope="col">Person</th><th scope="col">Clinic</th><th scope="col">Wanted</th><th scope="col">Condition</th><th scope="col">Note</th></tr></thead>
+        <tbody>
+          {% for a in pagination.items %}
+            <tr>
+              <td data-label="Requested">{{ a.created_at|datetimefmt }}</td>
+              <td data-label="Person">{{ a.patient_name }}<br><span class="mono small">{{ a.patient_phone }}</span></td>
+              <td data-label="Clinic">{{ a.clinic_name }}{% if a.clinic_address %}<br><span class="small muted">{{ a.clinic_address }}</span>{% endif %}{% if a.clinic_phone %}<br><span class="mono small">{{ a.clinic_phone }}</span>{% endif %}</td>
+              <td data-label="Wanted">{{ a.preferred_date|datefmt }}<br><span class="small muted">{{ a.time_slot|capitalize }}</span></td>
+              <td data-label="Condition">{{ a.predicted_condition or '—' }}</td>
+              <td data-label="Note" class="small">{{ a.note or '—' }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {{ paginate(pagination, 'admin.appointments', {}) }}
+  {% else %}
+    <div class="empty"><h2>No requests yet</h2><p>When someone taps <strong>Book</strong> on a clinic, their request appears here.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

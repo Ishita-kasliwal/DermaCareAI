@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}Request saved{% endblock %}
+{% block content %}
+{% set slots = {'morning': 'morning', 'afternoon': 'afternoon', 'evening': 'evening'} %}
+<div class="container page narrow">
+  <div class="alert alert-success" role="status">
+    <p><strong>Thank you, {{ appt.patient_name }}! Your request is saved.</strong></p>
+  </div>
+  <h1>Your appointment request</h1>
+  <dl class="meta-list">
+    <dt>Clinic</dt><dd>{{ appt.clinic_name }}{% if appt.clinic_address %}<br><span class="small muted">{{ appt.clinic_address }}</span>{% endif %}</dd>
+    <dt>Day</dt><dd>{{ appt.preferred_date|datefmt }}, in the {{ slots.get(appt.time_slot, appt.time_slot) }}</dd>
+    <dt>Your mobile</dt><dd>{{ appt.patient_phone }}</dd>
+    {% if appt.predicted_condition %}<dt>For</dt><dd>{{ appt.predicted_condition }} (from your skin check)</dd>{% endif %}
+    {% if appt.note %}<dt>Your note</dt><dd>{{ appt.note }}</dd>{% endif %}
+    <dt>Sent</dt><dd>{{ appt.created_at|datetimefmt }}</dd>
+  </dl>
+
+  <div class="alert alert-warning" role="note">
+    <p><strong>One more step:</strong> the clinic hasn't been told yet. Please call them to confirm your visit.
+      It's a good idea to take a photo of this page with you.</p>
+  </div>
+  <div class="clinic-actions">
+    {% if clinic.tel_href %}
+      <a class="btn btn-primary clinic-btn" href="{{ clinic.tel_href }}">{{ icon('phone') }} Call {{ clinic.display_phone }}</a>
+    {% else %}
+      <span class="btn clinic-btn is-unavailable" aria-disabled="true">{{ icon('phone') }} Phone number not available</span>
+    {% endif %}
+    {% if has_location %}
+      <a class="btn btn-secondary clinic-btn" href="{{ clinic.directions_url }}" target="_blank" rel="noopener noreferrer">{{ icon('pin') }} Directions<span class="visually-hidden"> (opens Google Maps)</span></a>
+    {% endif %}
+    <a class="btn btn-secondary clinic-btn" href="{{ url_for('main.dashboard') }}">Back to home</a>
+  </div>
+  <p class="small muted">Take care, and we hope you feel better soon.</p>
+</div>
+{% endblock %}

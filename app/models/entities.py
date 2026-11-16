@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 import sqlalchemy as sa
 from flask_login import UserMixin
@@ -214,3 +214,36 @@ class AuditLog(db.Model):
     created_at: Mapped[datetime] = mapped_column(sa.DateTime, default=utcnow, index=True)
 
     user: Mapped[User | None] = relationship()
+
+
+TIME_SLOTS = ("morning", "afternoon", "evening")
+
+
+class Appointment(db.Model):
+    """An appointment REQUEST made from a clinic card ("Book"). The clinic is not contacted automatically:
+    the request is stored here and listed for admins at /admin/appointments."""
+
+    __tablename__ = "appointments"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    public_id: Mapped[str] = mapped_column(sa.String(36), unique=True, default=new_uuid)
+    user_id: Mapped[int] = mapped_column(sa.ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    prediction_id: Mapped[int | None] = mapped_column(
+        sa.BigInteger().with_variant(sa.Integer, "sqlite"),
+        sa.ForeignKey("predictions.id", ondelete="SET NULL"))
+    clinic_name: Mapped[str] = mapped_column(sa.String(160))
+    clinic_address: Mapped[str | None] = mapped_column(sa.String(255))
+    clinic_phone: Mapped[str | None] = mapped_column(sa.String(40))
+    clinic_lat: Mapped[float | None] = mapped_column(sa.Float)
+    clinic_lon: Mapped[float | None] = mapped_column(sa.Float)
+    patient_name: Mapped[str] = mapped_column(sa.String(80))
+    patient_phone: Mapped[str] = mapped_column(sa.String(10))
+    preferred_date: Mapped[date] = mapped_column(sa.Date)
+    time_slot: Mapped[str] = mapped_column(sa.String(10))      # morning | afternoon | evening
+    note: Mapped[str | None] = mapped_column(sa.String(500))
+    predicted_condition: Mapped[str | None] = mapped_column(sa.String(120))   # snapshot of the check's answer
+    status: Mapped[str] = mapped_column(sa.String(16), default="requested")
+    created_at: Mapped[datetime] = mapped_column(sa.DateTime, default=utcnow, index=True)
+
+    user: Mapped[User] = relationship()
+    prediction: Mapped[Prediction | None] = relationship()

@@ -37,16 +37,13 @@ def inconclusive_reasons(pred: Prediction) -> list[str]:
     probs = sorted((s.probability for s in pred.scores), reverse=True)
     if probs and probs[0] < threshold:
         reasons.append(
-            f"The best match only scored {probs[0]:.0%}. We need at least {threshold:.0%} "
-            "before naming one type."
+            f"The closest match only reached {probs[0]:.0%}. We like to be at least {threshold:.0%} sure "
+            "before naming anything."
         )
     if len(probs) > 1 and probs[0] - probs[1] < margin:
-        reasons.append(
-            f"The top two matches are very close (less than {margin:.0%} apart), so the AI "
-            "can't tell them apart."
-        )
+        reasons.append("The top two answers were very close, so the AI couldn't choose between them.")
     if pred.image.quality_issues:
-        reasons.append("The photo has some quality issues, which can make the result less reliable.")
+        reasons.append("The photo isn't very clear, which makes it harder to read.")
     return reasons
 
 

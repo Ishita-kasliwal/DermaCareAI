@@ -44,3 +44,24 @@ def test_skin_cancer_result_shows_only_see_a_doctor(client, user, tmp_path):
     assert "Please don&#39;t try to treat this at home" in html or "Please don't try to treat this at home" in html
     assert "care-list" not in html                  # no list of remedies at all
     assert "med-list" not in html and "Medicines you can ask" not in html   # and no medicines
+
+
+def test_result_page_uses_plain_caring_words(client, user, model_dirs):
+    register_model(model_dirs["general"])          # favours eczema
+    html = _result_html(client, check="general")
+    from app.services import tone
+    assert any(o.replace("'", "&#39;") in html for o in tone.OPENERS)
+    assert any(c.replace("'", "&#39;") in html for c in tone.CLOSING)
+    assert "atopic" not in html.lower()            # plain name "Eczema", not "Eczema (atopic dermatitis)"
+    assert ">Eczema<" in html
+
+
+def test_result_page_sections_in_the_right_order(client, user, model_dirs):
+    """Task 7: result + top 3, explanation, home care, medicines, dermatologists, disclaimer."""
+    register_model(model_dirs["general"])          # favours eczema: every section is shown
+    html = _result_html(client, check="general")
+    order = ["result-title", "Top 3 possibilities", "What this means", "Home care",
+             "Medicines you can ask a pharmacist about", "Find a dermatologist near you",
+             "This tool is a student project and not a medical diagnosis. Please consult a qualified dermatologist."]
+    positions = [html.index(marker) for marker in order]
+    assert positions == sorted(positions), dict(zip(order, positions, strict=True))

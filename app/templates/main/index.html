@@ -5,8 +5,7 @@
 <section class="hero">
   <div class="container hero-grid">
     <div>
-      <span class="eyebrow pill-eyebrow">Free skin checker</span>
-      <h1>Understand your skin problem <span class="hl">before you see a doctor</span></h1>
+      <h1>Understand your skin problem before you see a doctor</h1>
       <p class="lead">Upload a photo of a mole, spot, rash or other skin problem. Our AI compares it with common
         skin conditions and tells you, in plain words, what it looks most like. It also tells you when it isn't sure.</p>
       <div class="btn-row">
@@ -25,55 +24,55 @@
       </ul>
     </div>
 
-    <div class="hero-art" aria-hidden="true">
-      <svg class="art" viewBox="0 0 400 290" focusable="false">
-        <rect class="art-bg" x="0" y="0" width="400" height="290" rx="18"/>
-        <rect class="art-skin" x="30" y="25" width="340" height="240" rx="16"/>
-        <circle class="art-skin-dot" cx="80" cy="60" r="3"/><circle class="art-skin-dot" cx="120" cy="215" r="2.5"/>
-        <circle class="art-skin-dot" cx="320" cy="70" r="3"/><circle class="art-skin-dot" cx="300" cy="225" r="2.5"/>
-        <circle class="art-skin-dot" cx="65" cy="170" r="2"/><circle class="art-skin-dot" cx="345" cy="160" r="2"/>
-        <circle class="art-skin-dot" cx="160" cy="45" r="2"/><circle class="art-skin-dot" cx="250" cy="245" r="2"/>
-        <ellipse class="art-lesion" cx="200" cy="145" rx="52" ry="42" transform="rotate(-12 200 145)"/>
-        <ellipse class="art-lesion-2" cx="192" cy="140" rx="24" ry="19" transform="rotate(-8 192 140)"/>
-        <circle class="art-ring" cx="200" cy="145" r="78"/>
-        <circle class="art-ring-2" cx="200" cy="145" r="96"/>
-        <path class="art-corner" d="M58 52v-14h14M342 52v-14h-14M58 238v14h14M342 238v14h-14"/>
-      </svg>
-      <div class="art-caption">
-        <span class="icon-circle">{{ icon('eye') }}</span>
-        <p>The AI looks at <strong>shape, colour, texture and pattern</strong>. You always see every score, not just one answer.</p>
-      </div>
+    <div class="hero-panel">
+      <h2 class="hero-panel-title">What you can check</h2>
+      <ul class="check-list">
+        <li><span class="check-dot"></span><div><strong>Pimples and acne</strong><span>Whiteheads, blackheads and red spots</span></div></li>
+        <li><span class="check-dot"></span><div><strong>Rashes and eczema</strong><span>Itchy, red or dry patches</span></div></li>
+        <li><span class="check-dot"></span><div><strong>Ringworm</strong><span>Round, scaly, itchy patches</span></div></li>
+        <li><span class="check-dot"></span><div><strong>Dark spots and redness</strong><span>Uneven skin tone, marks, flushed cheeks</span></div></li>
+        <li><span class="check-dot"></span><div><strong>Scratches and small cuts</strong><span>Simple care and when to see a doctor</span></div></li>
+        <li><span class="check-dot"></span><div><strong>Moles and spots</strong><span>Signs that a doctor should look at it</span></div></li>
+      </ul>
+      <p class="small muted">Not sure which one it is? Just upload your photo and the AI picks the right check for you.</p>
     </div>
   </div>
 </section>
 
+{# conditions the installed checkers can actually name ("not a skin problem" is not a condition) #}
+{% set known = [] %}
+{% for ck in checkers %}{% for c in by_domain[ck.domain] if c.code != 'unfamiliar' %}{% set _ = known.append(c) %}{% endfor %}{% endfor %}
+
 <section class="section section-alt" id="how-it-works">
   <div class="container">
     <div class="section-head">
-      <span class="eyebrow">How it works</span>
-      <h2>Three easy steps</h2>
+      <h2>How it works</h2>
     </div>
     <ol class="steps">
-      <li><h3>Take a clear photo</h3><p>Get close, use good light, and keep the spot in the middle of the photo.</p></li>
-      <li><h3>Upload and check</h3><p>We check that your photo is sharp and bright enough before the AI looks at it.</p></li>
-      <li><h3>Read your result</h3><p>See what the spot looks most like, how sure the AI is, and what to do next.</p></li>
+      <li><h3>Take a clear photo</h3><p>Get close, use good daylight, and keep the problem area in the middle of the photo.</p></li>
+      <li><h3>Upload it</h3><p>We check the photo is sharp and bright enough, then the AI picks the right check for it.</p></li>
+      <li><h3>Read your result</h3><p>See what it looks most like, safe things to try at home, and skin doctors near you.</p></li>
     </ol>
   </div>
 </section>
 
 <section class="section">
-  <div class="container">
-    <div class="section-head">
-      <span class="eyebrow">Why people like it</span>
-      <h2>Clear answers, no confusing words</h2>
+  <div class="container grid-2">
+    <div>
+      <h2>After your check, you get</h2>
+      <ul class="plain-list">
+        <li><strong>A clear answer in plain words</strong><span>What your photo looks most like, and how close the match is.</span></li>
+        <li><strong>Safe home care</strong><span>Simple tips for that condition and common medicines to ask a pharmacist about.</span></li>
+        <li><strong>Skin doctors near you</strong><span>Clinics in your city with buttons to call, get directions or ask for an appointment.</span></li>
+        <li><strong>An honest "not sure"</strong><span>If the photo is unclear, we say so instead of guessing.</span></li>
+      </ul>
     </div>
-    <div class="feature-grid">
-      <div class="feature"><span class="icon-circle">{{ icon('chat') }}</span><h3>Simple results</h3><p>Results are written in everyday language, with the medical name alongside.</p></div>
-      <div class="feature"><span class="icon-circle warm">{{ icon('question') }}</span><h3>Says when it's not sure</h3><p>If the photo doesn't clearly match one type, we tell you honestly instead of guessing.</p></div>
-      <div class="feature"><span class="icon-circle">{{ icon('eye') }}</span><h3>See what the AI looked at</h3><p>A heatmap highlights the parts of your photo the AI paid most attention to.</p></div>
-      <div class="feature"><span class="icon-circle">{{ icon('history') }}</span><h3>All your checks in one place</h3><p>Look back at earlier checks, compare them over time, or download them.</p></div>
-      <div class="feature"><span class="icon-circle warm">{{ icon('lock') }}</span><h3>Private by design</h3><p>We remove hidden photo details like location. Delete any photo whenever you like.</p></div>
-      <div class="feature"><span class="icon-circle">{{ icon('doctor') }}</span><h3>Clear next steps</h3><p>Every result tells you whether to see a doctor soon or just keep an eye on the spot.</p></div>
+    <div>
+      <h2>Your privacy</h2>
+      <ul class="plain-list">
+        <li><strong>Only you see your photos</strong><span>Location and other hidden details are removed from every photo.</span></li>
+        <li><strong>Delete anything, any time</strong><span>Delete a single check or your whole account with all its photos.</span></li>
+      </ul>
     </div>
   </div>
 </section>
@@ -81,30 +80,23 @@
 <section class="section section-alt">
   <div class="container">
     <div class="section-head">
-      <span class="eyebrow">What it knows</span>
-      <h2>The {{ classes|length }} skin conditions the AI can recognise</h2>
-      <p class="muted">There are two checkers. You choose the one that fits your photo. If your problem is something not listed here, the AI will still pick the closest match, which is one reason to always check with a doctor.</p>
+      <h2>What the AI can recognise</h2>
+      <p class="muted">{{ known|length }} common skin problems. If yours isn't on the list, the result may be wrong, which is one more reason to see a doctor.</p>
     </div>
-    {% for ck in checkers %}
-      <div class="mb-10 last:mb-0">
-        <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-          <h3 class="m-0 text-lg">{{ ck.title }} <span class="font-normal text-slate-500 dark:text-slate-400">· {{ by_domain[ck.domain]|length }} conditions</span></h3>
-          {% if models.get(ck.domain) and ck.domain == 'general' %}<span class="badge badge-medium">New</span>{% elif models.get(ck.domain) %}<span class="badge badge-low">Ready</span>{% else %}<span class="badge badge-neutral">Coming soon</span>{% endif %}
+    <div class="grid-2">
+      {% for ck in checkers %}
+        <div class="panel">
+          <h3>{{ ck.title }}</h3>
+          <ul class="name-list">
+            {% for c in by_domain[ck.domain] if c.code != 'unfamiliar' %}
+              <li>{{ simple_name(c.code, c.name) }}</li>
+            {% else %}
+              <li class="muted">Not available yet.</li>
+            {% endfor %}
+          </ul>
         </div>
-        <p class="muted small">{{ ck.intro }}</p>
-        <ul class="category-list cards">
-          {% for c in by_domain[ck.domain] %}
-            <li>
-              <span class="name">{{ c.name }}</span>
-              {{ risk_badge(c.risk_level) }}
-              <span class="desc">{{ c.description }}</span>
-            </li>
-          {% else %}
-            <li class="muted">These conditions haven't been set up yet.</li>
-          {% endfor %}
-        </ul>
-      </div>
-    {% endfor %}
+      {% endfor %}
+    </div>
   </div>
 </section>
 
@@ -123,7 +115,7 @@
       <h2>{{ brand }} cannot</h2>
       <ul class="checklist cross">
         <li>Tell you for sure what you have, or whether a spot is cancer</li>
-        <li>Recognise every skin disease: it knows {{ classes|length }} common conditions, not rare ones</li>
+        <li>Recognise every skin disease: it knows {{ known|length }} common problems, not rare ones</li>
         <li>Promise the same accuracy for every skin tone, especially for moles, where it learned mostly from lighter skin</li>
         <li>Replace a visit to a doctor</li>
       </ul>

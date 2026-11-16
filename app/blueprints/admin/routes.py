@@ -220,6 +220,17 @@ def audit_log():
     return render_template("admin/audit.html", pagination=pagination, actions=actions, action=action)
 
 
+@bp.get("/appointments")
+def appointments():
+    """Appointment requests from the clinic cards (Task 5), newest first."""
+    from app.models import Appointment
+
+    page = request.args.get("page", 1, type=int)
+    pagination = db.paginate(db.select(Appointment).order_by(Appointment.created_at.desc(), Appointment.id.desc()),
+                             page=max(page, 1), per_page=30, error_out=False)
+    return render_template("admin/appointments.html", pagination=pagination)
+
+
 @bp.get("/exports")
 def exports():
     return render_template("admin/exports.html", names=list(export_service.ADMIN_EXPORTS))

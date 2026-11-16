@@ -10,6 +10,15 @@ Page: `/find-a-dermatologist` (menu: **Find a dermatologist**), also reachable f
 3. Clinics are shown nearest first with their address and straight-line distance from the town centre.
 4. A button always opens Google Maps with the search **"dermatologist in City, District, State"**.
 
+## Buttons on each clinic
+- **Call**: a `tel:` link to the clinic's first listed number, or a grey "Phone number not available".
+- **Directions**: opens Google Maps directions to the clinic (`/maps/dir/?api=1&destination=LAT,LON`) in a new tab.
+- **Book**: a short form (name, 10-digit mobile number, a date from today on, morning/afternoon/evening, optional
+  note). It saves an **appointment request** in the `appointments` table with the clinic, the condition from the
+  check (when the search started from a result) and the time. **The clinic is not contacted automatically**; the
+  page says so and asks the person to call to confirm. Admins see all requests, newest first, at
+  `/admin/appointments`. Deleting an account deletes its requests.
+
 ## Where the clinic list comes from
 - **Default (free, no key): OpenStreetMap** via its Nominatim search service: places whose name contains "skin"
   and that are mapped as a clinic, doctor or hospital. Volunteer-made data, so small towns may have none.

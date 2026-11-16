@@ -56,11 +56,11 @@ def test_full_flow_stores_real_model_output(client, user, active_model, model_di
     page = client.get(f"/results/{pid}")
     assert page.status_code == 200
     html = page.data.decode()
-    assert "Common mole (melanocytic nevus)" in html
-    assert "This is not a diagnosis" in html
-    assert "see a doctor or dermatologist" in html
+    assert ">Common mole<" in html
+    assert "This tool is a student project and not a medical diagnosis. Please consult a qualified dermatologist." in html
+    assert "Please consult a qualified dermatologist" in html
     assert "Top 3 possibilities" in html
-    assert "Other close matches" in html
+    assert "It could also be" in html
     assert f"<strong>{probs['nv'] * 100:.1f}%</strong> match" in html
 
     # Grad-CAM explanation produced and served privately
@@ -75,8 +75,8 @@ def test_inconclusive_when_model_is_unsure(client, user, model_dirs):
     pred = _pred(pid)
     assert pred.status == "inconclusive"
     html = client.get(f"/results/{pid}").data.decode()
-    assert "The AI isn't sure about this one" in html
-    assert "We need at least 50%" in html
+    assert "The result is unclear" in html and "not enough to be sure" in html
+    assert "We like to be at least 50% sure" in html
     assert "please see a dermatologist" in html
 
 
