@@ -153,8 +153,10 @@ def _register_hooks(app: Flask) -> None:
 
         from app.services.google_auth import google_configured
 
+        from skinai_ml.classes import simple_name
+
         return {"current_year": date.today().year, "brand": app.config["BRAND_NAME"],
-                "google_enabled": google_configured(app)}
+                "google_enabled": google_configured(app), "simple_name": simple_name}
 
     def _as_dt(value):
         from datetime import datetime

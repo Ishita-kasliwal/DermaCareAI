@@ -106,6 +106,29 @@ only for this educational project, and nothing from them is committed to this re
 - **Limitations:** very small (39–81 photos per condition), unknown origin and labelling process, no lab
   confirmation. The 80–90% target is only reached when the AI is sure, not overall.
 
+## Roboflow Universe sets (approved by the project owner, 2026-11-16)
+
+Downloaded with `python -m ml.src.roboflow_download` (needs the owner's own free `ROBOFLOW_API_KEY` in `.env`;
+the key is never printed or committed). Files go to `ml/data/raw/ROBOFLOW/<name>/` with a `SOURCE.json`.
+
+| Set | Licence | Classes used → answer | Photos used (1 per original) |
+|---|---|---|---|
+| [Skin analysis](https://universe.roboflow.com/image-classification-q4nkn/skin-analysis-oue1i) v1 | CC BY 4.0 | Acne → acne, Pigmentation → dark spots, Redness → redness | 251 / 220 / 168 |
+| [basic-wound-classify](https://universe.roboflow.com/clinicvision/basic-wound-classify-mpoys) v2 | CC BY 4.0 | abrasion + laceration → scratches & cuts, normal skin → healthy | 308 / 594 |
+| [Oily (skin type)](https://universe.roboflow.com/neeta/oily-zkvaz) v1 | CC BY 4.0 | **not used** | – |
+
+- Roboflow exports contain 3 altered copies (flips, small rotations) of each training photo. Only one copy per
+  original is used, and near-duplicates (CLIP cosine > 0.95, also across sources) share a cross-validation group.
+- 63 dermatoscope close-ups (moles, some possibly melanoma) were removed from "Pigmentation" so the rash checker
+  never learns to call them "dark spots".
+- Photos with more than one label (e.g. "Acne Redness"), Dark Circles, Pores, Wrinkles, bruise and burn were not used.
+- The acne photos in "Skin analysis" carry a DermNet watermark: they originate from DermNet (dermnetnz.org), whose
+  images are for non-commercial educational use with attribution. This project is non-commercial.
+- **Skin type set not used:** its dry / normal / oily photos are ordinary selfies. In 5-fold cross-validation the
+  three types were told apart only 39% of the time (33% = guessing), so "dry skin" is not offered.
+- Limitations: unknown photographers and labelling process, no doctor confirmation; scratches and healthy skin
+  come from a single set each, so their very high scores (96–98%) partly reflect that set's photo style.
+
 ## Not usable
 
 - **DermNet** (often re-shared on Kaggle): DermNet's terms state that its free watermarked images **may not be used for AI

@@ -7,7 +7,7 @@ Upload a photo of your skin and choose what you're checking. DermaCareAI has **t
 | Checker | Learned from | Conditions | Test balanced accuracy |
 |---|---|---|---|
 | **Mole or spot** | HAM10000 (10,015 dermoscopic photos) | 7: melanoma, basal cell carcinoma, sun-damage patch, age spot, firm bump, common mole, blood-vessel spot | 55.4% |
-| **Rash or other skin problem** | Skin-rash photo set supplied for this project (172 photos, several skin tones) | 3: skin irritation (dermatitis), eczema, ringworm | 77.5% (5-fold cross-validation; 85% accuracy on the 74% of photos where it is at least 70% sure) |
+| **Rash or other skin problem** | Supplied rash/acne photos + SCIN subset + 2 Roboflow Universe sets (2,421 photos), CLIP image features | 8: acne, skin irritation, eczema, ringworm, dark spots, redness, scratches & cuts, healthy skin, plus "not a skin problem" | 84% (74% on the supplied photos; 89% when ≥60% sure), 5-fold grouped cross-validation |
 
 Each result shows every score, alternatives, a Grad-CAM heatmap and plain-English advice, and says **"not sure"**
 when the AI isn't confident. Results are stored in MySQL with private per-user history, Chart.js analytics,
@@ -25,7 +25,7 @@ Pandas · NumPy · scikit-learn · SQLAlchemy + Alembic · MySQL 8 · Python 3.1
 ```powershell
 .\scripts\setup_venv.ps1              # .venv with Python 3.12 + dependencies
 .\scripts\db_setup.ps1                # creates skin_ai_db + 2 least-privilege users (asks for YOUR MySQL root password)
-.\scripts\db_upgrade.ps1              # applies migrations, seeds all 19 conditions
+.\scripts\db_upgrade.ps1              # applies migrations, seeds all 20 answers
 .\.venv\Scripts\flask.exe --app wsgi create-admin   # prompts for the admin password
 ```
 
@@ -38,13 +38,17 @@ Pandas · NumPy · scikit-learn · SQLAlchemy + Alembic · MySQL 8 · Python 3.1
 
 # Rash or other skin problem checker (the supplied rash photo zips in Downloads)
 .\.venv\Scripts\python.exe -m ml.src.face_prepare
-.\.venv\Scripts\python.exe -m ml.src.face_cv --only dermatitis eczema ringworm   # honest 5-fold estimate
-.\.venv\Scripts\python.exe -m ml.src.face_train
+.\.venv\Scripts\python.exe -m ml.src.rash_clip_train          # CLIP features, 5-fold estimate + export
 .\.venv\Scripts\flask.exe --app wsgi register-model "ml\artifacts\face\models\$(Get-Content ml\artifacts\face\models\LATEST)" --activate
 # Older option with more conditions but much weaker results (SCIN, 10 conditions, 26% balanced accuracy):
 # ml.src.scin_prepare + ml/configs/train_scin.yaml
 ```
 Faster, more accurate training on a free GPU: see [docs/ML_TRAINING.md](docs/ML_TRAINING.md#train-on-a-free-gpu-google-colab).
+
+## Try the model on your own photos
+```powershell
+.\.venv\Scripts\python.exe scripts\check_photos.py my_photo1.jpg my_photo2.png
+```
 
 ## Run commands
 | Action  | Command                    |
@@ -77,5 +81,8 @@ npm run watch:css           # rebuild automatically while editing
 ## Data & licences
 - HAM10000 © ViDIR Group, Department of Dermatology, Medical University of Vienna, CC BY-NC 4.0 (non-commercial).
 - SCIN dataset, Google Research & Stanford Medicine, SCIN Data Use License (re-identifying contributors is prohibited).
+- Roboflow Universe: "Skin analysis" (image-classification-q4nkn) and "basic-wound-classify" (clinicvision), CC BY 4.0.
+  Some acne photos in "Skin analysis" originate from DermNet (dermnetnz.org). Download with `python -m ml.src.roboflow_download`
+  (needs your own free `ROBOFLOW_API_KEY` in `.env`).
 
 Datasets and trained weights are never committed. Because of the HAM10000 licence, this project is non-commercial.

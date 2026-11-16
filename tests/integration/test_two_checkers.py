@@ -18,10 +18,10 @@ def _pred(pid) -> Prediction:
     return db.session.scalar(db.select(Prediction).filter_by(public_id=pid))
 
 
-def test_all_19_conditions_seeded_with_checker(app):
+def test_all_24_conditions_seeded_with_checker(app):
     rows = list(db.session.scalars(db.select(DiseaseClass)))
-    assert len(rows) == 19
-    assert sorted(r.code for r in rows if r.domain == "general") == sorted(GENERAL_CLASSES + ["dermatitis", "ringworm"])
+    assert len(rows) == 24
+    assert sorted(r.code for r in rows if r.domain == "general") == sorted(GENERAL_CLASSES + ["dermatitis", "ringworm", "dark_spots", "redness", "scratches", "healthy", "unfamiliar"])
     assert len([r for r in rows if r.domain == "lesion"]) == 7
     assert all(r.description and r.advice for r in rows)
 
@@ -38,9 +38,9 @@ def test_rash_photo_uses_rash_model_and_only_its_conditions(client, user, model_
     assert codes == set(GENERAL_CLASSES), "rash results only list rash conditions"
     assert pred.predicted_class.code == "eczema"
     html = client.get(f"/results/{pred.public_id}").data.decode()
-    assert "How your photo matched all 10 types" in html
+    assert "Top 3 possibilities" in html
     assert "Eczema (atopic dermatitis)" in html
-    assert "Good to know." in html and "only knows 10 conditions" in html, "rash results carry the limits warning"
+    assert "Good to know." in html and "only knows a few common problems" in html, "rash results carry the limits warning"
 
     # the mole checker still uses the mole model
     iid2 = image_id_from(upload(client, image_bytes(seed=61), check="lesion"))

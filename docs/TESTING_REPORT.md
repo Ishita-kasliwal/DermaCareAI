@@ -1,13 +1,13 @@
 # Testing & security review report
 
-**Last updated:** 2026-11-15 · **Scope:** Flask backend, Tailwind frontend, both ML checkers, ML pipelines, MySQL ·
+**Last updated:** 2026-11-16 · **Scope:** Flask backend, Tailwind frontend, both ML checkers, ML pipelines, MySQL ·
 **Environment:** Windows 11, Python 3.12.10, TensorFlow 2.21.0 (CPU), Flask 3.1.3, MySQL 8.0.46
 
 ## 1. Result summary
 
 | Run | How | Result |
 |---|---|---|
-| Full automated suite | `.\.venv\Scripts\python.exe -m pytest tests` | **139 passed, 0 failed, 0 skipped** |
+| Full automated suite | `.\.venv\Scripts\python.exe -m pytest tests` | **145 passed, 0 failed, 0 skipped** |
 | Lint (errors, bugbear) | `ruff check app skinai_ml ml tests --select F,E9,B` | clean |
 | Migrations | `flask db upgrade` on fresh SQLite + `flask db check`; applied to the real MySQL database | 4 revisions applied (adds `users.google_sub`), no drift |
 | Real MySQL | app account `skin_ai_app` (SELECT/INSERT/UPDATE/DELETE only) | pages served from MySQL; DDL correctly refused |
@@ -25,7 +25,7 @@
 | Admin | `test_isolation_and_admin.py`, `test_two_checkers.py` | no self-deactivation/demotion; last admin protected; deactivation ends sessions; model activation is **per checker**; category edits; audit log |
 | Upload safety | `test_upload.py` | private storage, random names, path traversal ignored, **EXIF/GPS removed**, PHP/SVG/GIF/EXE/truncated/empty/tiny files rejected, decompression bomb, >8 MB → 413, blank photo rejected, greyscale warned, polyglot payload removed |
 | ML inference | `test_prediction_flow.py` | consent required; stored scores equal an independent run of the exported model (nothing hard-coded); "not sure" path; deterministic; heatmap; tampered model refused |
-| **Two checkers** | `test_two_checkers.py` | all 19 conditions seeded; rash photos use only the rash model and its conditions; mole photos use the mole model; a checker with no model is reported, never faked; invalid checker rejected; rash results carry the limits warning |
+| **Two checkers** | `test_two_checkers.py` | all 24 conditions seeded; rash photos use only the rash model and its conditions; mole photos use the mole model; a checker with no model is reported, never faked; invalid checker rejected; rash results carry the limits warning |
 | **Google sign-in, Excel, face photos** | `test_google_excel_switch.py` | Google button hidden unless configured; new account without password; linking by verified email only; unverified email and switched-off accounts refused; cancel handled; Google-only users can add a password and delete their account; user Excel has only their own rows; admin workbook has all 5 sheets with real numbers; Excel formula-injection guard; face warning only for the mole checker; one-click switch to the rash checker (owner only) |
 | History & analytics | `test_prediction_flow.py`, `test_isolation_and_admin.py` | filters, pagination, delete removes files, feedback, CSV without personal data; dashboard and analytics equal the database |
 | Security | `test_security.py` | CSRF on every state-changing form; SQL-injection payloads harmless; CSP without `unsafe-inline`, nosniff, frame and referrer headers; HttpOnly/SameSite cookies; no-store on private pages; no inline scripts/styles; hashes never rendered; no tracebacks on 500; login rate limit; SECRET_KEY not in any file; `.env`, uploads, data and models git-ignored |
@@ -49,6 +49,9 @@
 | 15 | A face photo with acne sent to the mole checker came back as "Common mole" | user report | face detection (OpenCV YuNet) warns and offers a one-click switch to the rash checker |
 | 16 | Dashboard chart cut off category names | user report | only categories you have results for are shown |
 | 17 | Stray `t` printed at the top of the My account page | review | removed |
+| 20 | "About the AI" page crashed (500) when a model answer has no measured results ("not a skin problem") | real site | such rows are left out; regression test added |
+| 19 | New "dark spots" photos made a side-view acne photo come back as dark spots (79%) — the pigmentation set is mostly side-view cheeks | spot check on real uploads | DermNet-sourced acne close-ups (also side-view cheeks) kept in training → acne 68% |
+| 18 | Rash checker forced one of 3 answers for any photo (selfie → ringworm 99%, acne → eczema) | user report | acne added; CLIP model; "not a skin problem" answer |
 
 ## 4. Model results (held-out test sets, never used for training or selection)
 
@@ -57,12 +60,24 @@ balanced accuracy **55.4%**, macro-F1 0.545, macro AUC 0.926; malignant/pre-mali
 (specificity 90.6%); **melanoma sensitivity 42%**. When ≥70% sure (59% of photos) it is right 92.8% of the time.
 Training was interrupted at round 16 of 30 and finished from the best saved checkpoint (documented in the model card).
 
-**Rash or other skin problem checker** — EfficientNetB3 features + logistic regression, 172 rash photos
-(skin irritation 39, eczema 52, ringworm 81), 5-fold grouped cross-validation (every photo is tested once by a model
-that never saw it): accuracy **76.2%**, balanced accuracy **77.5%** (chance 33%). When ≥70% sure (74% of photos) it is
-right **85.0%** of the time. The 80–90% goal is met only for confident answers. The earlier SCIN model (10 conditions,
-26.2% balanced accuracy) is kept but switched off. Adding the acne/eye-bags/redness face photos lowered accuracy to 63.7%,
-so they were left out (details in DATASETS.md).
+**Rash or other skin problem checker (v4, current)** — same CLIP method as v3 with two Roboflow Universe sets added
+(CC BY 4.0). 2,421 photos, 8 conditions: acne, skin irritation, eczema, ringworm, dark spots, redness, scratches & cuts,
+healthy skin. 5-fold cross-validation grouped by person/case/original photo: accuracy **83.6%** (balanced 79.5%),
+**74.3% on the supplied photos** (v3: 77.2%), **88.6% when at least 60% sure** (88% of photos). Per condition:
+healthy 98%, scratches & cuts 96%, dark spots 89%, acne 88%, redness 85%, ringworm 66%, skin irritation 61%, eczema 53%.
+The photo check turns away 5% of genuine photos. Dry skin was **not** added: the dry/normal/oily set scored 39% (33% =
+guessing). On the 4 real uploads: selfie → not a skin problem (99%), acne → acne (90%, 68%, 92%).
+
+**Rash checker v3 (previous)** — CLIP ViT-B/16 image features + logistic regression, with a
+"not a skin problem" photo check. 880 photos: the supplied rash/acne photos (202) plus a capped SCIN subset (678), 4 conditions
+(acne, skin irritation, eczema, ringworm). 5-fold cross-validation grouped by person/case: accuracy **66.4%** (balanced 66.9%),
+**77.2% on the supplied photos**, and **72.2% when it is at least 60% sure** (79% of photos). The photo check wrongly turns
+away 5% of genuine skin photos.
+
+Why this replaced v2 (EfficientNetB3, 3 conditions, 76% in cross-validation): v2 failed on real uploads. It had no acne class
+and no way to say "not a skin problem", so a selfie came back as "ringworm 99%" and acne as "eczema 97%". On those same 4 real
+uploads v3 answers: selfie → not a skin problem (90%), acne → acne (95%, 94%), faint marks → acne (69%). Four photos are a
+spot check, not a measurement. The 98% that was asked for is not reachable honestly with this data.
 
 ## 5. Not verified / known limitations (stated plainly)
 

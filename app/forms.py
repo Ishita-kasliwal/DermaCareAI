@@ -6,7 +6,7 @@ from __future__ import annotations
 from datetime import date
 
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileRequired
+from flask_wtf.file import MultipleFileField
 from wtforms import (
     BooleanField,
     DateField,
@@ -103,9 +103,11 @@ class DeleteAccountForm(FlaskForm):
 
 class UploadForm(FlaskForm):
     check_type = RadioField("What are you checking?", choices=[
-        ("lesion", "A mole or spot"), ("general", "A rash or other skin problem")],
+        ("lesion", "A mole or spot"), ("general", "A rash or other skin problem"),
+        ("auto", "Not sure? Check with both")],
         default="lesion", validators=[InputRequired("Please choose what you are checking.")])
-    image = FileField("Photo of the skin", validators=[FileRequired("Please choose a photo to upload.")])
+    # 1 to MAX_PHOTOS photos; checked in the upload route (each file is validated like a single upload)
+    image = MultipleFileField("Photos of the skin")
 
 
 class AnalyzeForm(FlaskForm):

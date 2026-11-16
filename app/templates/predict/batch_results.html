@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}Your results{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Step 3 of 3</span>
+      <h1>Your results</h1>
+      <p class="muted">This is not a diagnosis. If a spot changes, bleeds, hurts or worries you, please see a doctor.</p>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('predict.upload') }}">Check more photos</a>
+  </div>
+
+  {% if mode == 'auto' %}
+    <div class="alert alert-info" role="note">
+      <p><strong>Which answer should I look at?</strong> If it's <strong>one small dark or brown spot</strong>,
+        the mole checker's answer fits better. If it's <strong>red, itchy, bumpy or spread over an area</strong>
+        (like pimples or a rash), the rash checker's answer fits better.</p>
+    </div>
+  {% endif %}
+
+  <ul class="stack" aria-label="Results for each photo">
+    {% for g in groups %}
+      <li class="panel result-card">
+        <img src="{{ url_for('predict.image_file', image_id=g.image.public_id) }}" alt="Your photo {{ loop.index }}"
+             width="{{ g.image.width }}" height="{{ g.image.height }}">
+        <div class="flex-1">
+          <h2 class="text-lg">Photo {{ loop.index }}</h2>
+          <ul class="result-lines">
+            {% for p in g.preds %}
+              <li>
+                <span class="muted small block">{{ 'Mole checker' if p.model_version.domain == 'lesion' else 'Rash checker' }} says:</span>
+                <span class="font-semibold text-slate-900 dark:text-white">
+                  {% if p.status == 'inconclusive' %}Not sure{% if p.predicted_class.code != 'unfamiliar' %} · closest: {{ simple_name(p.predicted_class.code, p.predicted_class.name) }}{% endif %}
+                  {% else %}{{ simple_name(p.predicted_class.code, p.predicted_class.name) }}{% endif %}
+                </span>
+                <span class="muted small">({{ (p.confidence * 100)|round|int }}% match)</span>
+                {{ status_badge(p) }}
+                <a class="small" href="{{ url_for('predict.result', prediction_id=p.public_id) }}">See details</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

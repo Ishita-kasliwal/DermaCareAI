@@ -39,3 +39,6 @@ scikit-learn>=1.5
 matplotlib>=3.9
 pyyaml>=6.0
 tqdm>=4.66
+
+# CLIP image model for the rash checker (loads the exported model)
+keras-hub==0.33.0

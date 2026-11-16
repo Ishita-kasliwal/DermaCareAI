@@ -20,8 +20,9 @@
         <thead><tr><th scope="col">Condition</th><th scope="col" class="num">Test photos</th><th scope="col" class="num">Precision</th><th scope="col" class="num">Sensitivity</th><th scope="col" class="num">Specificity</th><th scope="col" class="num">F1</th></tr></thead>
         <tbody>
           {% for c in classes %}
-            {% set m = test.per_class.get(c.code, {}) %}
-            <tr><th scope="row">{{ c.name }}</th><td class="num">{{ m.support }}</td><td class="num">{{ m.precision|pct(1) }}</td><td class="num">{{ m.recall_sensitivity|pct(1) }}</td><td class="num">{{ m.specificity|pct(1) }}</td><td class="num">{{ m.f1|pct(1) }}</td></tr>
+            {% set m = test.per_class.get(c.code) %}
+            {# answers without measured results (e.g. "not a skin problem") are left out, never estimated #}
+            {% if m %}<tr><th scope="row">{{ c.name }}</th><td class="num">{{ m.support }}</td><td class="num">{{ m.precision|pct(1) }}</td><td class="num">{{ m.recall_sensitivity|pct(1) }}</td><td class="num">{{ m.specificity|pct(1) }}</td><td class="num">{{ m.f1|pct(1) }}</td></tr>{% endif %}
           {% endfor %}
         </tbody>
       </table>
@@ -57,10 +58,17 @@
         skin magnifier (dermatoscope) at a hospital in Vienna, Austria, and a skin clinic in Queensland, Australia. More than
         half were confirmed by a lab test (biopsy).</p>
       <p class="cite">Tschandl P., Rosendahl C., Kittler H. The HAM10000 dataset. <em>Scientific Data</em> 5, 180161 (2018). doi:10.1038/sdata.2018.161 · CC BY-NC 4.0.</p>
-      <p><strong>Rash or other skin problem:</strong> a small set of 172 skin rash photos (skin irritation, eczema and
-        ringworm) on different skin tones, supplied for this project. It is a small set, so the results are a rough guide only.
-        In our tests (5 rounds, each time checking photos the AI had not seen) it was right 76% of the time overall, and 85%
-        of the time when it was at least 70% sure.</p>
+      <p><strong>Rash or other skin problem:</strong> about 2,400 everyday photos of 8 answers: acne, skin irritation,
+        eczema, ringworm, dark spots, skin redness, scratches &amp; cuts and healthy skin. They come from a small set of
+        rash photos supplied for this project, part of Google's SCIN collection, and two free Roboflow Universe sets.
+        In our tests (5 rounds, each time checking photos the AI had not seen) it was right 84% of the time overall and
+        89% of the time when it was at least 60% sure. It is weakest at telling skin irritation, eczema and ringworm
+        apart (53&ndash;66%). It does <strong>not</strong> check for dry skin: the dry-skin photos we found were just
+        selfies, and the AI couldn't learn from them.</p>
+      <p class="cite">SCIN, Google Research &amp; Stanford Medicine (SCIN Data Use License) ·
+        &ldquo;Skin analysis&rdquo; by image-classification-q4nkn and &ldquo;basic-wound-classify&rdquo; by clinicvision,
+        Roboflow Universe, CC BY 4.0 (some acne photos in it are from DermNet, dermnetnz.org) ·
+        CLIP image model by OpenAI (MIT licence).</p>
 
       <h2>How it was built</h2>
       <ul>

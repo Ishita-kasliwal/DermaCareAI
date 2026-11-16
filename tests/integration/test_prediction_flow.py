@@ -59,7 +59,7 @@ def test_full_flow_stores_real_model_output(client, user, active_model, model_di
     assert "Common mole (melanocytic nevus)" in html
     assert "This is not a diagnosis" in html
     assert "see a doctor or dermatologist" in html
-    assert "How your photo matched all 7 types" in html
+    assert "Top 3 possibilities" in html
     assert "Other close matches" in html
     assert f"AI confidence <strong>{probs['nv'] * 100:.1f}%</strong>" in html
 
@@ -77,7 +77,7 @@ def test_inconclusive_when_model_is_unsure(client, user, model_dirs):
     html = client.get(f"/results/{pid}").data.decode()
     assert "The AI isn't sure about this one" in html
     assert "We need at least 50%" in html
-    assert "please see a skin doctor" in html
+    assert "please see a dermatologist" in html
 
 
 def test_status_rule():

@@ -46,11 +46,14 @@
       {% if pred.model_version.domain == 'general' %}
         <div class="alert alert-warning" role="note">
           {% set acc = pred.model_version.accuracy %}
-          <p><strong>Good to know.</strong> The rash checker learned from a small set of photos and only knows {{ pred.scores|length }} conditions (listed below).{% if acc %} In our tests it was right about {{ (acc * 100)|round|int }} out of 100 times, and more often when it was sure.{% endif %} If your skin problem is something else (like acne), it can't name it. Treat this as a hint, and ask a doctor or pharmacist.</p>
+          <p><strong>Good to know.</strong> The rash checker only knows a few common problems: {% for s in pred.scores|sort(attribute='disease_class.display_order') if s.disease_class.code != 'unfamiliar' %}{{ simple_name(s.disease_class.code)|lower }}{{ ', ' if not loop.last }}{% endfor %}.{% if acc %} In our tests it was right about {{ (acc * 100)|round|int }} out of 100 times, and more often when it was sure.{% endif %} If your skin problem is something else, it can't name it. Treat this as a hint, and ask a doctor or pharmacist.</p>
         </div>
       {% endif %}
       <div class="result-head">
-        {% if inconclusive %}
+        {% if dc.code == 'unfamiliar' %}
+          <h1 class="result-title">This doesn't look like a skin problem I know</h1>
+          <p class="result-confidence">The photo looks more like a selfie, clear skin, or something that isn't a close-up of a skin problem.</p>
+        {% elif inconclusive %}
           <h1 class="result-title">The AI isn't sure about this one</h1>
           <p class="result-confidence">Closest match: <strong>{{ dc.name }}</strong> ({{ pred.confidence|pct(1) }})</p>
           {% if reasons %}
@@ -65,10 +68,15 @@
         <p class="small muted">This number shows how closely your photo matches this type compared with the other {{ n_types - 1 }} it knows. It is not the chance that you have it.</p>
       </div>
 
-      {% if inconclusive %}
+      {% if dc.code == 'unfamiliar' %}
         <div class="risk-callout inconclusive">
           <h2>What to do next</h2>
-          <p>Try again with a sharper photo in better light. If the spot is new, changing or worrying you, please see a skin doctor.</p>
+          <p>Take a close-up of just the problem area (pimples, rash or red patch), in good light, filling most of the photo. If you're worried about your skin, please see a dermatologist (skin doctor).</p>
+        </div>
+      {% elif inconclusive %}
+        <div class="risk-callout inconclusive">
+          <h2>The result is unclear</h2>
+          <p>The AI is less than {{ pred.model_version.confidence_threshold|pct }} sure, so we won't name one condition. Try a sharper photo in better light. If it's new, changing, painful or worrying you, please see a dermatologist (skin doctor).</p>
         </div>
       {% else %}
         <div class="risk-callout {{ dc.risk_level }}">
@@ -78,11 +86,11 @@
       {% endif %}
 
       <section aria-labelledby="scores-h">
-        <h2 id="scores-h">How your photo matched all {{ n_types }} types</h2>
+        <h2 id="scores-h">Top 3 possibilities</h2>
         <ul class="prob-list">
-          {% for s in pred.scores %}
+          {% for s in pred.scores[:3] %}
             <li class="{{ 'top' if loop.first }}">
-              <span class="p-name">{{ s.disease_class.name }}</span>
+              <span class="p-name">{{ simple_name(s.disease_class.code, s.disease_class.name) }}</span>
               <progress class="bar" max="1" value="{{ '%.4f'|format(s.probability) }}" aria-label="{{ s.disease_class.name }} score">{{ s.probability|pct }}</progress>
               <span class="p-val">{{ s.probability|pct(1) }}</span>
             </li>

@@ -137,6 +137,10 @@ class SkinLesionPredictor:
                     raise ModelIntegrityError(
                         f"checksum mismatch for {model_path.name}: refusing to load"
                     )
+            import skinai_ml.layers  # noqa: F401 - registers custom layers (photo gate)
+
+            if self.manifest.get("requires") and "keras_hub" in self.manifest["requires"]:
+                import keras_hub  # noqa: F401 - registers CLIP layers
             model = keras.models.load_model(model_path, compile=False)
             n_out = model.output_shape[-1]
             if n_out != len(self.class_codes):

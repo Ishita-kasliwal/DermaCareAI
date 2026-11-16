@@ -4,7 +4,7 @@ module.exports = {
   // Class-based dark mode: theme.js adds `dark` to <html> from the saved choice or the OS setting.
   darkMode: "class",
   // Classes added only by JavaScript at runtime.
-  safelist: ["dark", "open", "show", "dragover", "is-loading"],
+  safelist: ["dark", "open", "show", "dragover", "is-loading", "nav-hidden"],
   theme: {
     extend: {
       colors: {

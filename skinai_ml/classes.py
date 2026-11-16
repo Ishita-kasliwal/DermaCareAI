@@ -44,6 +44,12 @@ _ALL = (
     # --- general (user-provided rash dataset, used by the current rash checker)
     LesionClass("dermatitis", "Skin irritation (dermatitis)", "low", "general"),
     LesionClass("ringworm", "Ringworm (fungal infection)", "low", "general"),
+    # --- general (Roboflow Universe sets, CC BY 4.0, added 2026-11-16)
+    LesionClass("dark_spots", "Dark spots and pigmentation", "low", "general"),
+    LesionClass("redness", "Skin redness", "low", "general"),
+    LesionClass("scratches", "Scratches and small cuts", "low", "general"),
+    LesionClass("healthy", "Healthy-looking skin", "low", "general"),
+    LesionClass("unfamiliar", "Not a skin problem the AI knows", "low", "general"),
 )
 
 CLASS_INFO: dict[str, LesionClass] = {c.code: c for c in _ALL}
@@ -54,3 +60,20 @@ MALIGNANT_CODES = ("akiec", "bcc", "mel")
 
 def codes_for(domain: str) -> list[str]:
     return [c.code for c in _ALL if c.domain == domain]
+
+
+# Everyday names for charts and short labels (no medical words).
+SIMPLE_NAMES = {
+    "akiec": "Sun-damage patch", "bcc": "Skin cancer (BCC)", "bkl": "Harmless age spot",
+    "df": "Harmless firm bump", "mel": "Skin cancer (melanoma)", "nv": "Common mole",
+    "vasc": "Blood-vessel spot", "eczema": "Eczema", "contact_dermatitis": "Skin reaction",
+    "urticaria": "Hives", "insect_bite": "Insect bite", "folliculitis": "Hair-root bumps",
+    "fungal": "Fungal infection", "acne": "Acne / pimples", "psoriasis": "Psoriasis",
+    "shingles": "Shingles", "cold_sores": "Cold sores", "dermatitis": "Skin irritation",
+    "ringworm": "Ringworm", "dark_spots": "Dark spots", "redness": "Skin redness",
+    "scratches": "Scratches & cuts", "healthy": "Healthy skin", "unfamiliar": "Not a known skin problem",
+}
+
+
+def simple_name(code: str, fallback: str = "") -> str:
+    return SIMPLE_NAMES.get(code, fallback or code)

@@ -39,3 +39,20 @@ def test_about_page_without_model_shows_no_fake_metrics(client):
     r = client.get("/about-model")
     assert b"This AI hasn't been trained yet" in r.data
     assert b"Balanced accuracy" not in r.data
+
+
+def test_about_page_skips_answers_without_measured_results(client, model_dirs):
+    """A model answer with no test numbers (e.g. "not a skin problem") must not break the page."""
+    from app.extensions import db
+    from app.models import ModelVersion
+    from tests.conftest import register_model
+
+    register_model(model_dirs["general"])
+    mv = db.session.scalar(db.select(ModelVersion).filter_by(domain="general", is_active=True))
+    one = {"support": 10, "precision": 0.5, "recall_sensitivity": 0.5, "specificity": 0.9, "f1": 0.5}
+    mv.metrics = {"test": {"n_images": 10, "accuracy": 0.5, "balanced_accuracy": 0.5, "macro_f1": 0.5,
+                           "per_class": {"eczema": one}}}    # every other answer has no measured results
+    db.session.commit()
+    r = client.get("/about-model")
+    assert r.status_code == 200
+    assert b"Balanced accuracy" in r.data or b"50.0%" in r.data

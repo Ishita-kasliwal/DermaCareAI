@@ -27,15 +27,15 @@
         {{ form.hidden_tag() }}
         <fieldset class="mb-5">
           <legend class="mb-3 text-lg">1. What are you checking?</legend>
-          <div class="grid gap-3 sm:grid-cols-2">
+          <div class="grid gap-3 sm:grid-cols-3">
             {% for opt in form.check_type %}
-              {% set ready = models.get(opt.data) is not none %}
+              {% set ready = (models.get('lesion') or models.get('general')) if opt.data == 'auto' else (models.get(opt.data) is not none) %}
               <label class="group relative flex cursor-pointer items-start gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-400 has-[:checked]:ring-2 has-[:checked]:ring-brand-600 dark:bg-slate-900 dark:ring-white/10 dark:hover:ring-brand-400/60 dark:has-[:checked]:ring-brand-400 {{ 'opacity-60' if not ready }}">
                 {{ opt(class_="mt-1 h-5 w-5 flex-none accent-brand-600", disabled=not ready, **({'checked': true} if (form.check_type.data or 'lesion') == opt.data and ready else {})) }}
                 <span>
                   <span class="block font-semibold text-slate-900 dark:text-white">{{ opt.label.text }}</span>
                   <span class="block text-sm text-slate-500 dark:text-slate-400">
-                    {% if opt.data == 'lesion' %}A single mole, freckle or spot. Close-up photos work best.{% else %}A rash or itchy, red or scaly patch: skin irritation, eczema or ringworm. Face photos are fine.{% endif %}
+                    {% if opt.data == 'lesion' %}One small dark or brown spot, like a mole or freckle.{% elif opt.data == 'general' %}Pimples, a rash, eczema, ringworm, dark patches, redness or a scratch.{% else %}Don't know which? We'll check with both and show you both answers.{% endif %}
                   </span>
                   {% if not ready %}<span class="mt-1 block text-xs font-semibold text-amber-700 dark:text-amber-300">Not available yet: this AI hasn't been installed</span>{% endif %}
                 </span>
@@ -44,27 +44,25 @@
           </div>
           {% if form.check_type.errors %}<p class="error-text mt-2">{{ form.check_type.errors|join(' ') }}</p>{% endif %}
         </fieldset>
-        <p class="mb-3 text-lg font-semibold text-slate-900 dark:text-white">2. Add your photo</p>
+        <p class="mb-1 text-lg font-semibold text-slate-900 dark:text-white">2. Add your photos</p>
+        <p class="muted small mb-3">You can add up to {{ max_photos }} photos, for example the same problem from different sides.</p>
         <div class="dropzone" data-dropzone>
           <span class="icon-circle">{{ icon('upload') }}</span>
-          <p class="dz-title">Drag your photo here</p>
-          <p class="muted small" id="file-hint">or choose a file · JPG or PNG · up to {{ max_mb }} MB · at least {{ min_side }} × {{ min_side }} pixels</p>
-          <label class="visually-hidden" for="image">Photo of the skin</label>
-          <input id="image" name="image" type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png" required aria-describedby="file-hint{{ ' upload-error' if error }}" data-file-input>
+          <p class="dz-title">Drag your photos here</p>
+          <p class="muted small" id="file-hint">or choose files · JPG or PNG · up to {{ max_mb }} MB · at least {{ min_side }} × {{ min_side }} pixels</p>
+          <label class="visually-hidden" for="image">Photos of the skin</label>
+          <input id="image" name="image" type="file" multiple data-max-files="{{ max_photos }}" accept="image/jpeg,image/png,.jpg,.jpeg,.png" required aria-describedby="file-hint{{ ' upload-error' if error }}" data-file-input>
           <div class="dz-preview" data-preview aria-live="polite">
-            <img alt="Preview of the photo you chose" data-preview-img>
-            <div>
-              <p class="label" data-preview-name></p>
-              <p class="muted small" data-preview-meta></p>
-            </div>
+            <div class="dz-thumbs" data-preview-list></div>
+            <p class="muted small mb-0" data-preview-meta></p>
           </div>
           <p class="error-text" data-client-error role="alert" hidden></p>
         </div>
         <div class="btn-row form-actions">
-          <button class="btn btn-primary" type="submit" data-submit>Upload photo</button>
+          <button class="btn btn-primary" type="submit" data-submit>Upload</button>
           <a class="btn btn-ghost" href="{{ url_for('main.dashboard') }}">Cancel</a>
         </div>
-        <p class="loading-note" data-loading-note>Uploading and checking your photo…</p>
+        <p class="loading-note" data-loading-note>Uploading and checking your photos…</p>
       </form>
     </div>
 

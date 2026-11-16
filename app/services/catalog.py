@@ -44,6 +44,11 @@ CLASS_CONTENT = {
         "Usually harmless. See a doctor if it bleeds again and again or grows quickly.",
     ),
     # ---- rash or other skin problem (SCIN)
+    "unfamiliar": (
+        "The photo doesn't look like a close-up of a skin problem the rash checker knows (for example a "
+        "selfie, clear skin, or an object).",
+        "Take a close-up photo of just the problem area in good light. If you're worried, see a dermatologist.",
+    ),
     "eczema": (
         "Dry, itchy, inflamed skin that often comes and goes. It's very common, especially in the creases "
         "of elbows and knees, and is not contagious.",
@@ -115,10 +120,37 @@ CLASS_CONTENT = {
         "Antifungal creams from a pharmacist usually clear it in 2-4 weeks. Keep the skin clean and dry and "
         "don't share towels. See a doctor if it's on your scalp or doesn't get better.",
     ),
+    # ---- added with the Roboflow Universe photo sets (CC BY 4.0)
+    "dark_spots": (
+        "Patches or small spots that are darker than the skin around them, such as freckles, sun spots, "
+        "marks left after pimples, or melasma (brownish patches on the cheeks). These are very common and "
+        "usually harmless.",
+        "Daily sunscreen helps stop them getting darker. See a dermatologist if a spot is new, growing, has "
+        "an uneven edge or several colours, itches or bleeds. For a single dark spot, also try the mole checker.",
+    ),
+    "redness": (
+        "Red or flushed skin, often on the cheeks, nose or chin. It can come from irritation, heat, sun, "
+        "a reaction to a product, or rosacea.",
+        "Use gentle, fragrance-free products and notice what makes it worse (sun, spicy food, hot drinks). "
+        "See a doctor if it is painful, hot, swollen, spreading or doesn't settle.",
+    ),
+    "scratches": (
+        "A scrape, graze or small cut where the top layer of skin is broken. Most heal by themselves in a "
+        "week or two.",
+        "Rinse with clean water, cover with a clean dressing and keep it clean. See a doctor for a deep or "
+        "gaping cut, bleeding that won't stop, an animal bite, or signs of infection (spreading redness, "
+        "warmth, pus or fever).",
+    ),
+    "healthy": (
+        "The photo looks like healthy skin with no clear problem that the AI knows.",
+        "If something still bothers you, take a closer photo of just that area in good light, or ask a "
+        "dermatologist.",
+    ),
 }
 
 DISPLAY_ORDER = ["mel", "bcc", "akiec", "bkl", "nv", "df", "vasc",
-                 "dermatitis", "eczema", "ringworm",
+                 "dermatitis", "eczema", "ringworm", "dark_spots", "redness", "scratches", "healthy",
+                 "unfamiliar",
                  "contact_dermatitis", "urticaria", "insect_bite", "folliculitis", "fungal",
                  "acne", "psoriasis", "shingles", "cold_sores"]
 

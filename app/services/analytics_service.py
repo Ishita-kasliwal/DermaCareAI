@@ -7,6 +7,8 @@ from datetime import date, datetime, timedelta
 
 import sqlalchemy as sa
 
+from skinai_ml.classes import simple_name
+
 from app.extensions import db
 from app.models import DiseaseClass, Feedback, Image, ModelVersion, Prediction, User
 from app.models.entities import utcnow
@@ -29,7 +31,8 @@ def _class_distribution(where) -> list[dict]:
         .group_by(DiseaseClass.id)
         .order_by(DiseaseClass.display_order)
     ).all()
-    return [{"code": c, "name": n, "risk_level": r, "count": int(k)} for c, n, r, k in rows]
+    return [{"code": c, "name": n, "simple_name": simple_name(c, n), "risk_level": r, "count": int(k)}
+            for c, n, r, k in rows]
 
 
 def _status_split(where) -> dict:

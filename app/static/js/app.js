@@ -67,6 +67,26 @@
     });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") setNav(false); });
 
+    // --- top bar slides away when scrolling down, comes back when scrolling up
+    var bar = document.querySelector(".topbar, .site-header");
+    if (bar) {
+      var lastY = window.scrollY, ticking = false;
+      window.addEventListener("scroll", function () {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(function () {
+          var y = window.scrollY;
+          var menuOpen = nav && nav.classList.contains("open");
+          if (y > lastY + 6 && y > 80 && !menuOpen) bar.classList.add("nav-hidden");
+          else if (y < lastY - 6 || y <= 80) bar.classList.remove("nav-hidden");
+          lastY = y;
+          ticking = false;
+        });
+      }, { passive: true });
+      // keep it visible while someone tabs through its links with the keyboard
+      bar.addEventListener("focusin", function () { bar.classList.remove("nav-hidden"); });
+    }
+
     // --- confirmation before destructive actions
     document.querySelectorAll("form[data-confirm]").forEach(function (form) {
       form.addEventListener("submit", function (e) {
@@ -133,15 +153,15 @@
     var input = form.querySelector("[data-file-input]");
     var zone = form.querySelector("[data-dropzone]");
     var preview = form.querySelector("[data-preview]");
-    var img = form.querySelector("[data-preview-img]");
-    var nameEl = form.querySelector("[data-preview-name]");
+    var list = form.querySelector("[data-preview-list]");
     var metaEl = form.querySelector("[data-preview-meta]");
     var errEl = form.querySelector("[data-client-error]");
     var submit = form.querySelector("[data-submit]");
     var note = form.querySelector("[data-loading-note]");
     var maxBytes = parseFloat(form.getAttribute("data-max-mb")) * 1024 * 1024;
     var minSide = parseInt(form.getAttribute("data-min-side"), 10);
-    var objectUrl = null;
+    var maxFiles = parseInt(input.getAttribute("data-max-files") || "1", 10);
+    var urls = [];
     var valid = false;
 
     function showError(msg) {
@@ -150,29 +170,45 @@
       valid = !msg;
     }
 
-    function handle(file) {
+    function handle(files) {
       showError("");
       preview.classList.remove("show");
-      if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
-      if (!file) { valid = false; return; }
-      var okType = /^image\/(jpeg|png)$/.test(file.type) || /\.(jpe?g|png)$/i.test(file.name);
-      if (!okType) return showError("Please choose a JPG or PNG photo.");
-      if (file.size > maxBytes) return showError("This photo is too big. Please choose a smaller one.");
-      if (file.size === 0) return showError("This file is empty. Please choose a photo.");
-      objectUrl = URL.createObjectURL(file);
-      img.onload = function () {
-        var w = img.naturalWidth, h = img.naturalHeight;
-        metaEl.textContent = w + " × " + h + " px · " + (file.size / 1024 / 1024).toFixed(1) + " MB";
-        if (Math.min(w, h) < minSide) showError("This photo is only " + w + " × " + h + " pixels. Please use one that's at least " + minSide + " pixels on each side.");
-      };
-      img.onerror = function () { showError("We couldn't open this file. Please choose a JPG or PNG photo."); };
-      img.src = objectUrl;
-      nameEl.textContent = file.name;
+      urls.forEach(function (u) { URL.revokeObjectURL(u); });
+      urls = [];
+      list.textContent = "";
+      if (!files || !files.length) { valid = false; return; }
+      if (files.length > maxFiles) return showError("Please choose up to " + maxFiles + " photos at a time.");
+      var total = 0;
+      for (var k = 0; k < files.length; k++) {
+        var file = files[k];
+        var okType = /^image\/(jpeg|png)$/.test(file.type) || /\.(jpe?g|png)$/i.test(file.name);
+        if (!okType) return showError(file.name + " isn't a JPG or PNG photo.");
+        if (file.size > maxBytes) return showError(file.name + " is too big. Please choose a smaller photo.");
+        if (file.size === 0) return showError(file.name + " is empty. Please choose a photo.");
+        total += file.size;
+      }
+      Array.prototype.forEach.call(files, function (file) {
+        var url = URL.createObjectURL(file);
+        urls.push(url);
+        var img = document.createElement("img");
+        img.alt = "Preview of " + file.name;
+        img.onload = function () {
+          if (Math.min(img.naturalWidth, img.naturalHeight) < minSide) {
+            showError(file.name + " is only " + img.naturalWidth + " × " + img.naturalHeight +
+              " pixels. Please use photos that are at least " + minSide + " pixels on each side.");
+          }
+        };
+        img.onerror = function () { showError("We couldn't open " + file.name + ". Please choose a JPG or PNG photo."); };
+        img.src = url;
+        list.appendChild(img);
+      });
+      metaEl.textContent = files.length + (files.length === 1 ? " photo" : " photos") + " · " +
+        (total / 1024 / 1024).toFixed(1) + " MB";
       preview.classList.add("show");
       valid = true;
     }
 
-    input.addEventListener("change", function () { handle(input.files[0]); });
+    input.addEventListener("change", function () { handle(input.files); });
 
     ["dragenter", "dragover"].forEach(function (ev) {
       zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.add("dragover"); });
@@ -183,7 +219,7 @@
     zone.addEventListener("drop", function (e) {
       if (!e.dataTransfer || !e.dataTransfer.files.length) return;
       try { input.files = e.dataTransfer.files; } catch (_) { /* older browsers */ }
-      handle(e.dataTransfer.files[0]);
+      handle(e.dataTransfer.files);
     });
 
     form.addEventListener("submit", function (e) {

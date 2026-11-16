@@ -64,6 +64,9 @@
     return wrap;
   }
 
+  // Everyday name from the API ("Common mole"), never the medical term
+  function simpleName(r) { return r.simple_name || r.name; }
+
   function pct(x) { return x === null || x === undefined ? "—" : Math.round(x * 100) + "%"; }
 
   function ready(fn) { if (document.readyState !== "loading") fn(); else document.addEventListener("DOMContentLoaded", fn); }
@@ -81,7 +84,7 @@
         renderers.push(function (C) {
           make(uc.querySelector("canvas"), {
             type: "bar",
-            data: { labels: rows.map(function (r) { return r.name; }),
+            data: { labels: rows.map(function (r) { return simpleName(r); }),
                     datasets: [{ data: rows.map(function (r) { return r.count; }),
                                  backgroundColor: rows.map(function (r) { return C.risk[r.risk_level] || C.grey; }),
                                  borderRadius: 3, maxBarThickness: 22 }] },
@@ -117,7 +120,7 @@
         });
         make(canvas("classes"), {
           type: "bar",
-          data: { labels: d.by_class.map(function (r) { return r.name; }),
+          data: { labels: d.by_class.map(function (r) { return simpleName(r); }),
                   datasets: [{ data: d.by_class.map(function (r) { return r.count; }),
                                backgroundColor: d.by_class.map(function (r) { return C.risk[r.risk_level] || C.grey; }), borderRadius: 3 }] },
           options: base(C, { indexAxis: "y", scales: axes(C, true) })
@@ -155,7 +158,7 @@
       // accessible data tables
       var raw = root.querySelector("[data-raw-tables]");
       raw.appendChild(el("h3", "By category"));
-      raw.appendChild(table(["Category", "Analyses"], d.by_class.map(function (r) { return [r.name, r.count]; })));
+      raw.appendChild(table(["Category", "Analyses"], d.by_class.map(function (r) { return [simpleName(r), r.count]; })));
       raw.appendChild(el("h3", "Top-score distribution"));
       raw.appendChild(table(["Score range", "Analyses"], d.confidence_histogram.map(function (r) { return [r.bin, r.count]; })));
       raw.appendChild(el("h3", "By model version"));

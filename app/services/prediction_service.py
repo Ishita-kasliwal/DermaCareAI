@@ -50,10 +50,13 @@ def inconclusive_reasons(pred: Prediction) -> list[str]:
     return reasons
 
 
-def run_prediction(user: User, image: Image) -> Prediction:
+def run_prediction(user: User, image: Image, domain: str | None = None) -> Prediction:
+    """Check one photo. `domain` picks the checker ("lesion" or "general"); default: the photo's own."""
     if image.user_id != user.id or image.deleted_at is not None:
         raise PermissionError("image not owned by user")
-    domain = image.domain or "lesion"
+    domain = domain or image.domain or "lesion"
+    if domain not in ("lesion", "general"):
+        raise ValueError("unknown checker")
     mv = registry.active_version(domain)
     if mv is None:
         raise ModelUnavailableError("The AI for this kind of check isn't ready yet.")
@@ -87,7 +90,8 @@ def run_prediction(user: User, image: Image) -> Prediction:
     db.session.add(pred)
     db.session.flush()
 
-    if current_app.config["ENABLE_GRADCAM"]:
+    # Heatmaps need a convolutional model; models that say "gradcam": false (e.g. CLIP-based) skip them.
+    if current_app.config["ENABLE_GRADCAM"] and predictor.manifest.get("gradcam", True)             and result.code != "unfamiliar":
         try:
             pred.gradcam_key = _save_gradcam(predictor, rgb, result, image, user)
         except Exception as exc:  # explanation is optional; never fail the prediction for it

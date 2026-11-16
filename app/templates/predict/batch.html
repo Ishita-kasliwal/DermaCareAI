@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "_macros.html" import check %}
+{% block title %}Check your photos{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Step 2 of 3</span>
+      <h1>{{ 'Check your photo' if images|length == 1 else 'Check your ' ~ images|length ~ ' photos' }}</h1>
+      <p class="muted">
+        {% if mode == 'auto' %}You weren't sure what it is, so each photo will be checked by
+          <strong>both</strong> the mole checker and the rash checker. You'll see both answers side by side.
+        {% else %}Each photo will be checked as: <strong>{{ domain_labels[mode]|lower }}</strong>.{% endif %}
+      </p>
+    </div>
+  </div>
+
+  {% if error %}<div class="alert alert-error" role="alert"><p>{{ error }}</p></div>{% endif %}
+
+  <ul class="photo-grid" aria-label="Your photos">
+    {% for image in images %}
+      {% set issues = (image.quality_issues or [])|rejectattr('code','equalto','face')|list %}
+      <li class="photo-card">
+        <img src="{{ url_for('predict.image_file', image_id=image.public_id) }}" alt="Your photo {{ loop.index }}"
+             width="{{ image.width }}" height="{{ image.height }}">
+        <p class="small mb-0">
+          {% if issues %}<span class="q-warn">Check</span> {{ issues[0].message|capitalize }}
+          {% else %}<span class="q-ok">Good</span> Photo quality looks fine.{% endif %}
+        </p>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <section class="panel mt-6" aria-labelledby="confirm-h">
+    <h2 id="confirm-h">Ready?</h2>
+    {% if not domains %}
+      <div class="alert alert-warning"><p>The AI isn't ready yet, so we can't check these photos right now.</p></div>
+    {% endif %}
+    <form class="form" method="post" novalidate data-loading-form>
+      {{ form.hidden_tag() }}
+      {{ check(form.consent, required=true) }}
+      <div class="btn-row">
+        <button class="btn btn-primary" type="submit" {% if not domains %}disabled aria-disabled="true"{% endif %}>
+          {{ 'Check my photo' if images|length == 1 else 'Check all ' ~ images|length ~ ' photos' }}</button>
+        <a class="btn btn-secondary" href="{{ url_for('predict.upload') }}">Use different photos</a>
+      </div>
+      <p class="loading-note" data-loading-note>The AI is looking at your photos. This can take up to a minute…</p>
+    </form>
+  </section>
+</div>
+{% endblock %}
