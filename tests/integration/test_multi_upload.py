@@ -1,4 +1,4 @@
-"""Several photos at once, and the "Not sure? Check with both" option."""
+"""Several photos at once, and the "Not sure? Let the AI choose" option."""
 
 import io
 import re
@@ -39,16 +39,47 @@ def test_several_photos_checked_together(client, db, user, both):
     assert db.session.scalar(db.select(db.func.count(Prediction.id))) == 3
 
 
-def test_not_sure_checks_with_both(client, db, user, both):
+def _sorter(monkeypatch, p_mole):
+    """Fake the photo sorter's answer (None = no sorter installed)."""
+    monkeypatch.setattr("skinai_ml.prediction.SkinLesionPredictor.mole_photo_probability", lambda self, rgb: p_mole)
+
+
+def test_not_sure_without_sorter_falls_back_to_both(client, db, user, both, monkeypatch):
+    _sorter(monkeypatch, None)
     login(client)
     loc = _batch_url(_post(client, [(image_bytes(seed=9), "x.jpg")], "auto"))
     assert "checked by" in client.get(loc).data.decode()
     r = client.post(loc, data={"consent": "y"})
     page = client.get(r.headers["Location"]).data.decode()
     assert "Mole checker says" in page and "Rash checker says" in page
-    assert "Which answer should I look at?" in page
     domains = sorted(p.model_version.domain for p in db.session.scalars(db.select(Prediction)))
     assert domains == ["general", "lesion"]
+
+
+def test_not_sure_rash_photo_gives_one_rash_answer(client, db, user, both, monkeypatch):
+    _sorter(monkeypatch, 0.01)                      # looks like a rash/acne photo
+    login(client)
+    r = client.post(_batch_url(_post(client, [(image_bytes(seed=9), "x.jpg")], "auto")), data={"consent": "y"})
+    assert "/results/" in r.headers["Location"] and "/results/batch" not in r.headers["Location"]  # straight to it
+    domains = [p.model_version.domain for p in db.session.scalars(db.select(Prediction))]
+    assert domains == ["general"], "no mole/skin-cancer answer next to a rash answer"
+
+
+def test_not_sure_mole_photo_uses_only_the_mole_checker(client, db, user, both, monkeypatch):
+    _sorter(monkeypatch, 0.99)                      # looks like a single mole close-up
+    login(client)
+    r = client.post(_batch_url(_post(client, [(image_bytes(seed=9), "x.jpg")], "auto")), data={"consent": "y"})
+    assert r.status_code == 302
+    preds = list(db.session.scalars(db.select(Prediction)))
+    assert [p.model_version.domain for p in preds] == ["lesion"]
+    assert preds[0].image.domain == "lesion"
+
+
+def test_upload_page_recommends_letting_the_ai_choose(client, user, both):
+    login(client)
+    html = client.get("/analyze").data.decode()
+    assert "Not sure? Let the AI choose" in html
+    assert re.search(r'value="auto"[^>]*checked|checked[^>]*value="auto"', html)
 
 
 def test_too_many_photos_rejected(client, user, both):

@@ -102,6 +102,7 @@ def _register_blueprints(app: Flask) -> None:
     from app.blueprints.api import bp as api_bp
     from app.blueprints.api.routes import health
     from app.blueprints.auth import bp as auth_bp
+    from app.blueprints.doctors import bp as doctors_bp
     from app.blueprints.history import bp as history_bp
     from app.blueprints.main import bp as main_bp
     from app.blueprints.predict import bp as predict_bp
@@ -110,6 +111,7 @@ def _register_blueprints(app: Flask) -> None:
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(account_bp, url_prefix="/account")
     app.register_blueprint(predict_bp)
+    app.register_blueprint(doctors_bp)
     app.register_blueprint(history_bp, url_prefix="/history")
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(api_bp, url_prefix="/api/v1")
@@ -172,8 +174,23 @@ def _register_hooks(app: Flask) -> None:
 
     @app.template_filter("datetimefmt")
     def datetimefmt(value):
+        """Stored times are UTC; people see India time (IST, UTC+5:30, no daylight saving), 12-hour clock."""
+        from datetime import UTC, timezone
+
         d = _as_dt(value)
-        return f"{d.day} {d:%b %Y, %H:%M} UTC" if d else "—"
+        if not d:
+            return "—"
+        ist = (d if d.tzinfo else d.replace(tzinfo=UTC)).astimezone(timezone(timedelta(hours=5, minutes=30)))
+        hour = ist.hour % 12 or 12
+        return f"{ist.day} {ist:%b %Y}, {hour}:{ist:%M} {'am' if ist.hour < 12 else 'pm'} IST"
+
+    @app.template_filter("duration")
+    def duration(ms):
+        """Milliseconds as everyday words: "under a second", "2 seconds", "11 seconds"."""
+        if ms is None:
+            return "—"
+        secs = round(ms / 1000)
+        return "under a second" if ms < 1000 else f"{secs} second{'s' if secs != 1 else ''}"
 
     @app.template_filter("pct")
     def pct(value, digits: int = 0):

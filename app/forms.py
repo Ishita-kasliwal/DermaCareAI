@@ -102,10 +102,11 @@ class DeleteAccountForm(FlaskForm):
 
 
 class UploadForm(FlaskForm):
+    # "auto" first and pre-selected: most people don't know which checker fits, so the AI picks one
     check_type = RadioField("What are you checking?", choices=[
-        ("lesion", "A mole or spot"), ("general", "A rash or other skin problem"),
-        ("auto", "Not sure? Check with both")],
-        default="lesion", validators=[InputRequired("Please choose what you are checking.")])
+        ("auto", "Not sure? Let the AI choose"), ("lesion", "A mole or spot"),
+        ("general", "A rash or other skin problem")],
+        default="auto", validators=[InputRequired("Please choose what you are checking.")])
     # 1 to MAX_PHOTOS photos; checked in the upload route (each file is validated like a single upload)
     image = MultipleFileField("Photos of the skin")
 
@@ -162,3 +163,40 @@ class UserSearchForm(FlaskForm):
                        validators=[Optional()], filters=[_empty_to_none])
     state = SelectField("Status", choices=[("", "All"), ("active", "Active"), ("inactive", "Switched off")],
                         validators=[Optional()], filters=[_empty_to_none])
+
+
+# Letters (any script, incl. Indian vowel signs), spaces and . ' - ( ) only: no digits or markup in place names
+PLACE_RE = r"^[^\W\d_](?:[^\W\d_]|[ऀ-෿]|[ .'()\-])*$"
+
+
+def _strip(v):
+    return v.strip() if isinstance(v, str) else v
+
+
+class DoctorSearchForm(FlaskForm):
+    """Find a dermatologist near me (Task 4). A GET search form: nothing is saved."""
+
+    class Meta:
+        csrf = False
+
+    city = StringField("City or town", filters=[_strip], validators=[
+        DataRequired("Please type your city or town, for example Pune."),
+        Length(min=2, max=60, message="Please type a city or town name between 2 and 60 letters long."),
+        Regexp(PLACE_RE, message="Please use only letters and spaces in the city name (no numbers)."),
+    ])
+    district = StringField("District (optional)", filters=[_strip], validators=[
+        Optional(),
+        Length(min=2, max=60, message="Please type a district name between 2 and 60 letters long, or leave it empty."),
+        Regexp(PLACE_RE, message="Please use only letters and spaces in the district name (no numbers)."),
+    ])
+    state = SelectField("State or union territory", choices=[], validators=[
+        DataRequired("Please choose your state or union territory from the list."),
+    ])
+    prediction = HiddenField()   # optional: the check this search came from (used for booking later)
+
+    def __init__(self, *args, **kwargs):
+        from app.data.india import STATES, UNION_TERRITORIES
+
+        super().__init__(*args, **kwargs)
+        self.state.choices = ([("", "Choose your state")] + [(s, s) for s in STATES]
+                              + [(u, f"{u} (UT)") for u in UNION_TERRITORIES])

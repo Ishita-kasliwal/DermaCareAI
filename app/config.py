@@ -72,6 +72,10 @@ class BaseConfig:
     GOOGLE_CLIENT_ID = _env("GOOGLE_CLIENT_ID", "")
     GOOGLE_CLIENT_SECRET = _env("GOOGLE_CLIENT_SECRET", "")
 
+    # Optional: Google Places key for the "find a dermatologist" clinic list (more clinics + phone numbers).
+    # Empty = free OpenStreetMap data. See docs/FIND_A_DERMATOLOGIST.md.
+    GOOGLE_MAPS_API_KEY = _env("GOOGLE_MAPS_API_KEY", "")
+
     # Rate limits (per client)
     LOGIN_RATE_LIMIT = "5 per minute"
     REGISTER_RATE_LIMIT = "10 per hour"

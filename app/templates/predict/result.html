@@ -33,11 +33,11 @@
       <section class="panel" aria-labelledby="about-h">
         <h2 id="about-h">About this check</h2>
         <dl class="meta-list">
-          <dt>AI version</dt><dd>{{ pred.model_version.architecture }} · <span class="mono">{{ pred.model_version.version }}</span></dd>
+          <dt>Checked by</dt><dd>{{ 'Rash checker' if pred.model_version.domain == 'general' else 'Mole checker' }}{% if pred.model_version.trained_at %} (last updated {{ pred.model_version.trained_at|datefmt }}){% endif %}</dd>
           <dt>Checked on</dt><dd>{{ pred.created_at|datetimefmt }}</dd>
-          <dt>Time taken</dt><dd>{{ pred.inference_ms }} ms</dd>
+          <dt>Time taken</dt><dd>{{ pred.inference_ms|duration }}</dd>
           <dt>Photo quality</dt><dd>{% if pred.image.quality_ok %}Looks good{% else %}{% for i in pred.image.quality_issues or [] %}{{ i.message[:1]|upper }}{{ i.message[1:] }} {% endfor %}{% endif %}</dd>
-          <dt>How we decide</dt><dd>We only name one type if it scores at least {{ pred.model_version.confidence_threshold|pct }} and is clearly ahead of the next one.</dd>
+          <dt>How we decide</dt><dd>We only give one answer when the AI is at least {{ pred.model_version.confidence_threshold|pct }} sure. Otherwise we tell you it's unclear.</dd>
         </dl>
       </section>
     </div>
@@ -62,7 +62,7 @@
         {% else %}
           <p class="muted">Your photo looks most like</p>
           <h1 class="result-title">{{ dc.name }}</h1>
-          <p class="result-confidence">AI confidence <strong>{{ pred.confidence|pct(1) }}</strong> {{ risk_badge(dc.risk_level) }}</p>
+          <p class="result-confidence"><strong>{{ pred.confidence|pct(1) }}</strong> match {{ risk_badge(dc.risk_level) }}</p>
           {% if reasons %}<p class="small muted">{{ reasons|join(' ') }}</p>{% endif %}
         {% endif %}
         <p class="small muted">This number shows how closely your photo matches this type compared with the other {{ n_types - 1 }} it knows. It is not the chance that you have it.</p>
@@ -134,6 +134,22 @@
         {% endif %}
       {% endif %}
 
+      {# Find a dermatologist (Task 4): small form that opens the search page for this check #}
+      <section class="section" aria-labelledby="derm-h">
+        <h2 id="derm-h">Find a dermatologist near you</h2>
+        <p class="muted">Type your city or town and choose your state to see skin clinics nearby.</p>
+        <form class="form doctor-search" method="get" action="{{ url_for('doctors.find') }}" novalidate data-loading-form>
+          <input type="hidden" name="prediction" value="{{ pred.public_id }}">
+          <div class="doctor-search-fields">
+            {{ field(doctor_form.city, maxlength=60, placeholder="e.g. Pune") }}
+            {{ field(doctor_form.district, maxlength=60) }}
+            {{ field(doctor_form.state) }}
+          </div>
+          <div class="btn-row"><button class="btn btn-secondary" type="submit">{{ icon('search') }} Find dermatologists</button></div>
+          <p class="loading-note" data-loading-note>Searching for skin clinics near you. This can take up to 15 seconds…</p>
+        </form>
+      </section>
+
       <section class="section" aria-labelledby="alt-h">
         <h2 id="alt-h">Other close matches</h2>
         {% if alternatives %}
@@ -184,7 +200,7 @@
       <div class="btn-row">
         <a class="btn btn-primary" href="{{ url_for('predict.upload') }}">Check another spot</a>
         <a class="btn btn-secondary" href="{{ url_for('history.index') }}">Back to my history</a>
-        <form class="inline-form" method="post" action="{{ url_for('history.delete', prediction_id=pred.public_id) }}" data-confirm="Delete this check and its photo? This can't be undone.">
+        <form class="inline-form" method="post" action="{{ url_for('history.delete', prediction_id=pred.public_id) }}" data-confirm="Delete this photo? Its result will be deleted too. You can't undo this.">
           {{ delete_form.hidden_tag() }}
           <button class="btn btn-danger" type="submit">Delete</button>
         </form>

@@ -3,7 +3,7 @@ from flask_login import current_user, login_required
 
 from app.blueprints.predict import bp
 from app.extensions import db, limiter
-from app.forms import AnalyzeForm, ConfirmForm, FeedbackForm, UploadForm
+from app.forms import AnalyzeForm, ConfirmForm, DoctorSearchForm, FeedbackForm, UploadForm
 from app.ml.registry import ModelUnavailableError, registry
 from app.models import DiseaseClass, Feedback
 from app.services.analytics_service import class_rows
@@ -41,7 +41,9 @@ def upload():
         wanted = request.args.get("check")
         if wanted in models:
             form.check_type.data = wanted
-        if models.get(form.check_type.data) is None:  # pre-select a checker that is actually installed
+        if wanted not in models and any(models.values()):
+            form.check_type.data = "auto"   # default: let the AI choose the checker
+        elif models.get(form.check_type.data) is None:  # pre-select a checker that is actually installed
             form.check_type.data = next((d for d, mv in models.items() if mv), form.check_type.data)
     error = None
     if form.validate_on_submit():
@@ -127,6 +129,39 @@ def _owned_images(ids: str) -> list:
     return out
 
 
+def _auto_check(image) -> list[str]:
+    """"Not sure? Let the AI choose": pick the checker that fits the photo, so people get ONE answer.
+
+    1. The photo sorter (router.json next to the rash model) says whether it looks like a single mole/spot
+       close-up. If so, only the mole checker answers.
+    2. Otherwise the rash checker answers. Only if it says "dark spots" or "not a skin problem" is the mole
+       checker added as a second opinion (the sorter has seen few phone photos of moles). An acne or rash
+       answer is never shown next to a mole/skin-cancer answer.
+    Without a sorter (or a model) it falls back to whatever checkers are installed.
+    Returns the ids of the predictions it made.
+    """
+    def run(domain):
+        return run_prediction(current_user, image, domain=domain)
+
+    have = {d: registry.active_version(d) is not None for d in ("lesion", "general")}
+    if not have["general"]:
+        return [run("lesion").public_id] if have["lesion"] else []
+    if not have["lesion"]:
+        return [run("general").public_id]
+    from skinai_ml.prediction import load_rgb_image
+
+    general = registry.get_predictor(registry.active_version("general"))
+    p_mole = general.mole_photo_probability(load_rgb_image(resolve_storage_key(image.storage_key)))
+    if p_mole is not None and p_mole >= 0.5:
+        switch_checker(image, "lesion")
+        return [run("lesion").public_id]
+    first = run("general")
+    ids = [first.public_id]
+    if p_mole is None or first.predicted_class.code in ("dark_spots", "unfamiliar"):
+        ids.append(run("lesion").public_id)
+    return ids
+
+
 @bp.route("/analyze/batch", methods=["GET", "POST"])
 @login_required
 @limiter.limit(lambda: current_app.config["UPLOAD_RATE_LIMIT"], methods=["POST"], key_func=_user_key)
@@ -150,12 +185,16 @@ def batch():
             pred_ids = []
             try:
                 for image in images:
-                    for d in domains:
-                        pred_ids.append(run_prediction(current_user, image, domain=d).public_id)
+                    if mode == "auto":
+                        pred_ids += _auto_check(image)
+                    else:
+                        pred_ids += [run_prediction(current_user, image, domain=d).public_id for d in domains]
             except Exception:
                 current_app.logger.exception("batch prediction failed")
                 error = "Sorry, something went wrong while checking your photos. Please try again in a moment."
             else:
+                if len(pred_ids) == 1:   # one photo, one answer: go straight to the full result page
+                    return redirect(url_for("predict.result", prediction_id=pred_ids[0]))
                 return redirect(url_for("predict.batch_results", ids=",".join(pred_ids), mode=mode))
     return render_template("predict/batch.html", images=images, form=form, mode=mode, domains=domains,
                            domain_labels=DOMAIN_LABELS, error=error), (400 if error else 200)
@@ -214,7 +253,7 @@ def result(prediction_id):
     return render_template(
         "predict/result.html", pred=pred, reasons=inconclusive_reasons(pred), care=care,
         alternatives=[s for s in pred.scores[1:3] if s.probability >= ALT_MIN], alt_min=ALT_MIN,
-        fb_form=fb_form, delete_form=ConfirmForm(),
+        fb_form=fb_form, delete_form=ConfirmForm(), doctor_form=DoctorSearchForm(formdata=None),
     )
 
 

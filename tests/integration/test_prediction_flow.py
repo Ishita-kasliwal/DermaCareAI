@@ -61,7 +61,7 @@ def test_full_flow_stores_real_model_output(client, user, active_model, model_di
     assert "see a doctor or dermatologist" in html
     assert "Top 3 possibilities" in html
     assert "Other close matches" in html
-    assert f"AI confidence <strong>{probs['nv'] * 100:.1f}%</strong>" in html
+    assert f"<strong>{probs['nv'] * 100:.1f}%</strong> match" in html
 
     # Grad-CAM explanation produced and served privately
     assert pred.gradcam_key and resolve_storage_key(pred.gradcam_key).exists()

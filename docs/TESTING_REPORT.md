@@ -7,7 +7,7 @@
 
 | Run | How | Result |
 |---|---|---|
-| Full automated suite | `.\.venv\Scripts\python.exe -m pytest tests` | **157 passed, 0 failed, 0 skipped** |
+| Full automated suite | `.\.venv\Scripts\python.exe -m pytest tests` | **171 passed, 0 failed, 0 skipped** |
 | Lint (errors, bugbear) | `ruff check app skinai_ml ml tests --select F,E9,B` | clean |
 | Migrations | `flask db upgrade` on fresh SQLite + `flask db check`; applied to the real MySQL database | 4 revisions applied (adds `users.google_sub`), no drift |
 | Real MySQL | app account `skin_ai_app` (SELECT/INSERT/UPDATE/DELETE only) | pages served from MySQL; DDL correctly refused |
@@ -50,6 +50,8 @@
 | 15 | A face photo with acne sent to the mole checker came back as "Common mole" | user report | face detection (OpenCV YuNet) warns and offers a one-click switch to the rash checker |
 | 16 | Dashboard chart cut off category names | user report | only categories you have results for are shown |
 | 17 | Stray `t` printed at the top of the My account page | review | removed |
+| 24 | "Not sure" mode showed two answers side by side (acne from the rash checker, skin cancer from the mole checker) | user report | a photo sorter (CLIP features, 99.9% in grouped cross-validation) picks one checker; the mole checker is added only for "dark spots" or "not a skin problem" answers |
+| 23 | "Find dermatologists" showed nothing: the OpenStreetMap Overpass servers timed out (45 s+) | real site | clinic search moved to OpenStreetMap Nominatim (about 5 s); "Searching…" shown while it runs |
 | 22 | Every Delete / confirm button did nothing in browsers that block pop-ups (window.confirm silently returned "no") | user report | the site's own confirmation box (`<dialog>`) instead of the browser pop-up; checked in the browser |
 | 21 | A forehead photo with many small acne bumps comes back as "ringworm 82%" | user report | **not fixed**: three fixes tried (CLIP text blend, extra acne-type photos, zoomed-crop training), none fixed it without making other results worse; listed under known limitations |
 | 20 | "About the AI" page crashed (500) when a model answer has no measured results ("not a skin problem") | real site | such rows are left out; regression test added |

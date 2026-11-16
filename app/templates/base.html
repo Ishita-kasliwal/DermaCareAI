@@ -47,6 +47,7 @@
         <a href="{{ url_for('main.dashboard') }}" {% if ep == 'main.dashboard' %}aria-current="page"{% endif %}>{{ icon('home') }}<span>Home</span></a>
         <a href="{{ url_for('predict.upload') }}" {% if ep.startswith('predict.') %}aria-current="page"{% endif %}>{{ icon('camera') }}<span>Check my skin</span></a>
         <a href="{{ url_for('history.index') }}" {% if ep.startswith('history.') %}aria-current="page"{% endif %}>{{ icon('history') }}<span>My history</span></a>
+        <a href="{{ url_for('doctors.find') }}" {% if ep.startswith('doctors.') %}aria-current="page"{% endif %}>{{ icon('pin') }}<span>Find a dermatologist</span></a>
         <a href="{{ url_for('main.about_model') }}" {% if ep == 'main.about_model' %}aria-current="page"{% endif %}>{{ icon('info') }}<span>About the AI</span></a>
         {% if current_user.is_admin %}
           <a href="{{ url_for('admin.dashboard') }}" {% if ep.startswith('admin.') %}aria-current="page"{% endif %}>{{ icon('shield') }}<span>Admin</span></a>

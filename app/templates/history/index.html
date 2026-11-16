@@ -37,7 +37,7 @@
           <th scope="col">Result</th>
           <th scope="col" class="num">Score</th>
           <th scope="col">Date</th>
-          <th scope="col">AI version</th>
+          <th scope="col">Checked by</th>
           <th scope="col"><span class="visually-hidden">Actions</span></th>
         </tr></thead>
         <tbody>
@@ -47,11 +47,11 @@
               <td data-label="Result">{{ result_label(p) }}<br>{{ status_badge(p) }}</td>
               <td data-label="Score" class="num">{{ p.confidence|pct(1) }}</td>
               <td data-label="Date">{{ p.created_at|datetimefmt }}</td>
-              <td data-label="AI version"><span class="small">{{ p.model_version.architecture }}</span></td>
+              <td data-label="Checked by"><span class="small">{{ 'Rash checker' if p.model_version.domain == 'general' else 'Mole checker' }}</span></td>
               <td>
                 <div class="actions">
                   <a class="btn btn-secondary btn-sm" href="{{ url_for('predict.result', prediction_id=p.public_id) }}">Open<span class="visually-hidden"> check from {{ p.created_at|datetimefmt }}</span></a>
-                  <form class="inline-form" method="post" action="{{ url_for('history.delete', prediction_id=p.public_id) }}" data-confirm="Delete this check and its photo? This can't be undone.">
+                  <form class="inline-form" method="post" action="{{ url_for('history.delete', prediction_id=p.public_id) }}" data-confirm="Delete this photo? Its result will be deleted too. You can't undo this.">
                     {{ delete_form.hidden_tag() }}
                     <button class="btn btn-danger btn-sm" type="submit">Delete<span class="visually-hidden"> check from {{ p.created_at|datetimefmt }}</span></button>
                   </form>

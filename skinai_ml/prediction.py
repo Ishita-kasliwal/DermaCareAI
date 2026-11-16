@@ -105,6 +105,7 @@ class SkinLesionPredictor:
         self.verify_checksum = verify_checksum
         self._lock = threading.Lock()
         self._model = None
+        self._embedder = None   # photo sorter (see mole_photo_probability)
 
         self.manifest = self._read_json("manifest.json")
         self.labels: list[dict] = self._read_json("labels.json")
@@ -168,6 +169,34 @@ class SkinLesionPredictor:
 
     def predict(self, image) -> PredictionResult:
         return self.predict_array(load_rgb_image(image))
+
+    # ----------------------------------------------------------- photo sorter
+    def mole_photo_probability(self, rgb_uint8: np.ndarray) -> float | None:
+        """Chance that the photo is a single mole/spot close-up (vs a rash/acne/skin photo).
+
+        Only for the CLIP rash checker with a router.json next to it (made by ml/src/router_train.py).
+        Reuses the model's own CLIP layers, so no extra model is loaded. Returns None when unavailable.
+        """
+        path = self.model_dir / "router.json"
+        if not path.exists():
+            return None
+        model = self._load()
+        with self._lock:
+            if getattr(self, "_embedder", None) is None:
+                import keras
+
+                try:
+                    self._embedder = keras.Model(model.input, model.get_layer("condition_probs").input)
+                except ValueError:  # not a CLIP rash model
+                    return None
+                self._router = json.loads(path.read_text(encoding="utf-8"))
+        x = to_model_input(preprocess_image(rgb_uint8, self.preprocess_cfg))[None, ...]
+        import tensorflow as tf
+
+        views = tta_views(x, self.preprocess_cfg.tta)   # same original + flipped average as in training
+        emb = np.asarray(self._embedder(tf.concat(views, axis=0), training=False)).mean(axis=0)
+        z = float(emb @ np.asarray(self._router["w"], dtype="float32") + self._router["b"])
+        return 1.0 / (1.0 + np.exp(-z))
 
     def _build_result(self, probs: np.ndarray, k: int = 3) -> PredictionResult:
         order = np.argsort(probs)[::-1]

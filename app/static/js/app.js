@@ -94,12 +94,14 @@
     if (confirmForms.length) {
       var dlg = document.createElement("dialog");
       dlg.className = "confirm-dialog";
-      dlg.setAttribute("aria-labelledby", "confirm-dialog-msg");
+      dlg.setAttribute("aria-labelledby", "confirm-dialog-title");
+      dlg.setAttribute("aria-describedby", "confirm-dialog-msg");
       dlg.innerHTML =
+        '<h2 id="confirm-dialog-title" class="confirm-title"></h2>' +
         '<p id="confirm-dialog-msg" class="confirm-msg"></p>' +
-        '<div class="btn-row">' +
-        '<button type="button" class="btn btn-danger" data-confirm-yes>Yes, continue</button>' +
+        '<div class="confirm-actions">' +
         '<button type="button" class="btn btn-secondary" data-confirm-no>Cancel</button>' +
+        '<button type="button" class="btn btn-danger-solid" data-confirm-yes>Yes, continue</button>' +
         "</div>";
       document.body.appendChild(dlg);
       var pendingForm = null;
@@ -117,11 +119,22 @@
           e.preventDefault();
           pendingForm = form;
           var msg = form.getAttribute("data-confirm");
-          dlg.querySelector(".confirm-msg").textContent = msg;   // textContent: never treated as HTML
+          // "Delete this check and its photo? This can't be undone." -> title + explanation
+          var cut = msg.indexOf("?");
+          var title = cut > 0 ? msg.slice(0, cut + 1) : msg;
+          var rest = cut > 0 ? msg.slice(cut + 1).trim() : "";
+          dlg.querySelector(".confirm-title").textContent = title;   // textContent: never treated as HTML
+          var body = dlg.querySelector(".confirm-msg");
+          body.textContent = rest;
+          body.hidden = !rest;
+          var danger = /delete|deactivate/i.test(msg);
           var yes = dlg.querySelector("[data-confirm-yes]");
           yes.textContent = /delete/i.test(msg) ? "Yes, delete" : "Yes, continue";
-          yes.className = /delete|deactivate/i.test(msg) ? "btn btn-danger" : "btn btn-primary";
-          if (typeof dlg.showModal === "function") dlg.showModal();
+          yes.className = danger ? "btn btn-danger-solid" : "btn btn-primary";
+          if (typeof dlg.showModal === "function") {
+            dlg.showModal();
+            dlg.querySelector("[data-confirm-no]").focus();   // safe choice focused first
+          }
           else if (window.confirm(msg)) { form.dataset.confirmed = "1"; form.submit(); }   // very old browsers
         });
       });

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field, icon %}
+{% block title %}Find a dermatologist{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head">
+    <div>
+      <h1>Find a dermatologist near you</h1>
+      <p class="muted">A dermatologist is a doctor who specialises in skin. Tell us where you are and we'll look for skin clinics nearby.</p>
+    </div>
+  </div>
+
+  <form class="form doctor-search" method="get" action="{{ url_for('doctors.find') }}" novalidate data-loading-form aria-label="Where are you?">
+    {{ form.prediction() }}
+    <div class="doctor-search-fields">
+      {{ field(form.city, autocomplete="address-level2", maxlength=60, placeholder="e.g. Pune") }}
+      {{ field(form.district, hint="Helps if your town is small.", maxlength=60, placeholder="e.g. Pune") }}
+      {{ field(form.state, autocomplete="address-level1") }}
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" type="submit">{{ icon('search') }} Find dermatologists</button></div>
+          <p class="loading-note" data-loading-note>Searching for skin clinics near you. This can take up to 15 seconds…</p>
+  </form>
+
+  {% if submitted and form.errors %}
+    <div class="alert alert-warning" role="alert"><p>Please check the highlighted {{ 'box' if form.errors|length == 1 else 'boxes' }} above.</p></div>
+  {% endif %}
+
+  {% if result %}
+    <section class="section" aria-labelledby="found-h">
+      {% for m in result.messages %}<div class="alert alert-info" role="status"><p>{{ m }}</p></div>{% endfor %}
+      {% if result.error %}<div class="alert alert-warning" role="alert"><p>{{ result.error }}</p></div>{% endif %}
+
+      {% if result.clinics %}
+        <h2 id="found-h">Skin clinics {{ 'in' if result.level == 'city' else 'across' }} {{ result.area }}</h2>
+        <p class="small muted">Nearest first. Distances are straight-line from the centre of {{ form.city.data|title if result.level == 'city' else result.area }}, so the road distance will be longer. Listings come from {{ result.source }} and may be out of date, so please call before you go.</p>
+        <ul class="clinic-list">
+          {% for c in result.clinics %}
+            <li class="clinic-card">
+              <div class="clinic-main">
+                <h3 class="clinic-name">{{ c.name }}</h3>
+                <p class="small muted">{{ c.address or 'Address not listed' }}</p>
+              </div>
+              {% if c.distance_km is not none %}<span class="clinic-distance">{{ '%.1f'|format(c.distance_km) }} km</span>{% endif %}
+              <a class="btn btn-secondary btn-sm" href="{{ c.maps_url }}" target="_blank" rel="noopener noreferrer">See on map</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <h2 id="found-h" class="visually-hidden">No clinics found</h2>
+      {% endif %}
+
+      <div class="maps-cta">
+        <p>Google Maps often lists more clinics, with reviews and opening times.</p>
+        <a class="btn btn-primary" href="{{ result.maps_search_url }}" target="_blank" rel="noopener noreferrer">Open &ldquo;dermatologist in {{ form.city.data|title }}&rdquo; in Google Maps</a>
+      </div>
+    </section>
+  {% endif %}
+
+  <p class="small muted">If your skin is very painful, bleeding, spreading fast, or you feel unwell, don't wait for an appointment: go to the nearest hospital.</p>
+</div>
+{% endblock %}
