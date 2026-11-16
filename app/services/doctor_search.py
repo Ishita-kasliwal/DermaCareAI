@@ -133,9 +133,13 @@ def _nominatim(params: dict) -> list:
         wait = 1.05 - (time.time() - _last_nominatim[0])
         if wait > 0:
             time.sleep(wait)
+        url = NOMINATIM + "?" + urllib.parse.urlencode({**params, "countrycodes": "in", "format": "jsonv2"})
         try:
-            return _http_json(NOMINATIM + "?" + urllib.parse.urlencode(
-                {**params, "countrycodes": "in", "format": "jsonv2"})) or []
+            try:
+                return _http_json(url) or []
+            except MapServiceError:   # the free service sometimes hiccups: wait a moment and try once more
+                time.sleep(2)
+                return _http_json(url) or []
         finally:
             _last_nominatim[0] = time.time()
 

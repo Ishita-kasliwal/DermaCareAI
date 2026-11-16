@@ -15,6 +15,9 @@
     </div>
   </div>
 
+  {# filters fold away so phones show the checks first; open when a filter is being used #}
+  <details class="filter-box"{% if filtered or invalid %} open{% endif %}>
+    <summary class="btn btn-secondary btn-sm">{{ icon('search') }} Filter your checks{% if filtered %} (on){% endif %}</summary>
   <form class="filters" method="get" action="{{ url_for('history.index') }}" aria-label="Filter your checks">
     {{ field(form.category) }}
     {{ field(form.status) }}
@@ -26,6 +29,7 @@
       {% if filtered %}<a class="btn btn-ghost btn-sm" href="{{ url_for('history.index') }}">Clear</a>{% endif %}
     </div>
   </form>
+  </details>
   {% if invalid %}<div class="alert alert-warning"><p>Some filter values weren't valid, so we ignored them.</p></div>{% endif %}
 
   {% if pagination.items %}

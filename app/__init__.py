@@ -174,8 +174,15 @@ def _register_hooks(app: Flask) -> None:
 
     @app.template_filter("datefmt")
     def datefmt(value):
+        """Day only. Stored times (UTC) are shown as the India date; plain dates stay as they are."""
+        from datetime import UTC, datetime, timezone
+
         d = _as_dt(value)
-        return f"{d.day} {d:%b %Y}" if d else "—"
+        if not d:
+            return "—"
+        if isinstance(d, datetime):
+            d = (d if d.tzinfo else d.replace(tzinfo=UTC)).astimezone(timezone(timedelta(hours=5, minutes=30)))
+        return f"{d.day} {d:%b %Y}"
 
     @app.template_filter("datetimefmt")
     def datetimefmt(value):

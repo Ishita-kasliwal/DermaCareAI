@@ -5,8 +5,9 @@
 {% set dc = pred.predicted_class %}
 {% set inconclusive = pred.status == 'inconclusive' %}
 {% set n_types = pred.scores|length %}
+{% set step = namespace(n=1) %}
 <div class="container page">
-  <span class="eyebrow">Step 3 of 3 · Your result · {{ pred.created_at|datetimefmt }}</span>
+  <span class="eyebrow">Your result <span class="muted normal-case tracking-normal">· {{ pred.created_at|datetimefmt }}</span></span>
 
   <div class="grid-2 wide-right">
     {# on phones the result comes first and the photo after it (Task 7); side by side on wide screens #}
@@ -53,7 +54,7 @@
         <p class="result-opener">{{ words.opener }}</p>
         {% if dc.code == 'unfamiliar' %}
           <h1 class="result-title">{{ words.title }}</h1>
-          <p class="result-confidence">The photo looks more like a selfie, clear skin, or something that isn't a close-up of a skin problem.</p>
+          <p class="result-confidence">It may be a selfie, clear skin, a photo taken too close or too far away, or a skin problem the AI hasn't learned.</p>
         {% elif inconclusive %}
           <h1 class="result-title">{{ words.title }}</h1>
           <p class="result-confidence">The closest match was <strong>{{ simple_name(dc.code, dc.name)|lower }}</strong> ({{ pred.confidence|pct }}), but that's not enough to be sure.</p>
@@ -90,7 +91,7 @@
 
       {# 2. What it is, in plain words, and what to do #}
       <section class="section result-section" aria-labelledby="explain-h">
-        <h2 id="explain-h"><span class="step-no">2</span> What this means</h2>
+        <h2 id="explain-h">{% set step.n = step.n + 1 %}<span class="step-no">{{ step.n }}</span> What this means</h2>
         {% if dc.code != 'unfamiliar' and not inconclusive and dc.description %}<p>{{ dc.description }}</p>{% endif %}
       {% if dc.code == 'unfamiliar' %}
         <div class="risk-callout inconclusive">
@@ -128,7 +129,7 @@
       {# Home care: tips come from app/data/care.json (editable). Skin cancers get only a "see a doctor" message. #}
       {% if care and care.has_content %}
         <section class="section care" aria-labelledby="care-h">
-          <h2 id="care-h"><span class="step-no">3</span> Home care</h2>
+          <h2 id="care-h">{% set step.n = step.n + 1 %}<span class="step-no">{{ step.n }}</span> Home care</h2>
           {% if care.urgent %}
             <div class="alert alert-error" role="alert"><p><strong>{{ care.urgent_message }}</strong></p></div>
           {% else %}
@@ -146,7 +147,7 @@
         {# Over-the-counter medicines (Task 3): generic names only, no doses. Never shown for skin cancers. #}
         {% if not care.urgent %}
           <section class="section medicines" aria-labelledby="med-h">
-            <h2 id="med-h"><span class="step-no">4</span> Medicines you can ask a pharmacist about</h2>
+            <h2 id="med-h">{% set step.n = step.n + 1 %}<span class="step-no">{{ step.n }}</span> Medicines you can ask a pharmacist about</h2>
             {% if care.medicines %}
               <ul class="med-list">
                 {% for m in care.medicines %}<li><strong>{{ m.name }}</strong>{% if m.use %}: {{ m.use }}{% endif %}</li>{% endfor %}
@@ -163,7 +164,7 @@
 
       {# Find a dermatologist (Task 4): small form that opens the search page for this check #}
       <section class="section" aria-labelledby="derm-h">
-        <h2 id="derm-h"><span class="step-no">5</span> Find a dermatologist near you</h2>
+        <h2 id="derm-h">{% set step.n = step.n + 1 %}<span class="step-no">{{ step.n }}</span> Find a dermatologist near you</h2>
         <p class="muted">Type your city or town and choose your state to see skin clinics nearby.</p>
         <form class="form doctor-search" method="get" action="{{ url_for('doctors.find') }}" novalidate data-loading-form>
           <input type="hidden" name="prediction" value="{{ pred.public_id }}">
@@ -181,7 +182,7 @@
       <section class="disclaimer" aria-labelledby="disc-h">
         <span class="icon-circle warm">{{ icon('doctor') }}</span>
         <div>
-          <h2 id="disc-h"><span class="step-no">6</span> Please remember</h2>
+          <h2 id="disc-h">{% set step.n = step.n + 1 %}<span class="step-no">{{ step.n }}</span> Please remember</h2>
           <p><strong>This tool is a student project and not a medical diagnosis. Please consult a qualified dermatologist.</strong></p>
           <p class="small">It can be wrong, and it only knows {{ n_types }} common answers for this kind of check, so your skin problem may be something it has never seen.</p>
         </div>

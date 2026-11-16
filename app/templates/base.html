@@ -83,7 +83,7 @@
         {{ theme_button() }}
         <a class="nav-link hidden sm:inline-flex" href="{{ url_for('main.about_model') }}" {% if ep == 'main.about_model' %}aria-current="page"{% endif %}>About the AI</a>
         <a class="nav-link" href="{{ url_for('auth.login') }}" {% if ep == 'auth.login' %}aria-current="page"{% endif %}>Log in</a>
-        <a class="btn btn-primary btn-sm" href="{{ url_for('auth.register') }}">Create account</a>
+        <a class="btn btn-primary btn-sm" href="{{ url_for('auth.register') }}"><span class="sm:hidden">Sign up</span><span class="hidden sm:inline">Create account</span></a>
       </div>
     </div>
   </header>

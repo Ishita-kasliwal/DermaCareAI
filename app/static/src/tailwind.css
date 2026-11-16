@@ -75,14 +75,15 @@
 
   /* header & nav */
   .site-header { @apply sticky top-0 z-30 transition-transform duration-200 border-b border-slate-200 bg-white dark:border-white/[0.06] dark:bg-slate-950; }
-  .site-header .container { @apply flex min-h-[68px] flex-wrap items-center gap-4 lg:flex-nowrap; }
-  .brand { @apply inline-flex items-center gap-2.5 font-display text-xl font-extrabold tracking-tight text-slate-900 no-underline hover:text-slate-900 dark:text-white dark:hover:text-white; }
+  .site-header .container { @apply flex min-h-[60px] flex-nowrap items-center gap-2 sm:min-h-[68px] sm:gap-4; }   /* one row on phones too */
+  .brand { @apply inline-flex items-center gap-2 font-display text-lg sm:gap-2.5 sm:text-xl font-extrabold tracking-tight text-slate-900 no-underline hover:text-slate-900 dark:text-white dark:hover:text-white; }
   .brand .ai { @apply text-coral-500 dark:text-coral-400; }
   .brand-text { @apply inline-flex flex-col leading-tight; }
   .brand-sub { @apply mt-0.5 block font-sans text-[0.72rem] font-medium tracking-normal text-slate-500 dark:text-slate-400; }
   .logo-ring { stroke: var(--logo-ring); }
   .logo-mark { fill: var(--logo-mark); }
-  .header-tools { @apply ml-auto flex items-center gap-2 lg:order-3 lg:ml-3; }
+  .header-tools { @apply ml-auto flex items-center gap-1 sm:gap-2 lg:order-3 lg:ml-3; }
+  .site-header .nav-link, .site-header .btn { @apply whitespace-nowrap px-2 sm:px-3; }
   .nav-toggle { @apply inline-flex cursor-pointer items-center rounded-lg border border-slate-300 bg-white px-4 py-1.5 text-sm font-semibold text-slate-800 lg:hidden dark:border-white/15 dark:bg-slate-900 dark:text-slate-100; }
   .nav { @apply hidden w-full pb-3 lg:flex lg:w-auto lg:flex-1 lg:items-center lg:pb-0; }
   .nav.open { @apply block; }
@@ -131,6 +132,8 @@
   /* theme toggle */
   .theme-toggle { @apply inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:border-brand-500 hover:text-brand-700 dark:border-white/15 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-400 dark:hover:text-brand-300; }
   .theme-toggle svg { @apply h-4 w-4; }
+  .theme-toggle [data-theme-label] { @apply hidden sm:inline; }   /* icon only on phones (aria-label stays) */
+  .theme-toggle { @apply px-2.5 sm:px-3; }
   .theme-toggle .icon-sun { @apply hidden dark:inline; }
   .theme-toggle .icon-moon { @apply inline dark:hidden; }
 
@@ -182,6 +185,10 @@
   .auth-wrap { @apply mx-auto max-w-[460px]; }
   .auth-wrap h1, .auth-wrap .lead { @apply text-center; }
   .auth-wrap .lead { @apply mx-auto; }
+  .filter-box { @apply mb-6; }
+  .filter-box > summary { @apply mb-3 list-none; }
+  .filter-box > summary::-webkit-details-marker { display: none; }
+  .filter-box .filters { @apply mb-0; }
   .filters { @apply mb-6 grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] items-end gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-white/[0.06]; }
   .filters .field label { @apply text-sm; }
   .filters .btn-row { @apply col-span-full xl:col-auto; }
@@ -208,7 +215,7 @@
   /* stat tiles */
   .figures { @apply mb-8 grid grid-cols-2 gap-3 xl:grid-cols-4; }
   .figure { @apply rounded-2xl bg-white px-5 py-4 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-white/[0.06]; }
-  .figure .value { @apply font-display text-3xl font-bold leading-tight text-slate-900 dark:text-white; }
+  .figure .value { @apply font-display text-2xl font-bold sm:text-3xl leading-tight text-slate-900 dark:text-white; }
   .figure .label { @apply text-sm font-medium text-slate-500 dark:text-slate-400; }
 
   /* panels */
@@ -252,9 +259,9 @@
   .icon-circle.warm { @apply bg-coral-50 text-coral-600 ring-coral-100 dark:bg-coral-400/10 dark:text-coral-300 dark:ring-coral-400/20; }
 
   /* landing */
-  .hero { @apply py-12 lg:py-20; }
+  .hero { @apply py-8 sm:py-12 lg:py-20; }
   .hero-grid { @apply grid items-center gap-10 lg:grid-cols-[1.1fr_1fr]; }
-  .hero h1 { @apply max-w-[15ch] text-4xl tracking-tight sm:text-5xl lg:text-[3.3rem]; }
+  .hero h1 { @apply max-w-[16ch] text-[2rem] leading-tight tracking-tight sm:text-5xl lg:text-[3.3rem]; }
   .hero h1 .hl { @apply text-brand-700 dark:text-brand-300; }
   .hero .lead { @apply mb-6; }
   .trust-row { @apply mt-6 flex list-none flex-wrap gap-x-6 gap-y-2 p-0 text-sm text-slate-600 dark:text-slate-300; }
@@ -291,7 +298,7 @@
   .confirm-dialog .confirm-msg { @apply mb-5 text-sm text-slate-600 dark:text-slate-300; }
   .confirm-dialog .confirm-actions { @apply mt-5 flex flex-wrap justify-end gap-3; }
   /* Find a dermatologist: search form and clinic cards */
-  .doctor-search-fields { @apply grid gap-x-4 sm:grid-cols-3; }
+  .doctor-search-fields { @apply grid gap-x-4 gap-y-1 sm:grid-cols-3; }
   .clinic-list { @apply m-0 mb-4 grid list-none gap-3 p-0; }
   .clinic-card { @apply grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-2 rounded-xl border border-slate-200 bg-white p-4 dark:border-white/[0.06] dark:bg-white/5; }
   /* big, easy-to-tap buttons (at least 48px high); stacked on phones, in a row on wider screens */
@@ -357,7 +364,7 @@
   .q-ok { @apply bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300; }
   .q-warn { @apply bg-amber-50 text-amber-800 dark:bg-amber-400/10 dark:text-amber-300; }
   .result-head { @apply mb-6 pb-2; }
-  .result-title { @apply mb-2 text-3xl sm:text-4xl; }
+  .result-title { @apply mb-2 text-2xl leading-tight sm:text-4xl; }
   /* warm opening and closing lines on the result page (app/services/tone.py) */
   .result-opener { @apply mb-3 text-base text-slate-600 dark:text-slate-300; }
   .result-closing { @apply my-6 text-base font-medium text-brand-800 dark:text-brand-200; }
@@ -382,7 +389,7 @@
   .h-sub { @apply mb-3 text-base font-semibold; }
   .top3 { @apply mt-5 mb-4; }
   .close-matches { @apply mt-5; }
-  .result-confidence { @apply flex flex-wrap items-center gap-2 text-lg text-slate-600 dark:text-slate-300; }
+  .result-confidence { @apply flex flex-wrap items-center gap-2 text-base sm:text-lg text-slate-600 dark:text-slate-300; }
   .result-confidence strong { @apply font-display text-2xl text-slate-900 dark:text-white; }
   .prob-list { @apply m-0 grid list-none gap-3 p-0; }
   .prob-list li { @apply grid grid-cols-[1fr_54px] items-center gap-3 sm:grid-cols-[minmax(150px,1.2fr)_2fr_60px]; }
