@@ -64,7 +64,8 @@
 {%- endmacro %}
 
 {% macro result_label(pred) -%}
-  {% if pred.status == 'inconclusive' %}The AI wasn't sure<span class="muted small"> · closest: {{ pred.predicted_class.name }}</span>{% else %}{{ pred.predicted_class.name }}{% endif %}
+  {%- set plain = simple_name(pred.predicted_class.code, pred.predicted_class.name) -%}
+  {% if pred.predicted_class.code == 'unfamiliar' %}Not a skin problem we know{% elif pred.status == 'inconclusive' %}Not sure<span class="muted small"> · closest: {{ plain|lower }}</span>{% else %}{{ plain }}{% endif %}
 {%- endmacro %}
 
 {% macro pagination(p, endpoint, filters) -%}

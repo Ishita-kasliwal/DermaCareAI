@@ -149,6 +149,11 @@ def _register_hooks(app: Flask) -> None:
             resp.headers["Cache-Control"] = "private, no-store"
         return resp
 
+    # plain condition names are also needed inside imported macros, which don't see context processors
+    from skinai_ml.classes import simple_name as _simple_name
+
+    app.jinja_env.globals["simple_name"] = _simple_name
+
     @app.context_processor
     def inject_globals():
         from datetime import date

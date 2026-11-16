@@ -9,7 +9,8 @@
   <span class="eyebrow">Step 3 of 3 · Your result · {{ pred.created_at|datetimefmt }}</span>
 
   <div class="grid-2 wide-right">
-    <div class="stack">
+    {# on phones the result comes first and the photo after it (Task 7); side by side on wide screens #}
+    <div class="stack order-2 lg:order-1">
       <figure class="image-frame">
         <div data-image-views>
           <img src="{{ url_for('predict.image_file', image_id=pred.image.public_id) }}" alt="Your photo of the skin spot" data-view="original">
@@ -42,7 +43,7 @@
       </section>
     </div>
 
-    <div class="result-flow">
+    <div class="result-flow order-1 lg:order-2">
       {# Result page order (Task 7): 1 result + top 3 · 2 explanation · 3 home care · 4 medicines · 5 dermatologists · 6 disclaimer #}
 
       {# 1. Condition, how close the match is, and the top 3 #}

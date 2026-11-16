@@ -18,6 +18,12 @@ module.exports = {
           500: "#2f9886", 600: "#237a6c", 700: "#1f6358", 800: "#1c4f47", 900: "#19423c",
         },
         ink: { 950: "#0b1214" },
+        // Dark mode uses neutral charcoal instead of Tailwind's navy-tinted "slate", so it looks calm and printed,
+        // not like a neon dashboard. 50-600 keep Tailwind's values (light mode is unchanged).
+        slate: {
+          50: "#f8fafc", 100: "#f1f5f9", 200: "#e2e8f0", 300: "#cbd5e1", 400: "#94a3b8", 500: "#64748b",
+          600: "#475569", 700: "#3a3f45", 800: "#2a2d31", 900: "#202225", 950: "#17181a",
+        },
       },
       fontFamily: {
         sans: ['"Segoe UI Variable Text"', '"Segoe UI"', "system-ui", "-apple-system", "Roboto",
@@ -33,7 +39,7 @@ module.exports = {
         card: "none",
         lift: "0 8px 24px rgb(15 23 42 / 0.12)",
       },
-      borderRadius: { "2xl": "0.75rem", "3xl": "1rem" },
+      borderRadius: { "2xl": "0.5rem", "3xl": "0.75rem" },
     },
   },
   plugins: [],
