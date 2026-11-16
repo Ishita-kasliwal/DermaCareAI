@@ -116,6 +116,7 @@ the key is never printed or committed). Files go to `ml/data/raw/ROBOFLOW/<name>
 | [Skin analysis](https://universe.roboflow.com/image-classification-q4nkn/skin-analysis-oue1i) v1 | CC BY 4.0 | Acne → acne, Pigmentation → dark spots, Redness → redness | 251 / 220 / 168 |
 | [basic-wound-classify](https://universe.roboflow.com/clinicvision/basic-wound-classify-mpoys) v2 | CC BY 4.0 | abrasion + laceration → scratches & cuts, normal skin → healthy | 308 / 594 |
 | [Oily (skin type)](https://universe.roboflow.com/neeta/oily-zkvaz) v1 | CC BY 4.0 | **not used** | – |
+| [AcneClassification](https://universe.roboflow.com/anum-wq0lb/acneclassification) (+ [v2](https://universe.roboflow.com/anum-wq0lb/acneclassification2), same 270 originals) | CC BY 4.0 | tested, **not used** (see below) | – |
 
 - Roboflow exports contain 3 altered copies (flips, small rotations) of each training photo. Only one copy per
   original is used, and near-duplicates (CLIP cosine > 0.95, also across sources) share a cross-validation group.
@@ -126,6 +127,10 @@ the key is never printed or committed). Files go to `ml/data/raw/ROBOFLOW/<name>
   images are for non-commercial educational use with attribution. This project is non-commercial.
 - **Skin type set not used:** its dry / normal / oily photos are ordinary selfies. In 5-fold cross-validation the
   three types were told apart only 39% of the time (33% = guessing), so "dry skin" is not offered.
+- **Acne-type set tested, not used (2026-11-16):** added after a real forehead photo with many small acne bumps came
+  back as "ringworm 82%". Its 270 close-ups (blackheads/whiteheads, pimples, deep pimples, many skin tones) did not fix
+  that photo (still ringworm) and lowered accuracy on the supplied photos from 74.3% to 69.8%. Training on extra zoomed
+  centre crops did not help either. Kept downloadable (`acne_types`, `acne_types2`) for future work.
 - Limitations: unknown photographers and labelling process, no doctor confirmation; scratches and healthy skin
   come from a single set each, so their very high scores (96–98%) partly reflect that set's photo style.
 

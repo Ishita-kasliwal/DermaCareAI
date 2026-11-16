@@ -6,6 +6,8 @@ Datasets (approved by the project owner on 2026-11-16):
   skin_analysis  image-classification-q4nkn/skin-analysis-oue1i   Acne, Dark Circles, Pigmentation, Pores, Redness, Wrinkles
   skin_type      neeta/oily-zkvaz                                  dry, oily, normal, combination
   wounds         clinicvision/basic-wound-classify-mpoys           abrasion, bruise, burn, laceration, normal skin
+  acne_types     anum-wq0lb/acneclassification                     acne-comedonica, -conglobata, -papulopustulosa
+  acne_types2    anum-wq0lb/acneclassification2                    same 3 acne types (larger version)
 
 The key is read from the environment / .env and is never printed or saved anywhere else. Each export is
 downloaded as Roboflow's "folder" classification format and unzipped (path-safely) into
@@ -30,6 +32,9 @@ DATASETS = {
     "skin_analysis": ("image-classification-q4nkn", "skin-analysis-oue1i"),
     "skin_type": ("neeta", "oily-zkvaz"),
     "wounds": ("clinicvision", "basic-wound-classify-mpoys"),
+    # acne types (approved 2026-11-16 after a forehead-acne photo came back as ringworm)
+    "acne_types": ("anum-wq0lb", "acneclassification"),
+    "acne_types2": ("anum-wq0lb", "acneclassification2"),
 }
 OUT = resolve("ml/data/raw/ROBOFLOW")
 API = "https://api.roboflow.com"

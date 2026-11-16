@@ -88,11 +88,44 @@
     }
 
     // --- confirmation before destructive actions
-    document.querySelectorAll("form[data-confirm]").forEach(function (form) {
-      form.addEventListener("submit", function (e) {
-        if (!window.confirm(form.getAttribute("data-confirm"))) e.preventDefault();
+    // Uses the site's own <dialog> instead of window.confirm(): some browsers and in-app browsers block the
+    // native pop-up and silently answer "no", which made every Delete button do nothing.
+    var confirmForms = document.querySelectorAll("form[data-confirm]");
+    if (confirmForms.length) {
+      var dlg = document.createElement("dialog");
+      dlg.className = "confirm-dialog";
+      dlg.setAttribute("aria-labelledby", "confirm-dialog-msg");
+      dlg.innerHTML =
+        '<p id="confirm-dialog-msg" class="confirm-msg"></p>' +
+        '<div class="btn-row">' +
+        '<button type="button" class="btn btn-danger" data-confirm-yes>Yes, continue</button>' +
+        '<button type="button" class="btn btn-secondary" data-confirm-no>Cancel</button>' +
+        "</div>";
+      document.body.appendChild(dlg);
+      var pendingForm = null;
+      var close = function () { if (dlg.open) dlg.close(); pendingForm = null; };
+      dlg.querySelector("[data-confirm-no]").addEventListener("click", close);
+      dlg.addEventListener("cancel", function () { pendingForm = null; });   // Esc key
+      dlg.querySelector("[data-confirm-yes]").addEventListener("click", function () {
+        var form = pendingForm;
+        close();
+        if (form) { form.dataset.confirmed = "1"; form.submit(); }   // form.submit() skips this handler
       });
-    });
+      confirmForms.forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+          if (form.dataset.confirmed === "1") return;
+          e.preventDefault();
+          pendingForm = form;
+          var msg = form.getAttribute("data-confirm");
+          dlg.querySelector(".confirm-msg").textContent = msg;   // textContent: never treated as HTML
+          var yes = dlg.querySelector("[data-confirm-yes]");
+          yes.textContent = /delete/i.test(msg) ? "Yes, delete" : "Yes, continue";
+          yes.className = /delete|deactivate/i.test(msg) ? "btn btn-danger" : "btn btn-primary";
+          if (typeof dlg.showModal === "function") dlg.showModal();
+          else if (window.confirm(msg)) { form.dataset.confirmed = "1"; form.submit(); }   // very old browsers
+        });
+      });
+    }
 
     // --- loading state on submit (prevents double submission)
     document.querySelectorAll("form[data-loading-form]").forEach(function (form) {

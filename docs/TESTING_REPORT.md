@@ -7,7 +7,7 @@
 
 | Run | How | Result |
 |---|---|---|
-| Full automated suite | `.\.venv\Scripts\python.exe -m pytest tests` | **145 passed, 0 failed, 0 skipped** |
+| Full automated suite | `.\.venv\Scripts\python.exe -m pytest tests` | **157 passed, 0 failed, 0 skipped** |
 | Lint (errors, bugbear) | `ruff check app skinai_ml ml tests --select F,E9,B` | clean |
 | Migrations | `flask db upgrade` on fresh SQLite + `flask db check`; applied to the real MySQL database | 4 revisions applied (adds `users.google_sub`), no drift |
 | Real MySQL | app account `skin_ai_app` (SELECT/INSERT/UPDATE/DELETE only) | pages served from MySQL; DDL correctly refused |
@@ -25,6 +25,7 @@
 | Admin | `test_isolation_and_admin.py`, `test_two_checkers.py` | no self-deactivation/demotion; last admin protected; deactivation ends sessions; model activation is **per checker**; category edits; audit log |
 | Upload safety | `test_upload.py` | private storage, random names, path traversal ignored, **EXIF/GPS removed**, PHP/SVG/GIF/EXE/truncated/empty/tiny files rejected, decompression bomb, >8 MB → 413, blank photo rejected, greyscale warned, polyglot payload removed |
 | ML inference | `test_prediction_flow.py` | consent required; stored scores equal an independent run of the exported model (nothing hard-coded); "not sure" path; deterministic; heatmap; tampered model refused |
+| **Home care tips** | `test_care.py`, `test_home_care.py` | every condition has an entry; 3–5 tips each; skin cancers get no remedies, only "see a dermatologist as soon as possible"; no doses; tips only shown when the AI is sure; cancer message shown even when unsure |
 | **Two checkers** | `test_two_checkers.py` | all 24 conditions seeded; rash photos use only the rash model and its conditions; mole photos use the mole model; a checker with no model is reported, never faked; invalid checker rejected; rash results carry the limits warning |
 | **Google sign-in, Excel, face photos** | `test_google_excel_switch.py` | Google button hidden unless configured; new account without password; linking by verified email only; unverified email and switched-off accounts refused; cancel handled; Google-only users can add a password and delete their account; user Excel has only their own rows; admin workbook has all 5 sheets with real numbers; Excel formula-injection guard; face warning only for the mole checker; one-click switch to the rash checker (owner only) |
 | History & analytics | `test_prediction_flow.py`, `test_isolation_and_admin.py` | filters, pagination, delete removes files, feedback, CSV without personal data; dashboard and analytics equal the database |
@@ -49,6 +50,8 @@
 | 15 | A face photo with acne sent to the mole checker came back as "Common mole" | user report | face detection (OpenCV YuNet) warns and offers a one-click switch to the rash checker |
 | 16 | Dashboard chart cut off category names | user report | only categories you have results for are shown |
 | 17 | Stray `t` printed at the top of the My account page | review | removed |
+| 22 | Every Delete / confirm button did nothing in browsers that block pop-ups (window.confirm silently returned "no") | user report | the site's own confirmation box (`<dialog>`) instead of the browser pop-up; checked in the browser |
+| 21 | A forehead photo with many small acne bumps comes back as "ringworm 82%" | user report | **not fixed**: three fixes tried (CLIP text blend, extra acne-type photos, zoomed-crop training), none fixed it without making other results worse; listed under known limitations |
 | 20 | "About the AI" page crashed (500) when a model answer has no measured results ("not a skin problem") | real site | such rows are left out; regression test added |
 | 19 | New "dark spots" photos made a side-view acne photo come back as dark spots (79%) — the pigmentation set is mostly side-view cheeks | spot check on real uploads | DermNet-sourced acne close-ups (also side-view cheeks) kept in training → acne 68% |
 | 18 | Rash checker forced one of 3 answers for any photo (selfie → ringworm 99%, acne → eczema) | user report | acne added; CLIP model; "not a skin problem" answer |
@@ -80,6 +83,9 @@ uploads v3 answers: selfie → not a skin problem (90%), acne → acne (95%, 94%
 spot check, not a measurement. The 98% that was asked for is not reachable honestly with this data.
 
 ## 5. Not verified / known limitations (stated plainly)
+
+- **Rash checker mistakes acne for ringworm on some photos.** A real forehead photo with many small skin-coloured
+  acne bumps (brown skin) comes back as ringworm 82%. More acne photos and crop training did not fix it.
 
 - **Accuracy is limited.** In the real end-to-end check a melanoma test photo was reported as "Common mole, 58%"
   (melanoma 25% as runner-up). The site always shows all scores and recommends a doctor, but this is a real weakness.

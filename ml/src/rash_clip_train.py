@@ -12,6 +12,9 @@ Data
 - three Roboflow Universe sets (CC BY 4.0, downloaded by ml/src/roboflow_download.py, approved 2026-11-16):
   skin-analysis (Acne -> acne, Pigmentation -> dark_spots, Redness -> redness; multi-label photos skipped),
   basic-wound-classify (abrasion + laceration -> scratches, normal skin -> healthy).
+- Tested 2026-11-16 and NOT used: acneClassification by anum (270 acne close-ups, CC BY 4.0). It did not fix a
+  forehead-acne photo that comes back as ringworm, and lowered accuracy on the supplied photos (74.3% -> 69.8%);
+  training on extra zoomed centre crops did not help either (68.8%, forehead still ringworm).
   Roboflow stores 3 altered copies of each photo; only one copy per original is used and copies share a group.
   Dermatoscope close-ups inside "Pigmentation" (moles, possible melanoma) are removed with a CLIP text check so
   the rash checker never learns to call them "dark spots" - those belong to the mole checker.

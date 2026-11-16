@@ -8,6 +8,7 @@ from app.ml.registry import ModelUnavailableError, registry
 from app.models import DiseaseClass, Feedback
 from app.services.analytics_service import class_rows
 from app.services.audit_service import audit
+from app.services.care_service import care_for
 from app.services.image_service import (
     ImageValidationError,
     get_owned_image,
@@ -15,8 +16,11 @@ from app.services.image_service import (
     store_upload,
     switch_checker,
 )
-from app.services.prediction_service import get_owned_prediction, inconclusive_reasons, run_prediction
-
+from app.services.prediction_service import (
+    get_owned_prediction,
+    inconclusive_reasons,
+    run_prediction,
+)
 
 ALT_MIN = 0.05  # only discuss alternatives the model gave a non-trivial score
 MAX_PHOTOS = 5  # photos per upload
@@ -203,8 +207,12 @@ def result(prediction_id):
     pred = get_owned_prediction(current_user, prediction_id) or abort(404)
     fb_form = FeedbackForm(formdata=None)
     fb_form.suggested_class.choices = [("", "Select a category")] + [(c.code, c.name) for c in class_rows()]
+    # Home care: tips only when the AI is sure; the "see a doctor" message for cancers is shown even when unsure.
+    care = care_for(pred.predicted_class.code)
+    if not care.urgent and pred.status != "confident":
+        care = None
     return render_template(
-        "predict/result.html", pred=pred, reasons=inconclusive_reasons(pred),
+        "predict/result.html", pred=pred, reasons=inconclusive_reasons(pred), care=care,
         alternatives=[s for s in pred.scores[1:3] if s.probability >= ALT_MIN], alt_min=ALT_MIN,
         fb_form=fb_form, delete_form=ConfirmForm(),
     )

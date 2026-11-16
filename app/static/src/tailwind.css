@@ -282,6 +282,17 @@
   .category-list { @apply m-0 grid list-none gap-3 p-0; }
   .category-list.cards { @apply lg:grid-cols-2; }
   .category-list li { @apply grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 border-b border-slate-200 py-3 dark:border-white/10; }
+  /* "Are you sure?" box used by every form with data-confirm (replaces the browser's pop-up) */
+  .confirm-dialog { @apply m-auto w-[min(92vw,26rem)] rounded-xl border border-slate-200 bg-white p-5 text-slate-900 shadow-lg dark:border-white/10 dark:bg-slate-900 dark:text-slate-100; }
+  .confirm-dialog::backdrop { background: rgb(15 23 42 / 0.45); }
+  .confirm-dialog .confirm-msg { @apply mb-4 text-base font-medium; }
+  /* Over-the-counter medicines list on the result page */
+  .med-list { @apply mb-3 grid list-none gap-2 p-0; }
+  .med-list li { @apply rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/5; }
+  /* Home-care tips on the result page: simple ticked list */
+  .care-list { @apply mb-3 grid list-none gap-2 p-0; }
+  .care-list li { @apply relative rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 dark:border-white/10 dark:bg-white/5; }
+  .care-list li::before { content: "\2713"; @apply absolute left-3 top-2 font-bold text-brand-600 dark:text-brand-300; }
   .category-list.cards li { @apply rounded-2xl border-0 bg-white px-5 py-4 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-white/10; }
   .category-list .name { @apply font-semibold text-slate-900 dark:text-white; }
   .category-list .desc { @apply col-span-full text-sm text-slate-500 dark:text-slate-400; }

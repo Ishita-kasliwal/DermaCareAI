@@ -98,6 +98,42 @@
         </ul>
       </section>
 
+      {# Home care: tips come from app/data/care.json (editable). Skin cancers get only a "see a doctor" message. #}
+      {% if care and care.has_content %}
+        <section class="section care" aria-labelledby="care-h">
+          <h2 id="care-h">Home care</h2>
+          {% if care.urgent %}
+            <div class="alert alert-error" role="alert"><p><strong>{{ care.urgent_message }}</strong></p></div>
+          {% else %}
+            {% if care.doctor_first %}
+              <div class="alert alert-warning" role="note"><p><strong>{{ care.doctor_first }}</strong></p></div>
+            {% endif %}
+            <p class="muted">Simple, safe things you can do at home for {{ simple_name(dc.code, dc.name)|lower }}:</p>
+            <ul class="care-list">
+              {% for tip in care.home_care %}<li>{{ tip }}</li>{% endfor %}
+            </ul>
+            {% if care.after_tips %}<p class="small"><strong>When to see a doctor:</strong> {{ care.after_tips }}</p>{% endif %}
+          {% endif %}
+        </section>
+
+        {# Over-the-counter medicines (Task 3): generic names only, no doses. Never shown for skin cancers. #}
+        {% if not care.urgent %}
+          <section class="section medicines" aria-labelledby="med-h">
+            <h2 id="med-h">Medicines you can ask a pharmacist about</h2>
+            {% if care.medicines %}
+              <ul class="med-list">
+                {% for m in care.medicines %}<li><strong>{{ m.name }}</strong>{% if m.use %}: {{ m.use }}{% endif %}</li>{% endfor %}
+              </ul>
+              {% if care.medicine_warning %}<p class="small"><strong>Careful:</strong> {{ care.medicine_warning }}</p>{% endif %}
+            {% else %}
+              <p class="muted">{{ care.no_medicine_text }}</p>
+            {% endif %}
+            {# The safety note is always shown with this section #}
+            <div class="alert alert-info" role="note"><p>{{ care.medicine_note }}</p></div>
+          </section>
+        {% endif %}
+      {% endif %}
+
       <section class="section" aria-labelledby="alt-h">
         <h2 id="alt-h">Other close matches</h2>
         {% if alternatives %}

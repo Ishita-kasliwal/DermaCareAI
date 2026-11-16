@@ -50,6 +50,14 @@ Faster, more accurate training on a free GPU: see [docs/ML_TRAINING.md](docs/ML_
 .\.venv\Scripts\python.exe scripts\check_photos.py my_photo1.jpg my_photo2.png
 ```
 
+## Edit the home-care tips and medicines
+The safe home-care tips and over-the-counter medicines on the result page live in [`app/data/care.json`](app/data/care.json), one entry per
+condition (3–5 short tips each). Skin cancer and pre-cancer (`mel`, `bcc`, `akiec`) are marked `"urgent": true`:
+they never get home remedies or medicines, only a "see a dermatologist as soon as possible" message.
+Medicines: generic names only, no strengths or doses, nothing prescription-only (the tests check a list of
+prescription medicines), and the safety note is always shown with them. Edits show on the next page
+load. Run `.\.venv\Scripts\python.exe -m pytest tests/unit/test_care.py` afterwards to check the rules.
+
 ## Run commands
 | Action  | Command                    |
 |---------|----------------------------|

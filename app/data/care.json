@@ -1,0 +1,412 @@
+{
+  "_how_to_edit": [
+    "Safe home-care tips shown on the result page, one entry per condition code (see skinai_ml/classes.py).",
+    "home_care: 3 to 5 short, safe tips in plain English. No medicines here, no doses, nothing that needs a prescription.",
+    "doctor_first: optional sentence shown above the tips when a doctor should look at it soon.",
+    "urgent: true means NO home remedies are shown, only urgent_message. Use it for skin cancer and pre-cancer.",
+    "after_tips: the warning-sign sentence shown under the tips.",
+    "Edits take effect on the next page load (no restart needed). Run the tests after editing: they check the rules above.",
+    "medicines: 0 to 4 common over-the-counter options, each {name, use}. Generic names only (no brands), no strengths or doses (no numbers), never a prescription-only medicine. Urgent conditions have none.",
+    "medicine_warning: optional caution shown under the medicines for that condition.",
+    "medicine_note: the safety sentence that is always shown with the medicines."
+  ],
+  "urgent_message": "Please don't try to treat this at home. Book a visit with a dermatologist (skin doctor) as soon as possible. Only a doctor can check it properly, and finding it early makes a big difference.",
+  "conditions": {
+    "mel": {
+      "urgent": true
+    },
+    "bcc": {
+      "urgent": true
+    },
+    "akiec": {
+      "urgent": true
+    },
+    "bkl": {
+      "home_care": [
+        "Leave it alone: don't scratch, pick or try to cut it off.",
+        "Protect it from the sun with clothing or sunscreen (SPF 30 or more).",
+        "Take a clear photo once a month so you can notice any change.",
+        "If clothing or jewellery rubs on it, cover it with a soft plaster."
+      ],
+      "after_tips": "See a doctor if it bleeds, grows quickly, changes colour or looks different from your other spots.",
+      "medicines": [
+        {
+          "name": "Broad-spectrum sunscreen",
+          "use": "protects the skin from sun damage"
+        }
+      ]
+    },
+    "nv": {
+      "home_care": [
+        "Check your moles once a month in good light, and take photos to compare.",
+        "Use sunscreen (SPF 30 or more) and avoid strong midday sun.",
+        "Don't pick, scratch or shave over the mole.",
+        "Never try to remove a mole yourself with creams, thread or blades."
+      ],
+      "after_tips": "See a doctor if a mole changes size, shape or colour, gets a ragged edge, itches, bleeds, or looks different from your other moles.",
+      "medicines": [
+        {
+          "name": "Broad-spectrum sunscreen",
+          "use": "protects the skin from sun damage"
+        }
+      ]
+    },
+    "df": {
+      "home_care": [
+        "Leave it alone: squeezing or picking won't make it go away.",
+        "Be careful when shaving over it to avoid cuts.",
+        "Cover it with a soft plaster if clothing rubs on it.",
+        "Take a photo now and then to check it isn't changing."
+      ],
+      "after_tips": "See a doctor if it grows, changes colour, becomes painful or you're not sure what it is.",
+      "medicines": []
+    },
+    "vasc": {
+      "home_care": [
+        "Avoid scratching or knocking the spot.",
+        "If it bleeds, press on it firmly with a clean cloth for 10 minutes.",
+        "Protect your skin from strong sun.",
+        "Take a photo now and then to check it isn't growing."
+      ],
+      "after_tips": "See a doctor if it bleeds again and again, grows quickly or changes.",
+      "medicines": []
+    },
+    "acne": {
+      "home_care": [
+        "Wash your face twice a day with a mild, soap-free cleanser and lukewarm water. Don't scrub.",
+        "Don't squeeze or pick pimples: it can cause scars and dark marks.",
+        "Use oil-free, non-comedogenic (won't block pores) moisturiser, sunscreen and make-up.",
+        "Wash pillowcases often, keep hair off your face, and clean your phone screen.",
+        "Don't put toothpaste, lemon juice or baking soda on pimples: they irritate the skin."
+      ],
+      "after_tips": "See a doctor if pimples are large and painful, leave scars or dark marks, or affect how you feel.",
+      "medicines": [
+        {
+          "name": "Benzoyl peroxide gel",
+          "use": "helps clear pimples (can bleach towels and clothes)"
+        },
+        {
+          "name": "Salicylic acid face wash",
+          "use": "helps unblock pores"
+        }
+      ],
+      "medicine_warning": "Start with a small amount every other day: these can make skin dry or red at first. Don't use steroid creams without a doctor's advice: on the face they can cause thin skin and more pimples."
+    },
+    "dermatitis": {
+      "home_care": [
+        "Think about what touched your skin recently (new soap, cream, metal, plants, detergent) and stop using it.",
+        "Rinse the area with cool water and pat it dry gently.",
+        "Use a cool, damp cloth for 10-15 minutes to calm itching.",
+        "Use a plain, fragrance-free moisturiser and wear loose cotton clothes.",
+        "Try not to scratch: keep nails short."
+      ],
+      "after_tips": "See a doctor if it spreads, oozes, blisters, is on your face or genitals, or doesn't improve in two weeks.",
+      "medicines": [
+        {
+          "name": "Calamine lotion",
+          "use": "a soothing lotion for itchy skin"
+        },
+        {
+          "name": "Cetirizine or loratadine tablets",
+          "use": "antihistamines that can ease itching"
+        },
+        {
+          "name": "Plain petroleum jelly or a fragrance-free emollient cream",
+          "use": "keeps the skin moist and protected"
+        }
+      ],
+      "medicine_warning": "Don't use steroid creams without a doctor's advice: on the face they can cause thin skin and more pimples."
+    },
+    "contact_dermatitis": {
+      "home_care": [
+        "Find and avoid what touched your skin (new soap, cream, jewellery, plants, chemicals).",
+        "Rinse the area with cool water and pat it dry gently.",
+        "Use a cool, damp cloth for 10-15 minutes to calm itching.",
+        "Use a plain, fragrance-free moisturiser and wear loose cotton clothes."
+      ],
+      "after_tips": "See a doctor if it's severe, blistering, on your face or genitals, or doesn't improve in two weeks.",
+      "medicines": [
+        {
+          "name": "Calamine lotion",
+          "use": "a soothing lotion for itchy skin"
+        },
+        {
+          "name": "Cetirizine or loratadine tablets",
+          "use": "antihistamines that can ease itching"
+        },
+        {
+          "name": "Plain petroleum jelly or a fragrance-free emollient cream",
+          "use": "keeps the skin moist and protected"
+        }
+      ],
+      "medicine_warning": "Don't use steroid creams without a doctor's advice: on the face they can cause thin skin and more pimples."
+    },
+    "eczema": {
+      "home_care": [
+        "Moisturise at least twice a day with a thick, fragrance-free cream, especially right after bathing.",
+        "Take short, lukewarm baths or showers (not hot) and use a gentle, soap-free wash.",
+        "Pat your skin dry instead of rubbing.",
+        "Wear soft cotton clothes and avoid wool and rough fabrics.",
+        "Keep nails short, and notice what makes it worse (sweat, dust, certain soaps) so you can avoid it."
+      ],
+      "after_tips": "See a doctor if it keeps you awake, spreads, oozes, crusts or looks infected.",
+      "medicines": [
+        {
+          "name": "Plain petroleum jelly or a fragrance-free emollient cream",
+          "use": "keeps the skin moist and protected"
+        },
+        {
+          "name": "Colloidal oatmeal cream",
+          "use": "soothes dry, itchy skin"
+        },
+        {
+          "name": "Cetirizine or loratadine tablets",
+          "use": "antihistamines that can ease itching"
+        }
+      ],
+      "medicine_warning": "Don't use steroid creams without a doctor's advice: on the face they can cause thin skin and more pimples."
+    },
+    "ringworm": {
+      "home_care": [
+        "Keep the area clean and completely dry, especially in skin folds.",
+        "Don't share towels, combs, clothes or bedding, and wash them in hot water.",
+        "Wear loose cotton clothes and change sweaty clothes quickly.",
+        "Wash your hands after touching the patch, and don't scratch it.",
+        "Check pets for bald, scaly patches: they can pass it on."
+      ],
+      "after_tips": "See a doctor if it's on your scalp or nails, keeps spreading, or doesn't improve after two weeks.",
+      "medicines": [
+        {
+          "name": "Clotrimazole cream",
+          "use": "an antifungal cream"
+        },
+        {
+          "name": "Miconazole cream",
+          "use": "an antifungal cream"
+        },
+        {
+          "name": "Terbinafine cream",
+          "use": "an antifungal cream"
+        }
+      ],
+      "medicine_warning": "Keep using it for 1-2 weeks after the patch has gone, as the label says. Avoid creams that mix an antifungal with a steroid (for example ones containing clobetasol or betamethasone). They can make ringworm spread and come back."
+    },
+    "fungal": {
+      "home_care": [
+        "Keep the area clean and completely dry, especially between toes and in skin folds.",
+        "Don't share towels, socks or clothes, and wash them in hot water.",
+        "Wear loose cotton clothes and change sweaty clothes or socks quickly.",
+        "Wash your hands after touching the area."
+      ],
+      "after_tips": "See a doctor if it spreads, is on your scalp or nails, or doesn't improve after two weeks.",
+      "medicines": [
+        {
+          "name": "Clotrimazole cream",
+          "use": "an antifungal cream"
+        },
+        {
+          "name": "Miconazole cream or powder",
+          "use": "an antifungal; the powder helps keep feet and folds dry"
+        },
+        {
+          "name": "Terbinafine cream",
+          "use": "an antifungal cream"
+        }
+      ],
+      "medicine_warning": "Avoid creams that mix an antifungal with a steroid (for example ones containing clobetasol or betamethasone). They can make ringworm spread and come back."
+    },
+    "dark_spots": {
+      "home_care": [
+        "Use sunscreen (SPF 30 or more) every day, even indoors near windows, and reapply when outdoors.",
+        "Wear a hat or cover up in strong sun.",
+        "Don't pick pimples or scabs: that leaves new dark marks.",
+        "Avoid scrubbing hard or using lemon juice or bleaching products: they can make dark spots worse.",
+        "Be patient: marks often fade slowly over several months."
+      ],
+      "after_tips": "See a dermatologist if a spot is new, growing, has an uneven edge or several colours, itches or bleeds.",
+      "medicines": [
+        {
+          "name": "Broad-spectrum sunscreen",
+          "use": "protects the skin from sun damage"
+        },
+        {
+          "name": "Niacinamide serum",
+          "use": "may help even out skin tone over time"
+        }
+      ],
+      "medicine_warning": "Avoid skin-lightening or bleaching creams bought without a prescription: some contain steroids or mercury that harm the skin."
+    },
+    "redness": {
+      "home_care": [
+        "Use mild, fragrance-free cleansers and moisturisers.",
+        "Wash with lukewarm water, not hot, and pat dry gently.",
+        "Use sunscreen every day.",
+        "Notice what makes it worse (sun, heat, spicy food, hot drinks, a new product) and avoid it.",
+        "A cool, damp cloth can calm hot, flushed skin."
+      ],
+      "after_tips": "See a doctor if it's painful, hot, swollen, spreading fast, or doesn't settle.",
+      "medicines": [
+        {
+          "name": "Broad-spectrum sunscreen",
+          "use": "protects the skin from sun damage"
+        },
+        {
+          "name": "Plain petroleum jelly or a fragrance-free emollient cream",
+          "use": "keeps the skin moist and protected"
+        }
+      ],
+      "medicine_warning": "Don't use steroid creams without a doctor's advice: on the face they can cause thin skin and more pimples."
+    },
+    "scratches": {
+      "home_care": [
+        "Wash your hands, then rinse the scratch under clean running water to remove dirt.",
+        "If it bleeds, press gently on it with a clean cloth until it stops.",
+        "Cover it with a clean plaster or dressing and change it daily or when it gets wet.",
+        "Don't pick the scab: let it heal by itself."
+      ],
+      "after_tips": "See a doctor for a deep or gaping cut, bleeding that won't stop after 10 minutes of pressure, an animal or human bite, dirt you can't wash out, or signs of infection (spreading redness, warmth, pus or fever). Ask about a tetanus injection if you're not up to date.",
+      "medicines": [
+        {
+          "name": "Povidone-iodine or chlorhexidine antiseptic",
+          "use": "to clean the wound once"
+        },
+        {
+          "name": "Plain petroleum jelly",
+          "use": "keeps the wound moist so it heals with less scarring"
+        },
+        {
+          "name": "Paracetamol",
+          "use": "for pain"
+        }
+      ]
+    },
+    "healthy": {
+      "home_care": [
+        "Keep up a simple routine: gentle cleanser, moisturiser and sunscreen.",
+        "Drink enough water and get enough sleep.",
+        "Protect your skin from strong sun.",
+        "If one small area worries you, take a closer photo of just that area."
+      ],
+      "after_tips": "See a dermatologist if something on your skin is new, changing or bothering you.",
+      "medicines": []
+    },
+    "urticaria": {
+      "home_care": [
+        "Use a cool, damp cloth or have a cool shower to calm itching.",
+        "Wear loose, soft cotton clothes.",
+        "Think about what might have triggered it (new food, medicine, product) and avoid it.",
+        "Try not to scratch."
+      ],
+      "doctor_first": "Get emergency help straight away if your lips, tongue or throat swell, or you have trouble breathing.",
+      "after_tips": "See a doctor if hives keep coming back or last more than a few days.",
+      "medicines": [
+        {
+          "name": "Cetirizine or loratadine tablets",
+          "use": "antihistamines that can ease itching"
+        },
+        {
+          "name": "Calamine lotion",
+          "use": "a soothing lotion for itchy skin"
+        }
+      ]
+    },
+    "insect_bite": {
+      "home_care": [
+        "Wash the bite with soap and water.",
+        "Hold a cold pack wrapped in a cloth on it for 10 minutes to reduce swelling.",
+        "Try not to scratch, so it doesn't get infected.",
+        "Use a mosquito net or repellent to prevent more bites."
+      ],
+      "doctor_first": "Get emergency help straight away if you have swelling of the face or throat, trouble breathing, or feel faint.",
+      "after_tips": "See a doctor if it becomes very red, hot, swollen or painful, or you feel unwell.",
+      "medicines": [
+        {
+          "name": "Calamine lotion",
+          "use": "a soothing lotion for itchy skin"
+        },
+        {
+          "name": "Cetirizine or loratadine tablets",
+          "use": "antihistamines that can ease itching"
+        }
+      ]
+    },
+    "folliculitis": {
+      "home_care": [
+        "Keep the area clean with a mild soap and pat dry.",
+        "Hold a warm, damp cloth on it for 10 minutes a few times a day.",
+        "Stop shaving the area for a while, or use a clean, sharp razor in the direction of hair growth.",
+        "Wear loose clothes and change out of sweaty clothes quickly."
+      ],
+      "after_tips": "See a doctor if it spreads, keeps coming back, or forms painful lumps or boils.",
+      "medicines": [
+        {
+          "name": "Chlorhexidine or benzoyl peroxide wash",
+          "use": "an antiseptic wash for the area"
+        }
+      ]
+    },
+    "psoriasis": {
+      "home_care": [
+        "Moisturise often with a thick, fragrance-free cream.",
+        "Take lukewarm baths and pat your skin dry.",
+        "Don't pick or scratch the scales.",
+        "Notice what makes it worse (stress, smoking, alcohol, skin injuries) and try to avoid it."
+      ],
+      "after_tips": "It's worth seeing a doctor: there are effective treatments, and a doctor can confirm it's psoriasis. See one quickly if your joints hurt or the rash spreads fast.",
+      "medicines": [
+        {
+          "name": "Plain petroleum jelly or a fragrance-free emollient cream",
+          "use": "keeps the skin moist and protected"
+        },
+        {
+          "name": "Coal tar or salicylic acid shampoo",
+          "use": "for scaly patches on the scalp"
+        }
+      ],
+      "medicine_warning": "Don't use steroid creams without a doctor's advice: on the face they can cause thin skin and more pimples."
+    },
+    "shingles": {
+      "doctor_first": "Please see a doctor within 3 days of the rash starting: antiviral medicine works best early. Get urgent help if the rash is near your eye.",
+      "home_care": [
+        "Keep the rash clean and dry, and cover it loosely with clothing.",
+        "A cool, damp cloth can ease pain and itching.",
+        "Wear loose cotton clothes.",
+        "Avoid contact with pregnant women, newborn babies and people who haven't had chickenpox until the blisters crust over."
+      ],
+      "after_tips": "See a doctor quickly if the pain is severe, the rash spreads, or you feel very unwell.",
+      "medicines": [
+        {
+          "name": "Paracetamol",
+          "use": "for pain"
+        },
+        {
+          "name": "Calamine lotion",
+          "use": "a soothing lotion for itchy skin"
+        }
+      ],
+      "medicine_warning": "The antiviral medicine for shingles needs a doctor's prescription, so please see one soon."
+    },
+    "cold_sores": {
+      "home_care": [
+        "Don't touch or pick the sore, and wash your hands if you do.",
+        "Don't kiss or share cups, towels or lip balm until it heals.",
+        "Hold a cold, damp cloth on it to ease pain.",
+        "Use a lip balm with sunscreen: sun can trigger new sores."
+      ],
+      "after_tips": "See a doctor if sores are large, frequent, near your eye, or don't heal within two weeks.",
+      "medicines": [
+        {
+          "name": "Paracetamol",
+          "use": "for pain"
+        },
+        {
+          "name": "Petroleum jelly",
+          "use": "keeps the sore moist and less painful"
+        }
+      ]
+    },
+    "unfamiliar": {}
+  },
+  "medicine_note": "These are common options, not a prescription. Please check with a doctor or pharmacist before using any medicine, especially for children, pregnant women, or people with allergies.",
+  "no_medicine_text": "Usually no medicine is needed for this. The home-care tips above are the best place to start."
+}
