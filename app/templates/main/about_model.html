@@ -45,10 +45,15 @@
   <div class="grid-2 wide-left">
     <div class="prose">
       <h2>What it does</h2>
+      {# "unfamiliar" is the photo check's "not a skin problem the AI knows" answer, not a condition #}
+      {% set moles = by_domain['lesion']|rejectattr('code', 'equalto', 'unfamiliar')|list %}
+      {% set rashes = by_domain['general']|rejectattr('code', 'equalto', 'unfamiliar')|list %}
       <p>{{ brand }} has <strong>two AI checkers</strong>. You choose the one that fits your photo:</p>
       <ul>
-        <li><strong>Mole or spot</strong>: compares a close-up photo of one spot with {{ by_domain['lesion']|length }} types of moles and skin spots, including skin cancers.</li>
-        <li><strong>Rash or other skin problem</strong>: compares an everyday phone photo with {{ by_domain['general']|length }} common conditions: skin irritation (dermatitis), eczema and ringworm.</li>
+        <li><strong>Mole or spot</strong>: compares a close-up photo of one spot with {{ moles|length }} types of moles and skin spots, including skin cancers.</li>
+        <li><strong>Rash or other skin problem</strong>: compares an everyday phone photo with {{ rashes|length }} answers:
+          {% for c in rashes %}{{ simple_name(c.code, c.name)|lower }}{{ ', ' if loop.revindex > 2 else (' and ' if loop.revindex == 2 else '') }}{% endfor %}.
+          It also tells you when a photo doesn't look like a skin problem it knows.</li>
       </ul>
       <p>Each checker gives a score for every condition it knows, and the scores add up to 100%. We only name one condition
         when its score is high enough and clearly ahead of the rest. Otherwise we tell you the AI <em>isn't sure</em>.</p>
@@ -72,9 +77,9 @@
 
       <h2>How it was built</h2>
       <ul>
-        <li>We started from AI models that already understand everyday photos (MobileNetV2, EfficientNetB0 and EfficientNetB3), then taught them about skin. For each checker we keep whichever did better.</li>
+        <li><strong>Mole or spot:</strong> we started from AI models that already understand everyday photos (MobileNetV2, EfficientNetB0 and EfficientNetB3), then taught them about skin, and kept the one that did best. While learning, photos were flipped, turned and lightened or darkened, so it copes with different photos.</li>
+        <li><strong>Rash or other skin problem:</strong> OpenAI's CLIP image model turns each photo into a list of features, and a simple statistical model learned which features go with each answer. A separate photo check spots pictures that aren't a skin problem it knows.</li>
         <li>Every photo is cropped to a square and resized the same way when the AI learns and when it checks your photo.</li>
-        <li>While learning, photos were flipped, turned and lightened or darkened, so the AI copes with different photos.</li>
         <li>Common conditions get less weight and rare ones more, so the AI doesn't just guess the most common answer.</li>
         <li>Photos of the same spot or person were never split between learning and testing, so test results aren't inflated.</li>
       </ul>
@@ -84,7 +89,7 @@
         <h3>{{ ck.title }}</h3>
         {{ performance(models.get(ck.domain), by_domain[ck.domain]) }}
       {% endfor %}
-      <p class="small muted"><strong>Sensitivity</strong> = how often it finds a condition when it's really there. <strong>Specificity</strong> = how often it correctly says "not this one". These results come from photos in the same collections, are <strong>not</strong> the same as a doctor's accuracy, and real-life results will likely be lower. For the rash checker, some conditions had only about 10 test cases, so their numbers can swing a lot.</p>
+      <p class="small muted"><strong>Sensitivity</strong> = how often it finds a condition when it's really there. <strong>Specificity</strong> = how often it correctly says "not this one". These results come from photos in the same collections, are <strong>not</strong> the same as a doctor's accuracy, and real-life results will likely be lower. The rash checker was tested in 5 rounds: each photo was checked once by a version of the AI that had never seen it or a near-copy of it.</p>
 
       <h2>Things to keep in mind</h2>
       <ul>

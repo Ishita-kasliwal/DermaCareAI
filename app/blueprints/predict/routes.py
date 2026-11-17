@@ -6,7 +6,7 @@ from app.extensions import db, limiter
 from app.forms import AnalyzeForm, ConfirmForm, DoctorSearchForm, FeedbackForm, UploadForm
 from app.ml.registry import ModelUnavailableError, registry
 from app.models import DiseaseClass, Feedback
-from app.services.analytics_service import class_rows
+from app.services.analytics_service import known_class_rows
 from app.services.audit_service import audit
 from app.services.care_service import care_for
 from app.services.image_service import (
@@ -248,7 +248,7 @@ def result(prediction_id):
     pred = get_owned_prediction(current_user, prediction_id) or abort(404)
     fb_form = FeedbackForm(formdata=None)
     fb_form.suggested_class.choices = [("", "Choose what the doctor said")] + [
-        (c.code, simple_name(c.code, c.name)) for c in class_rows() if c.code != "unfamiliar"]
+        (c.code, simple_name(c.code, c.name)) for c in known_class_rows() if c.code != "unfamiliar"]
     # Home care: tips only when the AI is sure; the "see a doctor" message for cancers is shown even when unsure.
     care = care_for(pred.predicted_class.code)
     if not care.urgent and pred.status != "confident":
@@ -268,7 +268,7 @@ def result(prediction_id):
 def feedback(prediction_id):
     pred = get_owned_prediction(current_user, prediction_id) or abort(404)
     form = FeedbackForm()
-    form.suggested_class.choices = [("", "")] + [(c.code, c.name) for c in class_rows()]
+    form.suggested_class.choices = [("", "")] + [(c.code, c.name) for c in known_class_rows()]
     if not form.validate_on_submit():
         flash("Please choose an answer before saving.", "error")
         return redirect(url_for("predict.result", prediction_id=prediction_id))

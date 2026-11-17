@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from collections import Counter, OrderedDict
 from datetime import date, datetime, timedelta
 
@@ -20,6 +21,34 @@ def _live_predictions():
 
 def class_rows() -> list[DiseaseClass]:
     return list(db.session.scalars(db.select(DiseaseClass).order_by(DiseaseClass.display_order)))
+
+
+def model_codes(mv) -> set[str] | None:
+    """Condition codes an installed model can actually name (from its labels.json); None if unknown."""
+    if mv is None:
+        return None
+    from app.ml.registry import registry
+
+    try:
+        labels = json.loads((registry.model_dir(mv) / "labels.json").read_text(encoding="utf-8"))
+        return {item["code"] for item in labels}
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+def known_class_rows(extra_ids=()) -> list[DiseaseClass]:
+    """Conditions the installed checkers can name, plus any whose id is in `extra_ids`.
+
+    Conditions from older models stay in the database (past results point to them) but are not offered
+    as choices. A checker that isn't installed, or whose labels can't be read, keeps all its rows.
+    """
+    from app.ml.registry import registry
+
+    models = registry.active_versions()
+    codes = {d: model_codes(models.get(d)) for d in ("lesion", "general")}
+    extra = set(extra_ids)
+    return [c for c in class_rows()
+            if c.id in extra or codes.get(c.domain) is None or c.code in codes[c.domain]]
 
 
 def _class_distribution(where) -> list[dict]:

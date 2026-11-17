@@ -3,12 +3,14 @@ from datetime import datetime, time, timedelta
 from flask import Response, abort, flash, redirect, render_template, request, stream_with_context, url_for
 from flask_login import current_user, login_required
 
+from skinai_ml.classes import simple_name
+
 from app.blueprints.history import bp
 from app.extensions import db
 from app.forms import ConfirmForm, HistoryFilterForm
 from app.models import DiseaseClass, Prediction
 from app.services import export_service
-from app.services.analytics_service import class_rows
+from app.services.analytics_service import known_class_rows
 from app.services.prediction_service import get_owned_prediction, soft_delete_prediction
 
 PER_PAGE = 15
@@ -17,9 +19,12 @@ PER_PAGE = 15
 @bp.get("/")
 @login_required
 def index():
-    classes = class_rows()
+    # Current conditions plus any older ones that still appear in this person's history.
+    used = db.session.scalars(db.select(Prediction.predicted_class_id).distinct()
+                              .where(Prediction.user_id == current_user.id, Prediction.deleted_at.is_(None)))
+    classes = known_class_rows(extra_ids=set(used))
     form = HistoryFilterForm(request.args)
-    form.category.choices = [("", "All categories")] + [(c.code, c.name) for c in classes]
+    form.category.choices = [("", "All categories")] + [(c.code, simple_name(c.code, c.name)) for c in classes]
     valid = form.validate()
 
     q = (db.select(Prediction)

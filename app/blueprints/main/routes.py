@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 from flask import current_app, render_template
@@ -6,7 +5,7 @@ from flask_login import current_user, login_required
 
 from app.blueprints.main import bp
 from app.ml.registry import registry
-from app.services.analytics_service import class_rows, recent_predictions, user_stats
+from app.services.analytics_service import known_class_rows, recent_predictions, user_stats
 
 CHECKERS = [
     {"domain": "lesion", "title": "Moles and spots",
@@ -46,31 +45,15 @@ def _check_items():
             for i in CHECK_ITEMS]
 
 
-def _model_codes(mv) -> set[str] | None:
-    """Category codes the installed model can actually name (from its labels.json)."""
-    if mv is None:
-        return None
-    try:
-        labels = json.loads((registry.model_dir(mv) / "labels.json").read_text(encoding="utf-8"))
-        return {item["code"] for item in labels}
-    except (OSError, ValueError, KeyError, TypeError):
-        return None
-
-
 def _classes_by_domain():
-    rows = class_rows()
-    models = registry.active_versions()
-    out = {}
-    for c in CHECKERS:
-        codes = _model_codes(models.get(c["domain"]))
-        out[c["domain"]] = [r for r in rows if r.domain == c["domain"] and (codes is None or r.code in codes)]
-    return out
+    rows = known_class_rows()
+    return {c["domain"]: [r for r in rows if r.domain == c["domain"]] for c in CHECKERS}
 
 
 @bp.get("/")
 def index():
     models = registry.active_versions()
-    return render_template("main/index.html", classes=class_rows(), by_domain=_classes_by_domain(),
+    return render_template("main/index.html", classes=known_class_rows(), by_domain=_classes_by_domain(),
                            checkers=CHECKERS, models=models, model=any(models.values()), check_items=_check_items())
 
 
@@ -78,7 +61,8 @@ def index():
 def about_model():
     models = registry.active_versions()
     return render_template("main/about_model.html", checkers=CHECKERS, models=models,
-                           by_domain=_classes_by_domain(), classes=class_rows())
+                           by_domain=_classes_by_domain(),
+                           classes=[c for c in known_class_rows() if c.code != "unfamiliar"])
 
 
 @bp.get("/dashboard")
