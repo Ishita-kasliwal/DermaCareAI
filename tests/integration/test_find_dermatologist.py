@@ -30,7 +30,8 @@ def test_results_and_fallback_message_shown(client, monkeypatch):
     import app.blueprints.doctors.routes as routes
     monkeypatch.setattr(routes, "search", fake_search)
     html = client.get("/find-a-dermatologist?city=Smalltown&district=Pune&state=Maharashtra").data.decode()
-    assert "Skin Care Clinic" in html and "3.2 km" in html and "FC Road, Pune" in html
+    assert "Skin Care Clinic" in html and "3.2 km" in html
+    assert "FC Road, Pune" not in html      # addresses are not shown (open-map addresses can be wrong)
     assert "looked in the wider district" in html
     assert "across Pune district" in html
     assert "google.com/maps/search/" in html and "dermatologist+in+Smalltown" in html

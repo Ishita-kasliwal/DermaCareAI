@@ -15,7 +15,7 @@
             <tr>
               <td data-label="Requested">{{ a.created_at|datetimefmt }}</td>
               <td data-label="Person">{{ a.patient_name }}<br><span class="mono small">{{ a.patient_phone }}</span></td>
-              <td data-label="Clinic">{{ a.clinic_name }}{% if a.clinic_address %}<br><span class="small muted">{{ a.clinic_address }}</span>{% endif %}{% if a.clinic_phone %}<br><span class="mono small">{{ a.clinic_phone }}</span>{% endif %}</td>
+              <td data-label="Clinic">{{ a.clinic_name }}{% if a.clinic_phone %}<br><span class="mono small">{{ a.clinic_phone }}</span>{% endif %}</td>
               <td data-label="Wanted">{{ a.preferred_date|datefmt }}<br><span class="small muted">{{ a.time_slot|capitalize }}</span></td>
               <td data-label="Condition">{{ a.predicted_condition or '—' }}</td>
               <td data-label="Note" class="small">{{ a.note or '—' }}</td>

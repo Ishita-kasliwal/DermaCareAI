@@ -12,7 +12,6 @@
 
   <section class="panel clinic-summary" aria-labelledby="clinic-h">
     <h2 id="clinic-h" class="clinic-name">{{ clinic.name }}</h2>
-    {% if clinic.address %}<p class="small muted">{{ clinic.address }}</p>{% endif %}
     <div class="clinic-actions">
       {% if clinic.tel_href %}
         <a class="btn btn-secondary clinic-btn" href="{{ clinic.tel_href }}">{{ icon('phone') }} Call {{ clinic.display_phone }}</a>

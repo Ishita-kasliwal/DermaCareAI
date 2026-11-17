@@ -9,7 +9,7 @@
   </div>
   <h1>Your appointment request</h1>
   <dl class="meta-list">
-    <dt>Clinic</dt><dd>{{ appt.clinic_name }}{% if appt.clinic_address %}<br><span class="small muted">{{ appt.clinic_address }}</span>{% endif %}</dd>
+    <dt>Clinic</dt><dd>{{ appt.clinic_name }}</dd>
     <dt>Day</dt><dd>{{ appt.preferred_date|datefmt }}, in the {{ slots.get(appt.time_slot, appt.time_slot) }}</dd>
     <dt>Your mobile</dt><dd>{{ appt.patient_phone }}</dd>
     {% if appt.predicted_condition %}<dt>For</dt><dd>{{ appt.predicted_condition }} (from your skin check)</dd>{% endif %}

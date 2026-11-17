@@ -34,15 +34,14 @@
 
       {% if result.clinics %}
         <h2 id="found-h">Skin clinics {{ 'in' if result.level == 'city' else 'across' }} {{ result.area }}</h2>
-        <p class="small muted">Nearest first. Distances are straight-line from the centre of {{ form.city.data|title if result.level == 'city' else result.area }}, so the road distance will be longer. Listings come from {{ result.source }}. Please check the address on Google Maps and call before you go.</p>
+        <p class="small muted">Nearest first. Distances are straight-line from the centre of {{ form.city.data|title if result.level == 'city' else result.area }}, so the road distance will be longer. Listings come from {{ result.source }}. Please check the clinic on Google Maps and call before you go.</p>
         <ul class="clinic-list">
           {% for c in result.clinics %}
             <li class="clinic-card">
               <div class="clinic-main">
                 <h3 class="clinic-name">{{ c.name }}</h3>
-                <p class="small muted">{{ c.address or 'Address not listed' }}</p>
                 {% if c.display_phone %}<p class="small">{{ c.display_phone }}</p>{% endif %}
-                <p class="small"><a href="{{ c.check_url }}" target="_blank" rel="noopener noreferrer">Check address, hours and reviews on Google Maps</a></p>
+                <p class="small"><a href="{{ c.check_url }}" target="_blank" rel="noopener noreferrer">See location, hours and reviews on Google Maps</a></p>
               </div>
               {% if c.distance_km is not none %}<span class="clinic-distance">{{ '%.1f'|format(c.distance_km) }} km</span>{% endif %}
               <div class="clinic-actions">
