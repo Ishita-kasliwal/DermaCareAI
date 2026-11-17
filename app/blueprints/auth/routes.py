@@ -118,8 +118,15 @@ def google_start():
     if not google_auth.google_configured():
         flash("Google sign-in isn't set up on this site yet. Please use your email and password.", "info")
         return redirect(url_for("auth.login"))
+    # Google only accepts the exact return address saved in Google Cloud (docs/GOOGLE_SIGNIN.md uses 127.0.0.1).
+    # "localhost" is the same computer but a different address to Google, so move to 127.0.0.1 first
+    # (before anything is stored in the session, which is tied to the address).
+    host = request.host.partition(":")[0]
+    if host == "localhost" and current_app.config.get("GOOGLE_LOCALHOST_TO_127", True):
+        return redirect(request.url.replace("//localhost", "//127.0.0.1", 1))
     session["google_next"] = safe_next_url(request.args.get("next", ""), url_for("main.dashboard"))
-    redirect_uri = url_for("auth.google_callback", _external=True)
+    redirect_uri = current_app.config.get("GOOGLE_REDIRECT_URI") or url_for("auth.google_callback", _external=True)
+    current_app.logger.info("google sign-in: redirect_uri sent to Google = %s", redirect_uri)
     try:
         return google_auth.client().authorize_redirect(redirect_uri)
     except Exception:  # noqa: BLE001 - e.g. no internet to reach Google

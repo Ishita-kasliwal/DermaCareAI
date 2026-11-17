@@ -71,6 +71,8 @@ class BaseConfig:
     # Optional "Continue with Google" (see docs/GOOGLE_SIGNIN.md). Both empty = button hidden.
     GOOGLE_CLIENT_ID = _env("GOOGLE_CLIENT_ID", "")
     GOOGLE_CLIENT_SECRET = _env("GOOGLE_CLIENT_SECRET", "")
+    # Optional: force the exact return address registered in Google Cloud (empty = built from the address in use)
+    GOOGLE_REDIRECT_URI = _env("GOOGLE_REDIRECT_URI", "")
 
     # Optional: Google Places key for the "find a dermatologist" clinic list (more clinics + phone numbers).
     # Empty = free OpenStreetMap data. See docs/FIND_A_DERMATOLOGIST.md.
@@ -114,6 +116,12 @@ class TestingConfig(BaseConfig):
     SQLALCHEMY_ENGINE_OPTIONS: dict = {}
     WTF_CSRF_ENABLED = False
     RATELIMIT_ENABLED = False
+    # never use real keys from .env in tests (tests switch Google on with fake keys when they need it)
+    GOOGLE_CLIENT_ID = ""
+    GOOGLE_CLIENT_SECRET = ""
+    GOOGLE_REDIRECT_URI = ""
+    GOOGLE_MAPS_API_KEY = ""
+    GOOGLE_LOCALHOST_TO_127 = False   # the test server is called "localhost"
     ENABLE_GRADCAM = True
 
 

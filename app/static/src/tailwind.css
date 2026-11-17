@@ -11,24 +11,24 @@
 @layer base {
   /* Colour tokens read by charts.js and the SVG artwork */
   :root {
-    --primary: #1f6358; --primary-soft: rgba(47, 152, 134, .14); --accent: #2f9886;
+    --primary: #245085; --primary-soft: rgba(58, 124, 192, .14); --accent: #3a7cc0;
     --ink-2: #334155; --muted: #64748b; --line: #e2e8f0; --surface: #ffffff;
     --high: #be123c; --medium: #b45309; --low: #15803d;
     --art-bg: #f1f5f9; --art-skin: #f1d3c1; --art-skin-2: #e5b9a2; --art-lesion: #6b3a28; --art-lesion-2: #3e2017;
-    --logo-ring: #1f6358; --logo-mark: #ffffff;
+    --logo-ring: #245085; --logo-mark: #ffffff;
     color-scheme: light;
   }
   .dark {
-    --primary: #4db5a3; --primary-soft: rgba(77, 181, 163, .16); --accent: #4db5a3;
-    --ink-2: #cbd5e1; --muted: #94a3b8; --line: #1e293b; --surface: #0f172a;
+    --primary: #5a97d3; --primary-soft: rgba(90, 151, 211, .16); --accent: #5a97d3;
+    --ink-2: #cbd5e1; --muted: #94a3b8; --line: #2a2d31; --surface: #202225;
     --high: #fb7185; --medium: #fbbf24; --low: #4ade80;
     --art-bg: #111c2e; --art-skin: #8a6655; --art-skin-2: #77574a; --art-lesion: #3c2219; --art-lesion-2: #24130e;
-    --logo-ring: #4db5a3; --logo-mark: #0f172a;
+    --logo-ring: #5a97d3; --logo-mark: #17181a;
     color-scheme: dark;
   }
 
   html { -webkit-text-size-adjust: 100%; }
-  body { @apply bg-slate-50 font-sans text-[16px] leading-relaxed text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-200; }
+  body { @apply bg-[#f5f8fc] font-sans text-[16px] leading-relaxed text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-200; }
   h1, h2, h3 { @apply mb-3 font-display font-bold leading-tight tracking-tight text-slate-900 dark:text-white; }
   h1 { @apply text-3xl sm:text-4xl; }
   h2 { @apply text-xl sm:text-2xl; }
@@ -84,6 +84,7 @@
   .logo-mark { fill: var(--logo-mark); }
   .header-tools { @apply ml-auto flex items-center gap-1 sm:gap-2 lg:order-3 lg:ml-3; }
   .site-header .nav-link, .site-header .btn { @apply whitespace-nowrap px-2 sm:px-3; }
+  .site-header .header-tools { @apply ml-auto; }   /* buttons always on the right of the bar */
   .nav-toggle { @apply inline-flex cursor-pointer items-center rounded-lg border border-slate-300 bg-white px-4 py-1.5 text-sm font-semibold text-slate-800 lg:hidden dark:border-white/15 dark:bg-slate-900 dark:text-slate-100; }
   .nav { @apply hidden w-full pb-3 lg:flex lg:w-auto lg:flex-1 lg:items-center lg:pb-0; }
   .nav.open { @apply block; }

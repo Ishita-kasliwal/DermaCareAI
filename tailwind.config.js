@@ -8,14 +8,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Soft medical blue (clinic style). Every accent on the site uses this palette.
         brand: {
-          50: "#effaf8", 100: "#d7f2ec", 200: "#b0e4da", 300: "#7fcfc0", 400: "#4db5a3",
-          500: "#2f9886", 600: "#237a6c", 700: "#1f6358", 800: "#1c4f47", 900: "#19423c", 950: "#0a2622",
+          50: "#f0f6fc", 100: "#dce9f7", 200: "#bcd5ef", 300: "#8db8e3", 400: "#5a97d3",
+          500: "#3a7cc0", 600: "#2b64a3", 700: "#245085", 800: "#20436d", 900: "#1d395b", 950: "#13253d",
         },
-        // Flat, single-colour look: the old orange "coral" accent now uses the same green as the brand.
+        // Single-colour look: the old "coral" accent uses the same blue as the brand.
         coral: {
-          50: "#effaf8", 100: "#d7f2ec", 200: "#b0e4da", 300: "#7fcfc0", 400: "#4db5a3",
-          500: "#2f9886", 600: "#237a6c", 700: "#1f6358", 800: "#1c4f47", 900: "#19423c",
+          50: "#f0f6fc", 100: "#dce9f7", 200: "#bcd5ef", 300: "#8db8e3", 400: "#5a97d3",
+          500: "#3a7cc0", 600: "#2b64a3", 700: "#245085", 800: "#20436d", 900: "#1d395b",
         },
         ink: { 950: "#0b1214" },
         // Dark mode uses neutral charcoal instead of Tailwind's navy-tinted "slate", so it looks calm and printed,
@@ -39,7 +40,7 @@ module.exports = {
         card: "none",
         lift: "0 8px 24px rgb(15 23 42 / 0.12)",
       },
-      borderRadius: { "2xl": "0.5rem", "3xl": "0.75rem" },
+      borderRadius: { "2xl": "0.75rem", "3xl": "1rem" },
     },
   },
   plugins: [],

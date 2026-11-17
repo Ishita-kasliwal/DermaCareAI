@@ -199,3 +199,10 @@ def test_detect_face_false_on_skin_texture():
     rng = np.random.default_rng(0)
     rgb = np.clip(rng.normal(150, 30, (300, 300, 3)), 0, 255).astype(np.uint8)
     assert quality_service.detect_face(rgb) is False
+
+
+def test_google_start_moves_localhost_to_127_0_0_1(client, google_on):
+    """Google needs the exact registered return address; localhost is moved to 127.0.0.1 first."""
+    client.application.config["GOOGLE_LOCALHOST_TO_127"] = True
+    r = client.get("/auth/google", base_url="http://localhost:8010")
+    assert r.status_code == 302 and r.headers["Location"] == "http://127.0.0.1:8010/auth/google"

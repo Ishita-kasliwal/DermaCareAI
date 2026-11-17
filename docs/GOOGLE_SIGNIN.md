@@ -30,6 +30,19 @@ GOOGLE_CLIENT_SECRET=paste-the-client-secret-here
 Then restart the site (VS Code task **DermaCareAI: Restart** or `scripts\restart.ps1`).
 Open <http://127.0.0.1:8010/auth/login>. Use `127.0.0.1`, not `localhost`, because the redirect URI must match exactly.
 
+## If Google says "Error 400: redirect_uri_mismatch"
+
+Google compares the return address character by character. Check in **Credentials → your OAuth client →
+Authorised redirect URIs** (not "Authorised JavaScript origins") that it is exactly:
+
+    http://127.0.0.1:8010/auth/google/callback
+
+- `http`, not `https`; `127.0.0.1`, not `localhost`; port `8010`; no slash at the end.
+- If you open the site as `http://localhost:8010`, it now switches to `127.0.0.1` by itself before going to Google.
+- The address the site sends is written to the server log (`google sign-in: redirect_uri sent to Google = ...`).
+- To force one fixed address (for example a public link), set `GOOGLE_REDIRECT_URI=` in `.env`.
+- After saving in Google Cloud it can take a few minutes before the new address is accepted.
+
 ## Using it with the public link
 
 Each Cloudflare quick-tunnel link is new, so Google needs that exact address too. After starting the public link,
