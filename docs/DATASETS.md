@@ -189,7 +189,7 @@ Not used for training. Shown on the home page only.
 | `app/static/img/home/take-photo.jpg` | Hand taking a photo with a phone | Luciano Oliveira, [Unsplash](https://unsplash.com/photos/LX3YF0Rv524), Unsplash Licence |
 | `app/static/img/home/read-result.jpg` | Doctor showing a patient a tablet | Vitaly Gariev, [Unsplash](https://unsplash.com/photos/6qN9yEK5k9U), Unsplash Licence |
 | `app/static/img/home/home-care.jpg` | Applying cream to the cheek | Leighann Blackwood, [Unsplash](https://unsplash.com/photos/zoYLGk2oULA), Unsplash Licence |
-| `app/static/img/home/skin-doctor.jpg` | Doctor talking with a patient | Nate Johnston, [Unsplash](https://unsplash.com/photos/EGRtDGCcKMA), Unsplash Licence |
+| `app/static/img/home/skin-check.jpg` | Moles seen through a magnifying glass | Bermix Studio, [Unsplash](https://unsplash.com/photos/a-close-up-of-a-person-looking-through-a-magnifying-glass-PNdOpC-6q-I), Unsplash Licence |
 | `app/static/img/conditions/acne.jpg` | Skin with acne marks | mehak mehla, [Unsplash](https://unsplash.com/photos/uqFmwvHa-xs), Unsplash Licence |
 | `app/static/img/conditions/scratches.jpg` | Plaster on an elbow | Diana Polekhina, [Unsplash](https://unsplash.com/photos/rKJoUsqmSs4), Unsplash Licence |
 | `app/static/img/conditions/dark_spots.jpg`, `moles.jpg` | Skin magnifier close-ups | HAM10000 (ViDIR Group, Medical University of Vienna), CC BY-NC 4.0 |
