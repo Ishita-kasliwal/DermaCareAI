@@ -413,14 +413,9 @@
   .name-list { @apply m-0 grid list-none gap-x-6 gap-y-2 p-0 sm:grid-cols-2; }
   .name-list li { @apply border-b border-slate-100 py-1.5 dark:border-white/5; }
   /* home page: plain "What you can check" panel (replaces the drawn illustration) */
-  /* home hero: big photo with a small floating note */
+  /* home hero: big photo with its credit underneath */
   .hero-photo { @apply relative m-0; }
   .hero-photo img { @apply block aspect-[4/3] w-full rounded-2xl object-cover shadow-lift lg:aspect-[5/4]; }
-  .hero-photo-frame { @apply relative; }
-  .hero-badge { @apply absolute bottom-4 left-4 flex max-w-[17rem] items-center gap-3 rounded-xl bg-white/95 px-4 py-3 shadow-lift backdrop-blur dark:bg-slate-900/95; }
-  .hero-badge svg { @apply h-6 w-6 flex-none text-brand-700 dark:text-brand-300; }
-  .hero-badge strong { @apply block text-sm text-slate-900 dark:text-white; }
-  .hero-badge span { @apply block text-xs text-slate-600 dark:text-slate-300; }
   .hero-photo .photo-credit { @apply mt-2 text-right; }
   /* "What you can check" picture cards */
   .check-grid { @apply m-0 grid list-none gap-5 p-0 sm:grid-cols-2 lg:grid-cols-3; }

@@ -8,8 +8,8 @@
       <span class="eyebrow">Step 2 of 3</span>
       <h1>{{ 'Check your photo' if images|length == 1 else 'Check your ' ~ images|length ~ ' photos' }}</h1>
       <p class="muted">
-        {% if mode == 'auto' %}You weren't sure what it is, so each photo will be checked by
-          <strong>both</strong> the mole checker and the rash checker. You'll see both answers side by side.
+        {% if mode == 'auto' %}You weren't sure what it is, so the AI will look at each photo and pick the
+          right checker for it (mole or spot, or rash and other skin problems). If it can't tell, the photo is checked by both.
         {% else %}Each photo will be checked as: <strong>{{ domain_labels[mode]|lower }}</strong>.{% endif %}
       </p>
     </div>
