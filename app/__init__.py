@@ -82,7 +82,7 @@ def _init_extensions(app: Flask) -> None:
         strict_transport_security=app.config["FORCE_HTTPS"],
         session_cookie_secure=app.config["SESSION_COOKIE_SECURE"],
         referrer_policy="strict-origin-when-cross-origin",
-        permissions_policy={"camera": "()", "geolocation": "()", "microphone": "()"},
+        permissions_policy={"camera": "(self)", "geolocation": "()", "microphone": "()"},  # camera: "Take a photo"
     )
 
     from app.services.google_auth import init_google
@@ -102,6 +102,7 @@ def _register_blueprints(app: Flask) -> None:
     from app.blueprints.api import bp as api_bp
     from app.blueprints.api.routes import health
     from app.blueprints.auth import bp as auth_bp
+    from app.blueprints.clinic import bp as clinic_bp
     from app.blueprints.doctors import bp as doctors_bp
     from app.blueprints.history import bp as history_bp
     from app.blueprints.main import bp as main_bp
@@ -112,6 +113,7 @@ def _register_blueprints(app: Flask) -> None:
     app.register_blueprint(account_bp, url_prefix="/account")
     app.register_blueprint(predict_bp)
     app.register_blueprint(doctors_bp)
+    app.register_blueprint(clinic_bp, url_prefix="/doctor")
     app.register_blueprint(history_bp, url_prefix="/history")
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(api_bp, url_prefix="/api/v1")

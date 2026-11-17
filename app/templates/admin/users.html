@@ -47,7 +47,10 @@
                       <select id="role-{{ u.public_id }}" name="role">
                         <option value="user" {% if u.role == 'user' %}selected{% endif %}>User</option>
                         <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>Administrator</option>
+                        <option value="doctor" {% if u.role == 'doctor' %}selected{% endif %}>Doctor</option>
                       </select>
+                      <label class="visually-hidden" for="clinic-{{ u.public_id }}">Clinic of {{ u.full_name }} (doctors only)</label>
+                      <input id="clinic-{{ u.public_id }}" name="clinic_name" maxlength="160" placeholder="Clinic (doctors only)" value="{{ u.clinic_name or '' }}">
                       <button class="btn btn-secondary btn-sm" type="submit">Set role</button>
                     </form>
                   </div>

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination as paginate, risk_badge %}
+{% block title %}Appointment requests{% endblock %}
+{% block content %}
+{% set slots = {'morning': 'Morning', 'afternoon': 'Afternoon', 'evening': 'Evening'} %}
+<div class="container page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">For doctors</p>
+      <h1>Appointment requests</h1>
+      <p class="muted">People who asked for an appointment at <strong>{{ current_user.clinic_name }}</strong>, newest first.
+        You see a photo only when the patient chose to share it. Please call them to confirm a time.</p>
+    </div>
+  </div>
+
+  {% if pagination.items %}
+    <ul class="appt-list">
+      {% for a in pagination.items %}
+        {% set p = shared(a) %}
+        <li class="appt-card">
+          <div class="appt-photo">
+            {% if p %}
+              <a href="{{ url_for('clinic.photo', appointment_id=a.public_id) }}" target="_blank" rel="noopener">
+                <img src="{{ url_for('clinic.photo', appointment_id=a.public_id) }}" alt="Photo shared by {{ a.patient_name }}" loading="lazy">
+              </a>
+            {% else %}
+              <div class="appt-nophoto">No photo shared</div>
+            {% endif %}
+          </div>
+          <div class="appt-body">
+            <h2 class="appt-name">{{ a.patient_name }}</h2>
+            <p class="appt-meta">
+              <a href="tel:{{ a.patient_phone }}">{{ a.patient_phone }}</a> ·
+              wants {{ a.preferred_date|datefmt }}, {{ slots.get(a.time_slot, a.time_slot)|lower }}
+            </p>
+            {% if p %}
+              <p class="appt-ai">AI check: <strong>{{ simple_name(p.predicted_class.code, p.predicted_class.name) }}</strong>
+                ({{ p.confidence|pct }} match{% if p.status != 'confident' %}, unclear{% endif %}) {{ risk_badge(p.predicted_class.risk_level) }}</p>
+            {% elif a.predicted_condition %}
+              <p class="appt-ai muted">Patient's check said: {{ a.predicted_condition }} (photo not shared)</p>
+            {% endif %}
+            {% if a.note %}<p class="appt-note">&ldquo;{{ a.note }}&rdquo;</p>{% endif %}
+            <p class="small muted">Requested {{ a.created_at|datetimefmt }}</p>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+    {{ paginate(pagination, 'clinic.appointments', {}) }}
+  {% else %}
+    <div class="empty"><h2>No requests yet</h2>
+      <p>When someone asks for an appointment at <strong>{{ current_user.clinic_name }}</strong>, it appears here.</p></div>
+  {% endif %}
+  <p class="small muted">The AI result is a hint for the patient, not a diagnosis.</p>
+</div>
+{% endblock %}

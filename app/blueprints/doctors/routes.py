@@ -68,6 +68,7 @@ def book():
             patient_name=form.patient_name.data, patient_phone=form.patient_phone.data,
             preferred_date=form.preferred_date.data, time_slot=form.time_slot.data,
             note=form.note.data or None, predicted_condition=condition,
+            share_photo=bool(form.share_photo.data and pred is not None),   # only a real check can be shared
         )
         db.session.add(appt)
         db.session.flush()
@@ -75,7 +76,7 @@ def book():
         db.session.commit()
         return redirect(url_for("doctors.booked", appointment_id=appt.public_id))
     return render_template("doctors/book.html", form=form, clinic=clinic, has_location=lat is not None,
-                           condition=condition), (400 if request.method == "POST" else 200)
+                           condition=condition, pred=pred), (400 if request.method == "POST" else 200)
 
 
 @bp.get("/book/<appointment_id>")

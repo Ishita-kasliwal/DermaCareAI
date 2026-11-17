@@ -44,6 +44,15 @@
       {% if form.time_slot.errors %}<p class="error">{{ form.time_slot.errors|join(' ') }}</p>{% endif %}
     </fieldset>
     {{ field(form.note, rows=3, maxlength=500) }}
+    {% if pred %}
+      {# optional and unticked: the clinic only sees the photo if the patient says yes #}
+      <div class="field share-box">
+        <div class="check">{{ form.share_photo() }} {{ form.share_photo.label() }}</div>
+        <p class="hint">Optional. If you tick this, a doctor at <strong>{{ clinic.name }}</strong> who uses DermaCareAI
+          can see the photo from your skin check and what the AI said, to prepare for your visit. You can delete the
+          check at any time, and the photo is then removed for them too.</p>
+      </div>
+    {% endif %}
     {% if form.clinic_name.errors or form.prediction.errors %}
       <div class="alert alert-warning" role="alert"><p>Something about this clinic's details looks wrong. Please go back to the list and try again.</p></div>
     {% endif %}

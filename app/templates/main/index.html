@@ -26,13 +26,25 @@
 
     <div class="hero-panel">
       <h2 class="hero-panel-title">What you can check</h2>
-      <ul class="check-list">
-        <li><span class="check-dot"></span><div><strong>Pimples and acne</strong><span>Whiteheads, blackheads and red spots</span></div></li>
-        <li><span class="check-dot"></span><div><strong>Rashes and eczema</strong><span>Itchy, red or dry patches</span></div></li>
-        <li><span class="check-dot"></span><div><strong>Ringworm</strong><span>Round, scaly, itchy patches</span></div></li>
-        <li><span class="check-dot"></span><div><strong>Dark spots and redness</strong><span>Uneven skin tone, marks, flushed cheeks</span></div></li>
-        <li><span class="check-dot"></span><div><strong>Scratches and small cuts</strong><span>Simple care and when to see a doctor</span></div></li>
-        <li><span class="check-dot"></span><div><strong>Moles and spots</strong><span>Signs that a doctor should look at it</span></div></li>
+      {# photos only where a clearly licensed one exists (see CHECK_ITEMS in main/routes.py) #}
+      <ul class="check-cards">
+        {% for item in check_items %}
+          <li class="check-card">
+            {% if item.image %}
+              <figure class="check-photo">
+                <img src="{{ url_for('static', filename=item.image) }}" width="480" height="360" loading="lazy"
+                     alt="{{ item.title }}: example photo">
+              </figure>
+            {% else %}
+              <div class="check-tile" aria-hidden="true">{{ icon(item.icon) }}</div>
+            {% endif %}
+            <div>
+              <strong>{{ item.title }}</strong>
+              <span>{{ item.desc }}</span>
+              {% if item.image and item.credit %}<small class="check-credit">{{ item.credit }}</small>{% endif %}
+            </div>
+          </li>
+        {% endfor %}
       </ul>
       <p class="small muted">Not sure which one it is? Just upload your photo and the AI picks the right check for you.</p>
     </div>

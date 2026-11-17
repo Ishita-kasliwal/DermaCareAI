@@ -23,3 +23,4 @@ def role_required(*roles: str):
 
 
 admin_required = role_required("admin")
+doctor_required = role_required("doctor")

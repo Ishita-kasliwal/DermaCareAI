@@ -104,3 +104,12 @@ def test_batch_pages_only_show_own_photos(client, user, other_user, both):
     assert client.get(loc).status_code == 404
     assert client.post(loc, data={"consent": "y"}).status_code == 404
     assert client.get(res).status_code == 404
+
+
+def test_upload_page_offers_the_camera(client, user, both):
+    login(client)
+    r = client.get("/analyze")
+    html = r.data.decode()
+    assert "Take a photo" in html and 'capture="environment"' in html and "data-camera-dialog" in html
+    policy = r.headers.get("Permissions-Policy", "")
+    assert "camera=(self)" in policy and "microphone=()" in policy   # this site only, never the microphone

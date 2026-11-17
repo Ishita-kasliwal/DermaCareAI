@@ -14,6 +14,7 @@
     <dt>Your mobile</dt><dd>{{ appt.patient_phone }}</dd>
     {% if appt.predicted_condition %}<dt>For</dt><dd>{{ appt.predicted_condition }} (from your skin check)</dd>{% endif %}
     {% if appt.note %}<dt>Your note</dt><dd>{{ appt.note }}</dd>{% endif %}
+    <dt>Your photo</dt><dd>{{ 'Shared with this clinic' if appt.share_photo else 'Not shared' }}</dd>
     <dt>Sent</dt><dd>{{ appt.created_at|datetimefmt }}</dd>
   </dl>
 

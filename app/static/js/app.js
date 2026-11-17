@@ -266,6 +266,73 @@
 
     input.addEventListener("change", function () { handle(input.files); });
 
+    // --- "Take a photo": phones use their own camera app; laptops get a webcam window. The photo is added to
+    // the same file list as chosen photos, so it goes through exactly the same checks.
+    function addFiles(newFiles) {
+      if (typeof DataTransfer === "undefined") return showError("This browser can't add camera photos. Please choose a file instead.");
+      var dt = new DataTransfer();
+      Array.prototype.forEach.call(input.files || [], function (f) { dt.items.add(f); });
+      Array.prototype.forEach.call(newFiles, function (f) { dt.items.add(f); });
+      if (dt.files.length > maxFiles) return showError("Please choose up to " + maxFiles + " photos at a time.");
+      input.files = dt.files;
+      handle(input.files);
+    }
+    var camOpen = form.querySelector("[data-camera-open]");
+    var camInput = form.querySelector("[data-camera-input]");
+    var dlg = form.querySelector("[data-camera-dialog]");
+    if (camOpen && camInput) {
+      camInput.addEventListener("change", function () { if (camInput.files.length) addFiles(camInput.files); camInput.value = ""; });
+      var phone = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+      var canWebcam = dlg && typeof dlg.showModal === "function" && navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
+      var video = dlg && dlg.querySelector("[data-camera-video]");
+      var shot = dlg && dlg.querySelector("[data-camera-shot]");
+      var canvas = dlg && dlg.querySelector("[data-camera-canvas]");
+      var msg = dlg && dlg.querySelector("[data-camera-msg]");
+      var btn = function (name) { return dlg.querySelector("[data-camera-" + name + "]"); };
+      var stream = null, blob = null, shotUrl = null;
+      var stop = function () {
+        if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; }
+        if (shotUrl) { URL.revokeObjectURL(shotUrl); shotUrl = null; }
+      };
+      var mode = function (taken) {
+        video.hidden = taken; shot.hidden = !taken;
+        btn("snap").hidden = taken; btn("retake").hidden = !taken; btn("use").hidden = !taken;
+      };
+      var say = function (text) { msg.textContent = text; msg.hidden = !text; };
+
+      camOpen.addEventListener("click", function () {
+        if (phone || !canWebcam) { camInput.click(); return; }       // phone camera app (or file picker)
+        blob = null; mode(false); say(""); video.parentNode.hidden = false; dlg.showModal();
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false })
+          .then(function (s) { stream = s; video.srcObject = s; })
+          .catch(function () {
+            say("We couldn't open your camera. Please allow camera access in your browser, or choose a photo file instead.");
+            btn("snap").hidden = true;
+            video.parentNode.hidden = true;          // no empty black box when there's no camera
+          });
+      });
+      btn("snap").addEventListener("click", function () {
+        if (!stream || !video.videoWidth) return;
+        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+        canvas.getContext("2d").drawImage(video, 0, 0);
+        canvas.toBlob(function (b) {
+          blob = b;
+          if (shotUrl) URL.revokeObjectURL(shotUrl);
+          shotUrl = URL.createObjectURL(b); shot.src = shotUrl; mode(true);
+        }, "image/jpeg", 0.92);
+      });
+      btn("retake").addEventListener("click", function () { blob = null; mode(false); });
+      btn("use").addEventListener("click", function () {
+        if (blob) {
+          var stamp = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14);
+          addFiles([new File([blob], "camera-" + stamp + ".jpg", { type: "image/jpeg" })]);
+        }
+        dlg.close();
+      });
+      btn("close").addEventListener("click", function () { dlg.close(); });
+      dlg.addEventListener("close", stop);      // camera light goes off as soon as the window closes
+    }
+
     ["dragenter", "dragover"].forEach(function (ev) {
       zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.add("dragover"); });
     });

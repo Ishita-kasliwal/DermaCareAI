@@ -146,12 +146,18 @@ def change_role(public_id):
     if user.role == "admin" and form.role.data != "admin" and _active_admin_count() <= 1:
         flash("At least one active administrator is required.", "error")
         return redirect(url_for("admin.users"))
+    if form.role.data == "doctor" and not form.clinic_name.data:
+        flash("Please type the clinic name for a doctor account (exactly as it appears in the clinic list).", "error")
+        return redirect(url_for("admin.users"))
     old = user.role
     user.role = form.role.data
+    user.clinic_name = form.clinic_name.data if user.role == "doctor" else None
     user.auth_version += 1
     db.session.commit()
-    audit("admin_role_change", current_user, "user", user.public_id, details={"from": old, "to": user.role})
-    flash(f"{user.full_name} is now {'an administrator' if user.role == 'admin' else 'a standard user'}.", "success")
+    audit("admin_role_change", current_user, "user", user.public_id,
+          details={"from": old, "to": user.role, "clinic": user.clinic_name})
+    label = {"admin": "an administrator", "doctor": f"a doctor at {user.clinic_name}"}.get(user.role, "a standard user")
+    flash(f"{user.full_name} is now {label}.", "success")
     return redirect(url_for("admin.users"))
 
 

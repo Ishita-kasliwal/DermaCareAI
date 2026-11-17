@@ -20,7 +20,7 @@ def new_uuid() -> str:
     return str(uuid.uuid4())
 
 
-ROLE_ENUM = sa.Enum("user", "admin", name="user_role")
+ROLE_ENUM = sa.Enum("user", "admin", "doctor", name="user_role")
 RISK_ENUM = sa.Enum("high", "medium", "low", name="risk_level")
 STATUS_ENUM = sa.Enum("confident", "inconclusive", name="prediction_status")
 SEX_ENUM = sa.Enum("female", "male", "other", "prefer_not", name="sex")
@@ -38,6 +38,8 @@ class User(UserMixin, db.Model):
     password_hash: Mapped[str] = mapped_column(sa.String(255))  # "!google" = signs in with Google only
     google_sub: Mapped[str | None] = mapped_column(sa.String(255), unique=True)  # Google account id
     role: Mapped[str] = mapped_column(ROLE_ENUM, default="user")
+    # doctors only: the clinic whose appointment requests they may see (set by an admin)
+    clinic_name: Mapped[str | None] = mapped_column(sa.String(160))
     is_active_flag: Mapped[bool] = mapped_column("is_active", sa.Boolean, default=True)
     # optional profile data (minimal; all optional)
     birth_year: Mapped[int | None] = mapped_column(sa.SmallInteger)
@@ -70,6 +72,10 @@ class User(UserMixin, db.Model):
     @property
     def is_admin(self) -> bool:
         return self.role == "admin"
+
+    @property
+    def is_doctor(self) -> bool:
+        return self.role == "doctor"
 
     @property
     def first_name(self) -> str:
@@ -243,6 +249,8 @@ class Appointment(db.Model):
     note: Mapped[str | None] = mapped_column(sa.String(500))
     predicted_condition: Mapped[str | None] = mapped_column(sa.String(120))   # snapshot of the check's answer
     status: Mapped[str] = mapped_column(sa.String(16), default="requested")
+    # the patient's choice: may the clinic see the photo and the AI result of the check?
+    share_photo: Mapped[bool] = mapped_column(sa.Boolean, default=False, server_default=sa.false())
     created_at: Mapped[datetime] = mapped_column(sa.DateTime, default=utcnow, index=True)
 
     user: Mapped[User] = relationship()

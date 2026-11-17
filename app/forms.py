@@ -43,6 +43,10 @@ SKIN_CHOICES = [("", "Not sure / prefer not to say")] + [
 ]
 
 
+def _strip(v):
+    return v.strip() if isinstance(v, str) else v
+
+
 def _empty_to_none(v):
     return v if v not in ("", None) else None
 
@@ -132,7 +136,10 @@ class ConfirmForm(FlaskForm):
 
 
 class RoleForm(FlaskForm):
-    role = SelectField("Role", choices=[("user", "User"), ("admin", "Admin")], validators=[DataRequired()])
+    role = SelectField("Role", choices=[("user", "User"), ("admin", "Admin"), ("doctor", "Doctor")],
+                       validators=[DataRequired()])
+    # doctors only: which clinic's appointment requests they may see (must match the clinic name in the list)
+    clinic_name = StringField("Clinic", filters=[_strip], validators=[Optional(), Length(max=160)])
 
 
 class ClassEditForm(FlaskForm):
@@ -168,10 +175,6 @@ class UserSearchForm(FlaskForm):
 
 # Letters (any script, incl. Indian vowel signs), spaces and . ' - ( ) only: no digits or markup in place names
 PLACE_RE = r"^[^\W\d_](?:[^\W\d_]|[ऀ-෿]|[ .'()\-])*$"
-
-
-def _strip(v):
-    return v.strip() if isinstance(v, str) else v
 
 
 class DoctorSearchForm(FlaskForm):
@@ -235,6 +238,8 @@ class AppointmentForm(FlaskForm):
     note = TextAreaField("Anything the clinic should know? (optional)", filters=[_strip], validators=[
         Optional(), Length(max=500, message="Please keep the note under 500 characters."),
     ])
+    # off by default: the patient chooses whether the clinic may see the photo and the AI result
+    share_photo = BooleanField("Share my photo and skin check result with this clinic")
     # the clinic (copied from the search result) and the check this booking came from
     clinic_name = HiddenField(validators=[DataRequired(), Length(max=160)])
     clinic_address = HiddenField(validators=[Optional(), Length(max=255)])
