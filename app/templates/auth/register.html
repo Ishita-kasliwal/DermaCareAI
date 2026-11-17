@@ -10,6 +10,16 @@
       {% if google_enabled %}{{ google_button('Sign up with Google') }}{% endif %}
       <form class="form" method="post" action="{{ url_for('auth.register') }}" novalidate data-loading-form>
         {{ form.hidden_tag() }}
+        <fieldset class="field role-choice">
+          <legend>I am a</legend>
+          <div class="segmented">
+            {% for opt in form.account_type %}<label class="segment">{{ opt() }}<span>{{ opt.label.text }}</span></label>{% endfor %}
+          </div>
+          {% if form.account_type.errors %}<p class="error">{{ form.account_type.errors|join(' ') }}</p>{% endif %}
+        </fieldset>
+        <div data-doctor-only>
+          {{ field(form.clinic, maxlength=160, hint="Type it exactly as it appears in the clinic list. An admin checks doctor accounts before switching on doctor access.") }}
+        </div>
         {{ field(form.full_name, autocomplete='name', required=true) }}
         {{ field(form.email, autocomplete='email', required=true, hint="You'll use this to log in. We never share it.") }}
         <div class="field{{ ' has-error' if form.password.errors }}">

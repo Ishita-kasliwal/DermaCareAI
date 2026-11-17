@@ -99,3 +99,14 @@ def test_service_down_gives_friendly_error(monkeypatch):
 
 def test_distance_km():
     assert ds.distance_km(18.52, 73.86, 19.08, 72.88) == pytest.approx(120, abs=5)   # Pune -> Mumbai
+
+
+def test_same_clinic_listed_twice_is_shown_once(monkeypatch):
+    monkeypatch.setattr(ds, "_http_json", fake_http({"city": [
+        clinic("Ethereal Skin Clinic", 18.01, 74.0, address={"road": "Service Road"}),
+        clinic("Ethereal Skin Clinic", 18.012, 74.001, address={"house_number": "109-C", "road": "Service Road"}),
+        clinic("Other Skin Clinic", 18.02, 74.0, address={"road": "MG Road"})]}))
+    r = ds.search("Smalltown", "Bigdistrict", "Maharashtra")
+    names = [c.name for c in r.clinics]
+    assert names.count("Ethereal Skin Clinic") == 1 and "Other Skin Clinic" in names
+    assert next(c for c in r.clinics if c.name == "Ethereal Skin Clinic").address.startswith("109-C")  # fuller one kept

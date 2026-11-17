@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "_macros.html" import risk_badge %}
-{% block title %}About the AI{% endblock %}
+{% block title %}About DermaCareAI{% endblock %}
 
 {% macro performance(mv, classes) -%}
   {% set test = ((mv.metrics or {}).get('test') or {}) if mv else {} %}
@@ -36,7 +36,7 @@
 <div class="container page">
   <div class="page-head">
     <div>
-      <span class="eyebrow">About the AI</span>
+      <span class="eyebrow">About DermaCareAI</span>
       <h1>How our AI works, and what it can't do</h1>
       <p class="lead">A plain-English look at how the AI was built and tested, so you know how much to trust a result.</p>
     </div>

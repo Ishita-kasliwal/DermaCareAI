@@ -52,6 +52,11 @@ def _empty_to_none(v):
 
 
 class RegisterForm(FlaskForm):
+    # Patient or doctor. A doctor account is only switched on after an admin checks it (never automatic).
+    account_type = RadioField("I am a", choices=[("patient", "Patient"), ("doctor", "Doctor")], default="patient",
+                              validators=[Optional()])
+    clinic = StringField("Your clinic's name (doctors only)", filters=[_strip],
+                         validators=[Optional(), Length(max=160, message="Please keep the clinic name under 160 characters.")])
     full_name = StringField("Your name", validators=[
         DataRequired("Please enter your name."), Length(2, 120, "Please enter between 2 and 120 characters."),
         Regexp(NAME_RE, message="Please use only letters, spaces and simple punctuation.")])
@@ -66,6 +71,9 @@ class RegisterForm(FlaskForm):
 
 
 class LoginForm(FlaskForm):
+    # Which part of the site to open. It never gives extra rights: the account's own role decides.
+    login_as = RadioField("Log in as", choices=[("user", "Patient"), ("doctor", "Doctor"), ("admin", "Admin")],
+                          default="user", validators=[Optional()])
     email = EmailField("Email", validators=[DataRequired("Please enter your email."), Length(max=254)])
     password = PasswordField("Password", validators=[DataRequired("Please enter your password."), Length(max=128)])
     next = HiddenField()
@@ -183,18 +191,18 @@ class DoctorSearchForm(FlaskForm):
     class Meta:
         csrf = False
 
-    city = StringField("City or town", filters=[_strip], validators=[
-        DataRequired("Please type your city or town, for example Pune."),
-        Length(min=2, max=60, message="Please type a city or town name between 2 and 60 letters long."),
-        Regexp(PLACE_RE, message="Please use only letters and spaces in the city name (no numbers)."),
+    state = SelectField("State or union territory", choices=[], validators=[
+        DataRequired("Please choose your state or union territory from the list."),
     ])
     district = StringField("District (optional)", filters=[_strip], validators=[
         Optional(),
         Length(min=2, max=60, message="Please type a district name between 2 and 60 letters long, or leave it empty."),
         Regexp(PLACE_RE, message="Please use only letters and spaces in the district name (no numbers)."),
     ])
-    state = SelectField("State or union territory", choices=[], validators=[
-        DataRequired("Please choose your state or union territory from the list."),
+    city = StringField("City or town", filters=[_strip], validators=[
+        DataRequired("Please type your city or town, for example Pune."),
+        Length(min=2, max=60, message="Please type a city or town name between 2 and 60 letters long."),
+        Regexp(PLACE_RE, message="Please use only letters and spaces in the city name (no numbers)."),
     ])
     prediction = HiddenField()   # optional: the check this search came from (used for booking later)
 
@@ -239,7 +247,7 @@ class AppointmentForm(FlaskForm):
         Optional(), Length(max=500, message="Please keep the note under 500 characters."),
     ])
     # off by default: the patient chooses whether the clinic may see the photo and the AI result
-    share_photo = BooleanField("Share my photo and skin check result with this clinic")
+    share_photo = BooleanField("Share my photo, skin check result and basic details with this clinic")
     # the clinic (copied from the search result) and the check this booking came from
     clinic_name = HiddenField(validators=[DataRequired(), Length(max=160)])
     clinic_address = HiddenField(validators=[Optional(), Length(max=255)])

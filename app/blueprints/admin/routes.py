@@ -229,8 +229,10 @@ def audit_log():
 @bp.get("/appointments")
 def appointments():
     """Appointment requests from the clinic cards (Task 5), newest first."""
+    from app.blueprints.clinic.routes import delete_expired
     from app.models import Appointment
 
+    delete_expired()   # same automatic clean-up as the doctor page
     page = request.args.get("page", 1, type=int)
     pagination = db.paginate(db.select(Appointment).order_by(Appointment.created_at.desc(), Appointment.id.desc()),
                              page=max(page, 1), per_page=30, error_out=False)

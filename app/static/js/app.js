@@ -150,6 +150,45 @@
       });
     });
 
+    // --- find a dermatologist: District suggestions follow the chosen State (typing any district still works)
+    document.querySelectorAll("form.doctor-search").forEach(function (form) {
+      var state = form.querySelector('select[name="state"]');
+      var district = form.querySelector('input[name="district"]');
+      if (!state || !district) return;
+      var list = form.querySelector("[data-district-list]");
+      if (!list) {
+        list = document.createElement("datalist");
+        list.id = "district-options-" + Math.random().toString(36).slice(2, 8);
+        form.appendChild(list);
+      }
+      district.setAttribute("list", list.id);
+      district.setAttribute("autocomplete", "off");
+      var data = null;
+      var fill = function () {
+        list.textContent = "";
+        ((data && data[state.value]) || []).forEach(function (d) {
+          var o = document.createElement("option"); o.value = d; list.appendChild(o);
+        });
+        district.placeholder = state.value ? "Choose or type your district" : "Choose your state first";
+      };
+      fetch(form.getAttribute("data-districts-url") || "/static/data/india_districts.json")
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) { data = j && j.states; fill(); })
+        .catch(function () { /* no list: typing still works */ });
+      state.addEventListener("change", function () { district.value = ""; fill(); });
+    });
+
+    // --- sign-up: the clinic name box only matters for doctors
+    document.querySelectorAll("[data-doctor-only]").forEach(function (box) {
+      var form = box.closest("form");
+      var sync = function () {
+        var pick = form.querySelector('input[name="account_type"]:checked');
+        box.hidden = !pick || pick.value !== "doctor";
+      };
+      form.querySelectorAll('input[name="account_type"]').forEach(function (r) { r.addEventListener("change", sync); });
+      sync();
+    });
+
     // --- loading state on submit (prevents double submission)
     document.querySelectorAll("form[data-loading-form]").forEach(function (form) {
       form.addEventListener("submit", function () {

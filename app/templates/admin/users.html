@@ -23,7 +23,9 @@
         <tbody>
           {% for u in pagination.items %}
             <tr>
-              <td data-label="Name">{{ u.full_name }}{% if u.id == current_user.id %} <span class="muted small">(you)</span>{% endif %}</td>
+              <td data-label="Name">{{ u.full_name }}{% if u.id == current_user.id %} <span class="muted small">(you)</span>{% endif %}
+                {% if u.role == 'user' and u.clinic_name %}<br><span class="badge badge-medium">Asked for doctor access: {{ u.clinic_name }}</span>{% endif %}
+                {% if u.role == 'doctor' %}<br><span class="small muted">Doctor at {{ u.clinic_name }}</span>{% endif %}</td>
               <td data-label="Email">{{ u.email }}</td>
               <td data-label="Role">{{ 'Administrator' if u.role == 'admin' else 'User' }}</td>
               <td data-label="Status">{% if u.is_active_flag %}<span class="badge badge-low">Active</span>{% else %}<span class="badge badge-neutral">Deactivated</span>{% endif %}{% if reset_requests.get(u.id) %}<br><span class="badge badge-medium mt-1" title="Asked on {{ reset_requests[u.id]|datetimefmt }}">Asked for reset</span>{% endif %}</td>

@@ -166,12 +166,12 @@
       <section class="section" aria-labelledby="derm-h">
         <h2 id="derm-h">{% set step.n = step.n + 1 %}<span class="step-no">{{ step.n }}</span> Find a dermatologist near you</h2>
         <p class="muted">Type your city or town and choose your state to see skin clinics nearby.</p>
-        <form class="form doctor-search" method="get" action="{{ url_for('doctors.find') }}" novalidate data-loading-form>
+        <form class="form doctor-search" method="get" action="{{ url_for('doctors.find') }}" data-districts-url="{{ url_for('static', filename='data/india_districts.json') }}" novalidate data-loading-form>
           <input type="hidden" name="prediction" value="{{ pred.public_id }}">
           <div class="doctor-search-fields">
-            {{ field(doctor_form.city, maxlength=60, placeholder="e.g. Pune") }}
-            {{ field(doctor_form.district, maxlength=60) }}
             {{ field(doctor_form.state) }}
+            {{ field(doctor_form.district, maxlength=60) }}
+            {{ field(doctor_form.city, maxlength=60, placeholder="e.g. Indore") }}
           </div>
           <div class="btn-row"><button class="btn btn-secondary" type="submit">{{ icon('search') }} Find dermatologists</button></div>
           <p class="loading-note" data-loading-note>Searching for skin clinics near you. This can take up to 15 seconds…</p>

@@ -9,7 +9,7 @@
       <p class="eyebrow">For doctors</p>
       <h1>Appointment requests</h1>
       <p class="muted">People who asked for an appointment at <strong>{{ current_user.clinic_name }}</strong>, newest first.
-        You see a photo only when the patient chose to share it. Please call them to confirm a time.</p>
+        You see a photo and details only when the patient chose to share them. Please call them to confirm a time. Requests are deleted {{ keep_days }} days after the appointment date, or when you press "Visit done, delete".</p>
     </div>
   </div>
 
@@ -34,13 +34,27 @@
               wants {{ a.preferred_date|datefmt }}, {{ slots.get(a.time_slot, a.time_slot)|lower }}
             </p>
             {% if p %}
+              {% set d = details(a, p) %}
               <p class="appt-ai">AI check: <strong>{{ simple_name(p.predicted_class.code, p.predicted_class.name) }}</strong>
                 ({{ p.confidence|pct }} match{% if p.status != 'confident' %}, unclear{% endif %}) {{ risk_badge(p.predicted_class.risk_level) }}</p>
+              <dl class="meta-list appt-details">
+                <dt>Top 3</dt><dd>{% for s in d.top3 %}{{ simple_name(s.disease_class.code, s.disease_class.name) }} {{ s.probability|pct }}{{ ', ' if not loop.last }}{% endfor %}</dd>
+                <dt>Checked</dt><dd>{{ d.checked_on|datetimefmt }} · {{ d.checker }}</dd>
+                <dt>Photo quality</dt><dd>{{ 'Good' if d.quality_ok else 'Some problems (may be blurry or dark)' }}</dd>
+                <dt>Age</dt><dd>{{ d.age ~ ' years' if d.age else 'Not given' }}</dd>
+                <dt>Sex</dt><dd>{{ d.sex or 'Not given' }}</dd>
+                <dt>Skin type</dt><dd>{{ 'Type ' ~ d.skin_type if d.skin_type else 'Not given' }}</dd>
+              </dl>
             {% elif a.predicted_condition %}
-              <p class="appt-ai muted">Patient's check said: {{ a.predicted_condition }} (photo not shared)</p>
+              <p class="appt-ai muted">Patient's check said: {{ a.predicted_condition }} (photo and details not shared)</p>
             {% endif %}
             {% if a.note %}<p class="appt-note">&ldquo;{{ a.note }}&rdquo;</p>{% endif %}
             <p class="small muted">Requested {{ a.created_at|datetimefmt }}</p>
+            <form class="inline-form" method="post" action="{{ url_for('clinic.delete', appointment_id=a.public_id) }}"
+                  data-confirm="Delete the request from {{ a.patient_name }}? Do this after the visit. You can't undo this.">
+              {{ delete_form.hidden_tag() }}
+              <button class="btn btn-secondary btn-sm" type="submit">Visit done, delete</button>
+            </form>
           </div>
         </li>
       {% endfor %}

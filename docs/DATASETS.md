@@ -179,3 +179,20 @@ ml/data/raw/HAM10000/
 - Harvard Dataverse HAM10000 record: https://doi.org/10.7910/DVN/DBW86T
 - ISIC challenge data page (2018/2019/2020 files, licenses, attributions): https://challenge.isic-archive.com/data/
 - SIIM-ISIC 2020 dataset: https://doi.org/10.34970/2020-DS01
+
+## Website photos (home page)
+
+Not used for training. Shown on the home page only.
+
+| File | What | Source and licence |
+|---|---|---|
+| `app/static/img/home/take-photo.jpg` | Hand taking a photo with a phone | Luciano Oliveira, [Unsplash](https://unsplash.com/photos/LX3YF0Rv524), Unsplash Licence |
+| `app/static/img/home/read-result.jpg` | Doctor showing a patient a tablet | Vitaly Gariev, [Unsplash](https://unsplash.com/photos/6qN9yEK5k9U), Unsplash Licence |
+| `app/static/img/home/home-care.jpg` | Applying cream to the cheek | Leighann Blackwood, [Unsplash](https://unsplash.com/photos/zoYLGk2oULA), Unsplash Licence |
+| `app/static/img/home/skin-doctor.jpg` | Doctor talking with a patient | Nate Johnston, [Unsplash](https://unsplash.com/photos/EGRtDGCcKMA), Unsplash Licence |
+| `app/static/img/conditions/acne.jpg` | Skin with acne marks | mehak mehla, [Unsplash](https://unsplash.com/photos/uqFmwvHa-xs), Unsplash Licence |
+| `app/static/img/conditions/scratches.jpg` | Plaster on an elbow | Diana Polekhina, [Unsplash](https://unsplash.com/photos/rKJoUsqmSs4), Unsplash Licence |
+| `app/static/img/conditions/dark_spots.jpg`, `moles.jpg` | Skin magnifier close-ups | HAM10000 (ViDIR Group, Medical University of Vienna), CC BY-NC 4.0 |
+
+Photos from the Roboflow sets are **not** shown on the website: many of them turned out to be stock photos
+(Getty Images, iStock, Depositphotos, 123RF) or have no source information.

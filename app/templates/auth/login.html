@@ -11,6 +11,13 @@
       {% if google_enabled %}{{ google_button('Continue with Google', form.next.data) }}{% endif %}
       <form class="form" method="post" action="{{ url_for('auth.login') }}" novalidate data-loading-form>
         {{ form.hidden_tag() }}
+        <fieldset class="field role-choice">
+          <legend>Log in as</legend>
+          <div class="segmented">
+            {% for opt in form.login_as %}<label class="segment">{{ opt() }}<span>{{ opt.label.text }}</span></label>{% endfor %}
+          </div>
+          {% if form.login_as.errors %}<p class="error">{{ form.login_as.errors|join(' ') }}</p>{% endif %}
+        </fieldset>
         {{ field(form.email, autocomplete='email', required=true, autofocus=true) }}
         {{ field(form.password, autocomplete='current-password', required=true) }}
         <p class="-mt-2 mb-0 text-right text-sm"><a href="{{ url_for('auth.forgot_password') }}">Forgot your password?</a></p>

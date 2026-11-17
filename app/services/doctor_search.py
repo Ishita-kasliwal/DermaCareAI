@@ -56,6 +56,12 @@ class Clinic:
         return "https://www.google.com/maps/search/?" + urllib.parse.urlencode({"api": 1, "query": q})
 
     @property
+    def check_url(self) -> str:
+        """Google Maps search for this clinic by name and town, to confirm address, hours and reviews."""
+        return "https://www.google.com/maps/search/?" + urllib.parse.urlencode(
+            {"api": 1, "query": f"{self.name} {self.address}".strip()})
+
+    @property
     def directions_url(self) -> str:
         """Google Maps directions to the clinic (opens in a new tab)."""
         return f"https://www.google.com/maps/dir/?api=1&destination={self.lat:.6f},{self.lon:.6f}"
@@ -160,10 +166,28 @@ def geocode(query: str) -> dict | None:
 
 # --------------------------------------------------------------------------------------------- clinic sources
 def _address(addr: dict) -> str:
-    parts = [addr.get(k, "") for k in ("house_number", "road", "neighbourhood", "suburb")]
-    town = addr.get("city") or addr.get("town") or addr.get("village") or addr.get("county", "")
-    parts += [town, addr.get("postcode", "")]
-    return ", ".join(p for p in parts if p)
+    """A postal-style address: "Badgara Crest, 301, LB Dawar Marg, Indore, Madhya Pradesh 452001".
+
+    Uses house number, road and the local area (neighbourhood/suburb), then the town and state with the PIN code.
+    Map-only district names such as "Indore City" or "... Tahsil" are left out: they aren't part of a postal address.
+    """
+    town = addr.get("city") or addr.get("town") or addr.get("village") or ""
+    skip = {town.lower(), "", None}
+    local = []
+    for k in ("house_number", "road", "neighbourhood", "quarter", "suburb"):
+        v = (addr.get(k) or "").strip()
+        if v and v.lower() not in skip and "tahsil" not in v.lower() and v.lower() != f"{town.lower()} city":
+            skip.add(v.lower())
+            local.append(v)
+    tail = ", ".join(x for x in (town, addr.get("state", "")) if x)
+    pin = addr.get("postcode", "")
+    return ", ".join(local + ([f"{tail} {pin}".strip()] if tail or pin else []))
+
+
+def _same_place(a: Clinic, b: Clinic) -> bool:
+    """The same clinic entered more than once on the map: same name, within 1.5 km."""
+    norm = lambda n: re.sub(r"[^a-z0-9]", "", n.lower())   # noqa: E731
+    return norm(a.name) == norm(b.name) and distance_km(a.lat, a.lon, b.lat, b.lon) <= 1.5
 
 
 def osm_clinics(bbox) -> list[Clinic]:
@@ -259,13 +283,14 @@ def search(city: str, district: str, state: str, google_key: str = "") -> Search
             for c in res.clinics:
                 c.distance_km = round(distance_km(centre["lat"], centre["lon"], c.lat, c.lon), 1)
             res.clinics.sort(key=lambda c: c.distance_km)
-        # remove duplicates (same name very close together) and keep the nearest few
-        seen, unique = set(), []
+        # the same clinic is often on the map several times: keep one (the one with the fullest address)
+        unique: list[Clinic] = []
         for c in res.clinics:
-            key = (c.name.lower(), round(c.lat, 3), round(c.lon, 3))
-            if key not in seen:
-                seen.add(key)
+            twin = next((u for u in unique if _same_place(u, c)), None)
+            if twin is None:
                 unique.append(c)
+            elif len(c.address) > len(twin.address):
+                unique[unique.index(twin)] = c
         res.clinics = unique[:MAX_RESULTS]
     except MapServiceError:
         res.error = ("We couldn't reach the map service just now. Please try again in a minute, "

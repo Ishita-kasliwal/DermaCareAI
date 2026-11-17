@@ -2,7 +2,7 @@ from flask import current_app, flash, redirect, render_template, request, sessio
 from flask_login import current_user, login_user, logout_user
 
 from app.blueprints.auth import bp
-from app.extensions import limiter
+from app.extensions import db, limiter
 from app.forms import ConfirmForm, ForgotPasswordForm, LoginForm, RegisterForm, ResetPasswordForm
 from app.security.passwords import MIN_LENGTH
 from app.security.utils import safe_next_url
@@ -24,16 +24,28 @@ def register():
     if current_user.is_authenticated:
         return redirect(url_for("main.dashboard"))
     form = RegisterForm()
-    if form.validate_on_submit():
+    if form.is_submitted() and form.account_type.data == "doctor" and not form.clinic.data:
+        form.validate()
+        form.clinic.errors = list(form.clinic.errors) + ["Please type your clinic's name."]
+    elif form.validate_on_submit():
         try:
             user = register_user(form.email.data, form.full_name.data, form.password.data)
         except AuthError as e:
             getattr(form, e.field or "email").errors.append(e.message)
         else:
+            if form.account_type.data == "doctor":
+                # stays a patient account until an admin checks it and switches on doctor access
+                user.clinic_name = form.clinic.data
+                db.session.commit()
+                audit("doctor_access_requested", user, "user", user.public_id, details={"clinic": user.clinic_name})
             session.clear()
             login_user(user)
             session.permanent = True
-            flash("Welcome to DermaCareAI! Your account is ready.", "success")
+            if form.account_type.data == "doctor":
+                flash("Welcome! Your doctor access is waiting for an admin to check it. Until then you can use "
+                      "DermaCareAI like a patient.", "info")
+            else:
+                flash("Welcome to DermaCareAI! Your account is ready.", "success")
             return redirect(url_for("main.dashboard"))
     return render_template("auth/register.html", form=form, min_length=MIN_LENGTH), (
         400 if form.errors else 200)
@@ -54,7 +66,16 @@ def login():
         except AuthError as e:
             error = e.message
         else:
-            target = safe_next_url(form.next.data, url_for("main.dashboard"))
+            homes = {"user": "main.dashboard", "doctor": "clinic.appointments", "admin": "admin.dashboard"}
+            labels = {"user": "a patient", "doctor": "a doctor", "admin": "an admin"}
+            if "login_as" in request.form and form.login_as.data != user.role:
+                # the choice never grants rights; it only has to match the account
+                error = (f"This is {labels.get(user.role, 'a patient')} account. Please choose "
+                         f"\"{dict(form.login_as.choices).get(user.role, 'Patient')}\" above and log in again.")
+                if form.login_as.data == "doctor" and user.role == "user" and user.clinic_name:
+                    error = "Your doctor access is still waiting for an admin to check it. Please log in as Patient for now."
+                return render_template("auth/login.html", form=form, error=error), 403
+            target = safe_next_url(form.next.data, url_for(homes.get(user.role, "main.dashboard")))
             session.clear()  # new session on privilege change (prevents fixation)
             login_user(user)
             session.permanent = True

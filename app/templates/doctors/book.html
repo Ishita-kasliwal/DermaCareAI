@@ -49,7 +49,8 @@
       <div class="field share-box">
         <div class="check">{{ form.share_photo() }} {{ form.share_photo.label() }}</div>
         <p class="hint">Optional. If you tick this, a doctor at <strong>{{ clinic.name }}</strong> who uses DermaCareAI
-          can see the photo from your skin check and what the AI said, to prepare for your visit. You can delete the
+          can see the photo from your skin check, what the AI said, and your age, sex and skin type if you filled them in
+          (never your email), to prepare for your visit. The request is deleted after your visit. You can delete the
           check at any time, and the photo is then removed for them too.</p>
       </div>
     {% endif %}

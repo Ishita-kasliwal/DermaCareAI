@@ -21,7 +21,7 @@ CHECKERS = [
 CHECK_ITEMS = [
     {"key": "acne", "title": "Pimples and acne", "icon": "chat",
      "desc": "Whiteheads, blackheads and red, sometimes painful spots, usually on the face, chest or back.",
-     "credit": ""},
+     "credit": "Photo: mehak mehla / Unsplash"},
     {"key": "eczema", "title": "Rashes and eczema", "icon": "sun",
      "desc": "Itchy, red or dry patches that can come and go, often in skin folds or where something touched the skin.",
      "credit": ""},
@@ -33,7 +33,7 @@ CHECK_ITEMS = [
      "credit": "Photo: sun spots seen through a skin magnifier. HAM10000, ViDIR Group, Medical University of Vienna, CC BY-NC 4.0."},
     {"key": "scratches", "title": "Scratches and small cuts", "icon": "doctor",
      "desc": "Scrapes and small cuts: how to clean them and when a doctor should look at them.",
-     "credit": ""},
+     "credit": "Photo: Diana Polekhina / Unsplash"},
     {"key": "moles", "title": "Moles and spots", "icon": "question",
      "desc": "A single mole or spot: whether it shows signs a doctor should check, like an uneven edge or several colours.",
      "credit": "Photo: a common mole seen through a skin magnifier. HAM10000, ViDIR Group, Medical University of Vienna, CC BY-NC 4.0."},

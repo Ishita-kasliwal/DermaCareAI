@@ -48,7 +48,7 @@
         <a href="{{ url_for('predict.upload') }}" {% if ep.startswith('predict.') %}aria-current="page"{% endif %}>{{ icon('camera') }}<span>Check my skin</span></a>
         <a href="{{ url_for('history.index') }}" {% if ep.startswith('history.') %}aria-current="page"{% endif %}>{{ icon('history') }}<span>My history</span></a>
         <a href="{{ url_for('doctors.find') }}" {% if ep.startswith('doctors.') %}aria-current="page"{% endif %}>{{ icon('pin') }}<span>Find a dermatologist</span></a>
-        <a href="{{ url_for('main.about_model') }}" {% if ep == 'main.about_model' %}aria-current="page"{% endif %}>{{ icon('info') }}<span>About the AI</span></a>
+        <a href="{{ url_for('main.about_model') }}" {% if ep == 'main.about_model' %}aria-current="page"{% endif %}>{{ icon('info') }}<span>About DermaCareAI</span></a>
         {% if current_user.is_doctor %}
           <a href="{{ url_for('clinic.appointments') }}" {% if ep.startswith('clinic.') %}aria-current="page"{% endif %}>{{ icon('calendar') }}<span>Appointment requests</span></a>
         {% endif %}
@@ -84,7 +84,7 @@
       {{ logo() }}
       <div class="header-tools">
         {{ theme_button() }}
-        <a class="nav-link hidden sm:inline-flex" href="{{ url_for('main.about_model') }}" {% if ep == 'main.about_model' %}aria-current="page"{% endif %}>About the AI</a>
+        <a class="nav-link hidden sm:inline-flex" href="{{ url_for('main.about_model') }}" {% if ep == 'main.about_model' %}aria-current="page"{% endif %}>About DermaCareAI</a>
         <a class="nav-link" href="{{ url_for('auth.login') }}" {% if ep == 'auth.login' %}aria-current="page"{% endif %}>Log in</a>
         <a class="btn btn-primary btn-sm" href="{{ url_for('auth.register') }}"><span class="sm:hidden">Sign up</span><span class="hidden sm:inline">Create account</span></a>
       </div>
@@ -124,7 +124,7 @@
           rash photos from SCIN (Google Research), Roboflow Universe (CC BY 4.0) and DermNet. For non-commercial use only.</p>
       </div>
       <nav aria-label="Footer">
-        <a href="{{ url_for('main.about_model') }}">About the AI</a>
+        <a href="{{ url_for('main.about_model') }}">About DermaCareAI</a>
         <a href="{{ url_for('main.index') }}#good-to-know">Good to know</a>
         <p class="small">© {{ current_year }} {{ brand }}</p>
       </nav>

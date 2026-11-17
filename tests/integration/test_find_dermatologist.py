@@ -56,3 +56,15 @@ def test_result_page_links_to_search(client, user, model_dirs):
 def upload_one(client):
     from tests.conftest import image_bytes, upload
     return upload(client, image_bytes(seed=91))
+
+
+def test_district_list_covers_every_state_and_ut(client):
+    from app.data.india import ALL
+    data = client.get("/static/data/india_districts.json").get_json()
+    assert set(data["states"]) == set(ALL)
+    assert "Indore" in data["states"]["Madhya Pradesh"] and "Leh" in data["states"]["Ladakh"]
+
+
+def test_search_form_asks_state_first(client):
+    html = client.get("/find-a-dermatologist").data.decode()
+    assert html.index('name="state"') < html.index('name="district"') < html.index('name="city"')

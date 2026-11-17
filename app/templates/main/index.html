@@ -24,32 +24,41 @@
       </ul>
     </div>
 
-    <div class="hero-panel">
-      <h2 class="hero-panel-title">What you can check</h2>
-      {# photos only where a clearly licensed one exists (see CHECK_ITEMS in main/routes.py) #}
-      <ul class="check-cards">
-        {% for item in check_items %}
-          <li class="check-card">
-            {% if item.image %}
-              <figure class="check-photo">
-                <img src="{{ url_for('static', filename=item.image) }}" width="480" height="360" loading="lazy"
-                     alt="{{ item.title }}: example photo">
-              </figure>
-            {% else %}
-              <div class="check-tile" aria-hidden="true">{{ icon(item.icon) }}</div>
-            {% endif %}
-            <div>
-              <strong>{{ item.title }}</strong>
-              <span>{{ item.desc }}</span>
-              {% if item.image and item.credit %}<small class="check-credit">{{ item.credit }}</small>{% endif %}
-            </div>
-          </li>
-        {% endfor %}
-      </ul>
-      <p class="small muted">Not sure which one it is? Just upload your photo and the AI picks the right check for you.</p>
-    </div>
+    <figure class="hero-photo">
+      <img src="{{ url_for('static', filename='img/home/skin-doctor.jpg') }}" width="800" height="520"
+           alt="A doctor talking with a patient about her skin">
+      <div class="hero-badge">{{ icon('clock') }}<div><strong>About a minute</strong><span>Upload a photo, read a plain-words result</span></div></div>
+      <figcaption class="photo-credit">Photo: Nate Johnston / Unsplash</figcaption>
+    </figure>
   </div>
 </section>
+
+<section class="section" id="what-you-can-check">
+  <div class="container">
+    <div class="section-head">
+      <h2>What you can check</h2>
+      <p class="muted">Not sure which one it is? Just upload your photo and the AI picks the right check for you.</p>
+    </div>
+    {# photos only where a clearly licensed one exists (see CHECK_ITEMS in main/routes.py) #}
+    <ul class="check-grid">
+      {% for item in check_items %}
+        <li class="check-grid-card">
+          {% if item.image %}
+            <img src="{{ url_for('static', filename=item.image) }}" width="480" height="360" loading="lazy" alt="{{ item.title }}: example photo">
+          {% else %}
+            <div class="check-grid-tile" aria-hidden="true">{{ icon(item.icon) }}</div>
+          {% endif %}
+          <div class="check-grid-body">
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.desc }}</p>
+            {% if item.image and item.credit %}<small class="photo-credit">{{ item.credit }}</small>{% endif %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
 
 {# conditions the installed checkers can actually name ("not a skin problem" is not a condition) #}
 {% set known = [] %}
@@ -60,10 +69,24 @@
     <div class="section-head">
       <h2>How it works</h2>
     </div>
-    <ol class="steps">
-      <li><h3>Take a clear photo</h3><p>Get close, use good daylight, and keep the problem area in the middle of the photo.</p></li>
-      <li><h3>Upload it</h3><p>We check the photo is sharp and bright enough, then the AI picks the right check for it.</p></li>
-      <li><h3>Read your result</h3><p>See what it looks most like, safe things to try at home, and skin doctors near you.</p></li>
+    {# photos: free Unsplash licence (credits in the small captions and docs/DATASETS.md) #}
+    <ol class="steps photo-steps">
+      <li>
+        <img class="step-photo" src="{{ url_for('static', filename='img/home/take-photo.jpg') }}" width="800" height="520" loading="lazy"
+             alt="A hand holding a phone and taking a photo">
+        <h3>Take a clear photo</h3><p>Get close, use good daylight, and keep the problem area in the middle of the photo.</p>
+        <small class="photo-credit">Photo: Luciano Oliveira / Unsplash</small>
+      </li>
+      <li>
+        <div class="step-photo step-photo-art" aria-hidden="true">{{ icon('upload') }}</div>
+        <h3>Upload it</h3><p>We check the photo is sharp and bright enough, then the AI picks the right check for it.</p>
+      </li>
+      <li>
+        <img class="step-photo" src="{{ url_for('static', filename='img/home/read-result.jpg') }}" width="800" height="520" loading="lazy"
+             alt="A doctor showing a patient results on a tablet">
+        <h3>Read your result</h3><p>See what it looks most like, safe things to try at home, and skin doctors near you.</p>
+        <small class="photo-credit">Photo: Vitaly Gariev / Unsplash</small>
+      </li>
     </ol>
   </div>
 </section>
@@ -80,6 +103,18 @@
       </ul>
     </div>
     <div>
+      <div class="photo-pair">
+        <figure>
+          <img src="{{ url_for('static', filename='img/home/home-care.jpg') }}" width="800" height="520" loading="lazy"
+               alt="A woman putting cream on her cheek">
+          <figcaption><strong>Safe home care</strong> for your skin problem<small class="photo-credit">Photo: Leighann Blackwood / Unsplash</small></figcaption>
+        </figure>
+        <figure>
+          <img src="{{ url_for('static', filename='img/home/skin-doctor.jpg') }}" width="800" height="520" loading="lazy"
+               alt="A doctor talking with a patient in a clinic">
+          <figcaption><strong>Skin doctors near you</strong> when you need one<small class="photo-credit">Photo: Nate Johnston / Unsplash</small></figcaption>
+        </figure>
+      </div>
       <h2>Your privacy</h2>
       <ul class="plain-list">
         <li><strong>Only you see your photos</strong><span>Location and other hidden details are removed from every photo.</span></li>
