@@ -63,7 +63,14 @@ class Clinic:
 
     @property
     def directions_url(self) -> str:
-        """Google Maps directions to the clinic (opens in a new tab)."""
+        """Google Maps directions to the clinic (opens in a new tab).
+
+        Uses the clinic's name and address so Google finds its own verified listing: volunteer map pins can be
+        slightly off. Only a clinic without any address falls back to the map position.
+        """
+        if self.address:
+            dest = f"{self.name}, {self.address}"
+            return "https://www.google.com/maps/dir/?" + urllib.parse.urlencode({"api": 1, "destination": dest})
         return f"https://www.google.com/maps/dir/?api=1&destination={self.lat:.6f},{self.lon:.6f}"
 
     @property

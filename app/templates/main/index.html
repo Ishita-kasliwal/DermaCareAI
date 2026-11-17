@@ -25,9 +25,11 @@
     </div>
 
     <figure class="hero-photo">
-      <img src="{{ url_for('static', filename='img/home/skin-doctor.jpg') }}" width="800" height="520"
-           alt="A doctor talking with a patient about her skin">
-      <div class="hero-badge">{{ icon('clock') }}<div><strong>About a minute</strong><span>Upload a photo, read a plain-words result</span></div></div>
+      <div class="hero-photo-frame">
+        <img src="{{ url_for('static', filename='img/home/skin-doctor.jpg') }}" width="800" height="520"
+             alt="A doctor talking with a patient about her skin">
+        <div class="hero-badge">{{ icon('clock') }}<div><strong>About a minute</strong><span>Upload a photo, read a plain-words result</span></div></div>
+      </div>
       <figcaption class="photo-credit">Photo: Nate Johnston / Unsplash</figcaption>
     </figure>
   </div>

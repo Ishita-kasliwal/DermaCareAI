@@ -31,7 +31,8 @@ def booking(**over):
 # ---------------------------------------------------------------- clinic card links
 def test_clinic_links():
     c = ds.Clinic("X Skin Clinic", "Road", 22.7058, 75.8677, phone="07312547200;8982693241")
-    assert c.directions_url == "https://www.google.com/maps/dir/?api=1&destination=22.705800,75.867700"
+    assert c.directions_url == "https://www.google.com/maps/dir/?api=1&destination=X+Skin+Clinic%2C+Road"   # by name
+    assert ds.Clinic("No Address", "", 22.7058, 75.8677).directions_url.endswith("destination=22.705800,75.867700")
     assert c.display_phone == "07312547200" and c.tel_href == "tel:07312547200"
     assert ds.Clinic("Y", "", 1, 2, phone="+91 98765 43210").tel_href == "tel:+919876543210"
     assert ds.Clinic("Z", "", 1, 2, phone="").tel_href == ""
@@ -49,7 +50,7 @@ def test_cards_show_call_directions_book(client, monkeypatch):
     html = client.get("/find-a-dermatologist?city=Indore&state=Madhya+Pradesh&prediction=abc").data.decode()
     assert html.index("Near Skin Clinic") < html.index("No Phone Skin Clinic")         # nearest first
     assert 'href="tel:9713193581"' in html and "Phone number not available" in html
-    assert "google.com/maps/dir/?api=1&amp;destination=22.700000,75.860000" in html
+    assert "google.com/maps/dir/?api=1&amp;destination=Near+Skin+Clinic%2C+MG+Road" in html
     assert 'target="_blank"' in html
     assert "/book?name=Near+Skin+Clinic" in html and "prediction=abc" in html
 
